@@ -1,0 +1,10 @@
+# https://pnpm.io/ja/pnpm-workspace_yaml
+packages:
+  - "packages/*"
+
+# https://pnpm.io/ja/workspaces#syncinjecteddepsafterscripts
+syncInjectedDepsAfterScripts:
+  - build
+
+# https://pnpm.io/ja/settings#minimumreleaseage
+minimumReleaseAge: 4320 # 3日間 (4,320分)
