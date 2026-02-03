@@ -1,0 +1,23 @@
+{
+  /* common settings */
+  "files.insertFinalNewline": true,
+
+  /* editor */
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.tabSize": 2,
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  /* linter, formatter */
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  // yaml
+  "[yaml][dockercompose]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.formatOnSave": true
+  }
+}
