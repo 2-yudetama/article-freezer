@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  commands:
+    check:
+      glob: "*.{ts,tsx}"
+      run: pnpm exec biome check {staged_files}
+    knip:
+      run: "pnpm knip"
+    lock:
+      run: "pnpm install --lockfile-only && git diff --exit-code pnpm-lock.yaml"

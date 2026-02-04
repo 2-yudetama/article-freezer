@@ -13,3 +13,7 @@ syncInjectedDepsAfterScripts:
 
 # https://pnpm.io/ja/settings#minimumreleaseage
 minimumReleaseAge: 4320 # 3日間 (4,320分)
+
+# https://pnpm.io/ja/settings#ignoredbuiltdependencies
+ignoredBuiltDependencies:
+  - lefthook
