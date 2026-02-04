@@ -13,7 +13,14 @@
   /* linter, formatter */
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "explicit",
+    "source.addMissingImports.ts": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+  // biome
+  "[typescript][typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
   },
   // yaml
   "[yaml][dockercompose]": {
