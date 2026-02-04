@@ -2,6 +2,11 @@
 packages:
   - "packages/*"
 
+catalogs:
+  ts:
+    "@types/node": 22.19.7
+    typescript: 5.9.3
+
 # https://pnpm.io/ja/workspaces#syncinjecteddepsafterscripts
 syncInjectedDepsAfterScripts:
   - build

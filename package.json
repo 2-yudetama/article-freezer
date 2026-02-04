@@ -10,9 +10,13 @@
   "scripts": {
     "web-app": "pnpm -F web-app",
     "check": "pnpm exec biome check .",
-    "check:write": "pnpm exec biome check --write ."
+    "check:write": "pnpm exec biome check --write .",
+    "knip": "knip"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.13"
+    "@biomejs/biome": "2.3.13",
+    "@types/node": "catalog:ts",
+    "knip": "^5.82.1",
+    "typescript": "catalog:ts"
   }
 }
