@@ -1,0 +1,185 @@
+import type { Article, ArticleTag } from "./types";
+
+export const mockTags: ArticleTag[] = [
+  {
+    id: "1",
+    name: "React",
+    description: "Reactライブラリに関する記事",
+    color: "#61dafb",
+  },
+  {
+    id: "2",
+    name: "Next.js",
+    description: "Next.jsフレームワークに関する記事",
+    color: "#000000",
+  },
+  {
+    id: "3",
+    name: "TypeScript",
+    description: "TypeScriptの型システムと活用法に関する記事",
+    color: "#3178c6",
+  },
+  {
+    id: "4",
+    name: "JavaScript",
+    description: "JavaScriptの基礎と応用に関する記事",
+    color: "#f7df1e",
+  },
+  {
+    id: "5",
+    name: "CSS",
+    description: "CSSスタイリングとレイアウトに関する記事",
+    color: "#1572b6",
+  },
+  {
+    id: "6",
+    name: "Node.js",
+    description: "Node.jsランタイムとバックエンド開発に関する記事",
+    color: "#339933",
+  },
+  {
+    id: "7",
+    name: "Database",
+    description: "データベース設計と最適化に関する記事",
+    color: "#4479a1",
+  },
+  {
+    id: "8",
+    name: "AI/ML",
+    description: "人工知能と機械学習に関する記事",
+    color: "#ff6f00",
+  },
+  {
+    id: "9",
+    name: "DevOps",
+    description: "インフラとCI/CDに関する記事",
+    color: "#326ce5",
+  },
+  {
+    id: "10",
+    name: "セキュリティ",
+    description: "Webセキュリティとベストプラクティスに関する記事",
+    color: "#e91e63",
+  },
+];
+
+export const mockArticles: Article[] = [
+  {
+    id: "1",
+    title: "React Server Componentsの基礎と実践",
+    url: "https://zenn.dev/example/react-server-components",
+    summary:
+      "React Server Components (RSC)は、サーバー側でのレンダリングを可能にする新しいアーキテクチャです。クライアントとサーバーのコンポーネントを組み合わせることで、パフォーマンスとユーザー体験を向上させます。",
+    comment:
+      "非常に参考になりました。特にクライアントとサーバーの境界の扱い方が明確でした。",
+    tags: [mockTags[0], mockTags[1], mockTags[2]],
+    publishedAt: "2024-01-15",
+    createdAt: "2024-01-20",
+    sourcePlatform: "zenn",
+    isFavorite: true,
+  },
+  {
+    id: "2",
+    title: "TypeScriptの型安全性を最大限に活用する",
+    url: "https://qiita.com/example/typescript-type-safety",
+    summary:
+      "TypeScriptの高度な型システムを活用して、より安全でメンテナンス性の高いコードを書く方法を解説します。ジェネリクス、条件型、テンプレートリテラル型などを実例とともに紹介。",
+    comment: "条件型の使い方が特に参考になった。実務で活用できそう。",
+    tags: [mockTags[2], mockTags[3]],
+    publishedAt: "2024-01-10",
+    createdAt: "2024-01-12",
+    sourcePlatform: "qiita",
+    isFavorite: false,
+  },
+  {
+    id: "3",
+    title: "Next.js 15の新機能まとめ",
+    url: "https://zenn.dev/example/nextjs-15-features",
+    summary:
+      "Next.js 15で追加された新機能を網羅的に解説。Turbopackの安定化、React 19のサポート、新しいキャッシングAPIなど、アップグレードする際に知っておくべきポイントをまとめました。",
+    comment: "アップグレード前に読んでおくべき記事。移行の参考になります。",
+    tags: [mockTags[1], mockTags[0]],
+    publishedAt: "2024-01-18",
+    createdAt: "2024-01-19",
+    sourcePlatform: "zenn",
+    isFavorite: true,
+  },
+  {
+    id: "4",
+    title: "モダンCSSテクニック: Container Queriesの活用",
+    url: "https://zenn.dev/example/css-container-queries",
+    summary:
+      "Container Queriesを使用することで、親要素のサイズに応じてスタイルを変更できます。メディアクエリとの違いや実践的な使用例を紹介します。",
+    comment: "レスポンシブデザインの新しいアプローチとして有用。",
+    tags: [mockTags[4]],
+    publishedAt: "2024-01-05",
+    createdAt: "2024-01-08",
+    sourcePlatform: "zenn",
+    isFavorite: false,
+  },
+  {
+    id: "5",
+    title: "Node.jsパフォーマンス最適化のベストプラクティス",
+    url: "https://qiita.com/example/nodejs-performance",
+    summary:
+      "Node.jsアプリケーションのパフォーマンスを向上させるための実践的なテクニック。プロファイリング、メモリ管理、非同期処理の最適化などを解説します。",
+    comment: "パフォーマンス改善のヒントが満載。実装してみたい。",
+    tags: [mockTags[5], mockTags[3]],
+    publishedAt: "2024-01-12",
+    createdAt: "2024-01-14",
+    sourcePlatform: "qiita",
+    isFavorite: false,
+  },
+  {
+    id: "6",
+    title: "PostgreSQLインデックス戦略の完全ガイド",
+    url: "https://note.com/example/postgresql-indexing",
+    summary:
+      "データベースパフォーマンスの鍵となるインデックス戦略について詳しく解説。B-treeインデックス、部分インデックス、複合インデックスの使い分けなど。",
+    comment: "データベース設計の参考になる。クエリの最適化に役立ちそう。",
+    tags: [mockTags[6]],
+    publishedAt: "2024-01-08",
+    createdAt: "2024-01-10",
+    sourcePlatform: "note",
+    isFavorite: true,
+  },
+  {
+    id: "7",
+    title: "LLMアプリケーション開発入門",
+    url: "https://zenn.dev/example/llm-app-development",
+    summary:
+      "大規模言語モデル(LLM)を活用したアプリケーション開発の基礎。プロンプトエンジニアリング、RAG、ファインチューニングなどの実装方法を紹介。",
+    comment: "AI開発の実践的な内容で非常に参考になった。",
+    tags: [mockTags[7], mockTags[2]],
+    publishedAt: "2024-01-20",
+    createdAt: "2024-01-21",
+    sourcePlatform: "zenn",
+    isFavorite: true,
+  },
+  {
+    id: "8",
+    title: "Kubernetesでのマイクロサービス運用",
+    url: "https://qiita.com/example/kubernetes-microservices",
+    summary:
+      "Kubernetesを使用したマイクロサービスの運用方法。デプロイメント、スケーリング、モニタリング、ログ管理など実運用で必要な知識を網羅。",
+    comment: "インフラ周りの理解が深まった。実際の運用に活かせる。",
+    tags: [mockTags[8]],
+    publishedAt: "2024-01-16",
+    createdAt: "2024-01-17",
+    sourcePlatform: "qiita",
+    isFavorite: false,
+  },
+  {
+    id: "9",
+    title: "Webアプリケーションセキュリティ対策ガイド",
+    url: "https://zenn.dev/example/web-security-guide",
+    summary:
+      "XSS、CSRF、SQLインジェクションなど、Webアプリケーションの主要なセキュリティ脅威とその対策方法を実例付きで解説します。",
+    comment: "セキュリティの基本を再確認できた。開発時に常に意識したい。",
+    tags: [mockTags[9], mockTags[3]],
+    publishedAt: "2024-01-22",
+    createdAt: "2024-01-23",
+    sourcePlatform: "zenn",
+    isFavorite: true,
+  },
+];
