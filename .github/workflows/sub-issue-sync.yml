@@ -1,0 +1,90 @@
+name: Sync parent labels and milestone to sub-issue
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync from parent
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const childNodeId = context.payload.issue.node_id;
+            const query = `
+              query($childId: ID!) {
+                node(id: $childId) {
+                  ... on Issue {
+                    id
+                    labels(first: 100) { nodes { id } }
+                    milestone { id }
+                    assignees(first: 100) { nodes { id } }
+                    parent {
+                      ... on Issue {
+                        id
+                        labels(first: 100) { nodes { id } }
+                        milestone { id }
+                        assignees(first: 100) { nodes { id } }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const { node } = await github.graphql(query, { childId: childNodeId });
+            if (!node || !node.parent) {
+              core.info("No parent issue found. Skipping.");
+              return;
+            }
+
+            const childLabelIds = new Set(node.labels.nodes.map((l) => l.id));
+            const parentLabelIds = node.parent.labels.nodes.map((l) => l.id);
+            const labelIdsToAdd = parentLabelIds.filter((id) => !childLabelIds.has(id));
+
+            if (labelIdsToAdd.length > 0) {
+              await github.graphql(
+                `
+                  mutation($labelIds: [ID!]!, $issueId: ID!) {
+                    addLabelsToLabelable(input: { labelIds: $labelIds, labelableId: $issueId }) {
+                      clientMutationId
+                    }
+                  }
+                `,
+                { labelIds: labelIdsToAdd, issueId: node.id }
+              );
+            }
+
+            if (!node.milestone && node.parent.milestone) {
+              await github.graphql(
+                `
+                  mutation($issueId: ID!, $milestoneId: ID!) {
+                    updateIssue(input: { id: $issueId, milestoneId: $milestoneId }) {
+                      clientMutationId
+                    }
+                  }
+                `,
+                { issueId: node.id, milestoneId: node.parent.milestone.id }
+              );
+            }
+
+            const childAssigneeIds = node.assignees.nodes.map((a) => a.id);
+            const parentAssigneeIds = node.parent.assignees.nodes.map((a) => a.id);
+            if (childAssigneeIds.length === 0 && parentAssigneeIds.length > 0) {
+              await github.graphql(
+                `
+                  mutation($issueId: ID!, $assigneeIds: [ID!]!) {
+                    addAssigneesToAssignable(input: { assignableId: $issueId, assigneeIds: $assigneeIds }) {
+                      clientMutationId
+                    }
+                  }
+                `,
+                { issueId: node.id, assigneeIds: parentAssigneeIds }
+              );
+            }
