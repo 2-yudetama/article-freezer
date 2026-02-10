@@ -1,0 +1,43 @@
+services:
+  postgres:
+    container_name: article-freezer-postgres
+    image: postgres:18
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+      PGUSER: $POSTGRES_USER
+      PGPASSWORD: $POSTGRES_PASSWORD
+      PGDATABASE: $POSTGRES_DB
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: "psql -c 'select 1;' >/dev/null 2>&1"
+      interval: 3s
+      timeout: 5s
+      retries: 3
+    networks:
+      - article-freezer-network
+  pgweb:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: ghcr.io/sosedoff/pgweb:0.17.0
+    environment:
+      PGWEB_DATABASE_URL: $DATABASE_URL?sslmode=disable
+    ports:
+      - 8081:8081
+    restart: unless-stopped
+    networks:
+      - article-freezer-network
+
+networks:
+  article-freezer-network:
+    name: article-freezer-network
+    driver: bridge
+
+volumes:
+  pgdata:
