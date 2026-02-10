@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm fetch
+  check:
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: "pnpm"
+      - name: Install dependencies (offline)
+        run: pnpm install --offline --frozen-lockfile
+      - name: Run biome check
+        run: pnpm check # biome check
+      - name: Run knip
+        run: pnpm knip # knip
+      - name: Run typecheck
+        run: pnpm --recursive run typecheck # tsc
+  build:
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: "pnpm"
+      - name: Install dependencies (offline)
+        run: pnpm install --offline --frozen-lockfile
+      # ビルドに必要なダミーの環境変数を作成
+      - name: Create dummy env files
+        run: |
+          for f in packages/*/.env.example; do
+            cp "$f" "${f%.example}"
+          done
+      - name: Build packages
+        run: pnpm --recursive run build
