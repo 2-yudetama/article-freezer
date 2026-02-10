@@ -23,7 +23,7 @@
     "editor.formatOnSave": true
   },
   // yaml
-  "[yaml][dockercompose]": {
+  "[yaml][dockercompose][github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",
     "editor.formatOnSave": true
   }
