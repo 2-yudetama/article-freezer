@@ -2,8 +2,36 @@
   "name": "db",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "prepare": "prisma generate && tsc --build",
+    "typecheck": "tsc --noEmit",
+    "build": "prisma generate && tsc",
     "db:up": "docker compose up",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate-sql": "prisma migrate dev --create-only",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:reset": "prisma migrate reset"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "dotenv": "^17.2.4",
+    "pg": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:ts",
+    "@types/pg": "^8.16.0",
+    "prisma": "^7.3.0",
+    "tsx": "catalog:ts",
+    "typescript": "catalog:ts"
   }
 }

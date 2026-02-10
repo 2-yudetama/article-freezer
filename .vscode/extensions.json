@@ -1,3 +1,3 @@
 {
-  "recommendations": ["biomejs.biome", "redhat.vscode-yaml"]
+  "recommendations": ["biomejs.biome", "redhat.vscode-yaml", "prisma.prisma"]
 }

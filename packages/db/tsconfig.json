@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    // https://github.com/tsconfig/bases/blob/main/bases/node24.json
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Error",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "node16",
+    "target": "es2024",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    // Custom options
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "prisma.config.ts"]
+}
