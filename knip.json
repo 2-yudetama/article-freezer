@@ -4,9 +4,13 @@
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     "packages/**": {
-      "project": ["**/*.{ts,tsx}"],
-      "ignore": ["src/components/ui/**"],
-      "ignoreDependencies": ["tailwindcss", "tw-animate-css"]
+      "project": ["**/*.{ts,tsx}"]
+    },
+    "packages/web-app": {
+      "ignore": ["src/components/ui/**"]
+    },
+    "packages/db": {
+      "ignoreDependencies": ["@prisma/client", "pg"]
     }
   }
 }
