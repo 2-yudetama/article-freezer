@@ -33,6 +33,8 @@ importers:
         specifier: catalog:ts
         version: 5.9.3
 
+  packages/db: {}
+
   packages/web-app:
     dependencies:
       '@radix-ui/react-alert-dialog':
