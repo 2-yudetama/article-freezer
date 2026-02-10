@@ -51,6 +51,9 @@ jobs:
         run: pnpm install --offline --frozen-lockfile
       # ビルドに必要なダミーの環境変数を作成
       - name: Create dummy env files
-        run: cp packages/*/.env.example packages/*/.env
+        run: |
+          for f in packages/*/.env.example; do
+            cp "$f" "${f%.example}"
+          done
       - name: Build packages
         run: pnpm --recursive run build
