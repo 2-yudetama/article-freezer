@@ -5,6 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
+  default:
+    valibot:
+      specifier: ^1.2.0
+      version: 1.2.0
   ts:
     '@types/node':
       specifier: 22.19.7
@@ -50,6 +54,9 @@ importers:
       pg:
         specifier: ^8.18.0
         version: 8.18.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@types/node':
         specifier: catalog:ts
@@ -117,6 +124,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      db:
+        specifier: workspace:*
+        version: link:../db
       lucide-react:
         specifier: ^0.454.0
         version: 0.454.0(react@19.2.0)

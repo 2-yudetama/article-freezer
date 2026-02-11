@@ -25,7 +25,8 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "dotenv": "^17.2.4",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:ts",
