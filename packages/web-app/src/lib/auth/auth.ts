@@ -19,7 +19,11 @@ export const { handlers, auth } = NextAuth({
       const pathname = request.nextUrl.pathname;
 
       // 認証不要のページへのアクセスは許可
-      const allowedPaths = ["/auth/signin", "/auth/notfound"];
+      const allowedPaths = [
+        "/auth/signin",
+        "/auth/notfound",
+        "/users/forbidden",
+      ];
       if (allowedPaths.some((path) => pathname.startsWith(path))) {
         return true;
       }
@@ -31,6 +35,18 @@ export const { handlers, auth } = NextAuth({
         redirectUrl.searchParams.set("callbackUrl", pathname);
 
         return Response.redirect(redirectUrl);
+      }
+
+      // ログインしているユーザに関連しないリソースへのアクセスを禁止
+      if (pathname.startsWith("/users/")) {
+        // パスからuserIdを取得
+        const userId = pathname.split("/").filter(Boolean)[1];
+        if (userId !== auth.user.id) {
+          console.error(
+            "[Auth] Unauthorized user access to other user's resource",
+          );
+          return Response.redirect(new URL("/auth/notfound", origin));
+        }
       }
 
       return true;
