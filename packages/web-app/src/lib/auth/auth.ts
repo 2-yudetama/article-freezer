@@ -2,7 +2,7 @@ import { prisma } from "db";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth } = NextAuth({
   providers: [GitHub],
   session: {
     strategy: "jwt",
