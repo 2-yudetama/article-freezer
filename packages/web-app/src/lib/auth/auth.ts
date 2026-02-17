@@ -90,7 +90,7 @@ export const { handlers, auth } = NextAuth({
         user.provider_account_id = dbUser.provider_account_id;
         user.role = dbUser.role;
 
-        console.log("[Auth] Upsert user successfully: ", dbUser);
+        console.log(`[Auth] Upsert user successfully; User: ${user.id}`);
         return true;
       } catch (error) {
         // DBエラーは認証エラーとする
