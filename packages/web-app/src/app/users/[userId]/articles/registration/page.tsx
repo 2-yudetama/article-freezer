@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { mockTags } from "@/lib/mock-data";
 import type { RegistrationStep } from "@/lib/types";
+import { useUserId } from "../../userIdProvider";
 
 type Heading = {
   id: string;
@@ -40,6 +41,7 @@ type Heading = {
 
 export default function ArticleRegistrationPage() {
   const router = useRouter();
+  const userId = useUserId();
 
   const [step, setStep] = useState<RegistrationStep>("url");
   const [url, setUrl] = useState("");
@@ -137,7 +139,7 @@ export default function ArticleRegistrationPage() {
     toast.success("登録完了", {
       description: "記事が正常に登録されました",
     });
-    router.push("/articles");
+    router.push(`/users/${userId}/articles`);
   };
 
   const toggleHeading = (id: string) => {
@@ -157,7 +159,7 @@ export default function ArticleRegistrationPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <Link href="/articles">
+        <Link href={`/users/${userId}/articles`}>
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             一覧に戻る

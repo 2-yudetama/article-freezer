@@ -29,10 +29,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { mockArticles } from "@/lib/mock-data";
+import { useUserId } from "../../userIdProvider";
 
 export default function ArticleDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const userId = useUserId();
   const article_id = params.article_id as string;
   const article = mockArticles.find((a) => a.id === article_id);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -45,7 +47,7 @@ export default function ArticleDetailPage() {
     toast.success("記事を削除しました", {
       description: article.title,
     });
-    router.push("/articles");
+    router.push(`/users/${userId}/articles`);
   };
 
   return (
@@ -53,7 +55,7 @@ export default function ArticleDetailPage() {
       {/* 上部ナビゲーション */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 -mx-4 px-4 py-4 mb-6 border-b border-border">
         <div className="flex items-center justify-between">
-          <Link href="/articles">
+          <Link href={`/users/${userId}/articles`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               一覧に戻る
@@ -66,7 +68,7 @@ export default function ArticleDetailPage() {
                 元記事
               </Button>
             </a>
-            <Link href={`/articles/${article.id}/edit`}>
+            <Link href={`/users/${userId}/articles/${article.id}/edit`}>
               <Button variant="outline" size="sm">
                 <Edit className="w-4 h-4 mr-2" />
                 編集
@@ -118,7 +120,7 @@ export default function ArticleDetailPage() {
 
         <div className="flex flex-wrap gap-2 mb-6">
           {article.tags.map((tag) => (
-            <Link key={tag.id} href={`/articles?tag=${tag.id}`}>
+            <Link key={tag.id} href={`/users/${userId}/articles?tag=${tag.id}`}>
               <Badge
                 variant="outline"
                 className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
@@ -188,7 +190,7 @@ export default function ArticleDetailPage() {
             .map((relatedArticle) => (
               <Link
                 key={relatedArticle.id}
-                href={`/articles/${relatedArticle.id}`}
+                href={`/users/${userId}/articles/${relatedArticle.id}`}
               >
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-4">

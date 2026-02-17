@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
 import * as v from "valibot";
+import { DesktopNavigation, MobileNavigation } from "@/components/navigation";
 import { auth } from "@/lib/auth";
 import { UserIdProvider } from "./userIdProvider";
 
@@ -48,5 +49,13 @@ export default async function UserLayout({
   }
 
   // チェック通過で子コンポーネントをレンダリング
-  return <UserIdProvider userId={userId}>{children}</UserIdProvider>;
+  return (
+    <UserIdProvider userId={userId}>
+      <DesktopNavigation />
+      <MobileNavigation />
+      <main className="md:ml-64 min-h-screen pb-16 md:pb-0 pt-16 md:pt-0">
+        {children}
+      </main>
+    </UserIdProvider>
+  );
 }

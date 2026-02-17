@@ -24,8 +24,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { mockArticles, mockTags } from "@/lib/mock-data";
+import { useUserId } from "../userIdProvider";
 
 export default function ArticleTagsPage() {
+  const userId = useUserId();
   const [tags, setTags] = useState(mockTags);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -260,7 +262,7 @@ export default function ArticleTagsPage() {
               </CardHeader>
               <CardContent>
                 {articleCount > 0 ? (
-                  <Link href={`/articles?tag=${tag.id}`}>
+                  <Link href={`/users/${userId}/articles?tag=${tag.id}`}>
                     <Button
                       variant="outline"
                       size="sm"

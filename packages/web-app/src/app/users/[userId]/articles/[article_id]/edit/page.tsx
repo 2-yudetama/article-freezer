@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { mockArticles, mockTags } from "@/lib/mock-data";
+import { useUserId } from "../../../userIdProvider";
 
 export default function ArticleEditPage({
   params,
@@ -19,6 +20,7 @@ export default function ArticleEditPage({
   params: Promise<{ article_id: string }>;
 }) {
   const router = useRouter();
+  const userId = useUserId();
   const { article_id } = use(params);
   const article = mockArticles.find((a) => a.id === article_id);
 
@@ -39,7 +41,7 @@ export default function ArticleEditPage({
     toast.success("保存しました", {
       description: "記事の情報が更新されました",
     });
-    router.push(`/articles/${article_id}`);
+    router.push(`/users/${userId}/articles/${article_id}`);
   };
 
   const toggleTag = (tagId: string) => {
@@ -54,7 +56,7 @@ export default function ArticleEditPage({
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href={`/articles/${article_id}`}>
+          <Link href={`/users/${userId}/articles/${article_id}`}>
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               詳細に戻る
@@ -160,7 +162,7 @@ export default function ArticleEditPage({
         </Card>
 
         <div className="flex justify-end gap-4 pt-6">
-          <Link href={`/articles/${article_id}`}>
+          <Link href={`/users/${userId}/articles/${article_id}`}>
             <Button variant="outline">キャンセル</Button>
           </Link>
           <Button onClick={handleSave}>

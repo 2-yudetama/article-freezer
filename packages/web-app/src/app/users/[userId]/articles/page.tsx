@@ -45,8 +45,10 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { mockArticles, mockTags } from "@/lib/mock-data";
 import type { SortOption, ViewMode } from "@/lib/types";
+import { useUserId } from "../userIdProvider";
 
 export default function ArticlesPage() {
+  const userId = useUserId();
   const [articles, setArticles] = useState(mockArticles);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
@@ -244,7 +246,7 @@ export default function ArticlesPage() {
                 </div>
                 <CardTitle className="line-clamp-2 leading-snug">
                   <Link
-                    href={`/articles/${article.id}`}
+                    href={`/users/${userId}/articles/${article.id}`}
                     className="hover:text-primary transition-colors"
                   >
                     {article.title}
@@ -266,7 +268,7 @@ export default function ArticlesPage() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2 pt-2">
-                  <Link href={`/articles/${article.id}`}>
+                  <Link href={`/users/${userId}/articles/${article.id}`}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -315,7 +317,7 @@ export default function ArticlesPage() {
                     </div>
                     <h3 className="text-xl font-semibold">
                       <Link
-                        href={`/articles/${article.id}`}
+                        href={`/users/${userId}/articles/${article.id}`}
                         className="hover:text-primary transition-colors"
                       >
                         {article.title}
@@ -338,7 +340,7 @@ export default function ArticlesPage() {
                   </div>
                   <div className="flex md:flex-col gap-2 md:justify-center">
                     <Link
-                      href={`/articles/${article.id}`}
+                      href={`/users/${userId}/articles/${article.id}`}
                       className="flex-1 md:flex-initial"
                     >
                       <Button

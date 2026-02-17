@@ -2,7 +2,6 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import type React from "react";
 import { Toaster } from "sonner";
-import { DesktopNavigation, MobileNavigation } from "@/components/navigation";
 import "./globals.css";
 
 import {
@@ -57,11 +56,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className="dark">
       <body className={`font-sans antialiased`}>
-        <DesktopNavigation />
-        <MobileNavigation />
-        <main className="md:ml-64 min-h-screen pb-16 md:pb-0 pt-16 md:pt-0">
-          {children}
-        </main>
+        <main className="min-h-screen">{children}</main>
         <Toaster />
         <Analytics />
       </body>
