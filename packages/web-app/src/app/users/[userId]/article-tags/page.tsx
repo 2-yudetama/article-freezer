@@ -254,7 +254,7 @@ export default function ArticleTagsPage() {
                 </div>
                 {!isEditing && (
                   <CardDescription className="mt-2">
-                    {tag.description || articleCount + "件の記事"}
+                    {tag.description || `${articleCount}件の記事`}
                   </CardDescription>
                 )}
               </CardHeader>
