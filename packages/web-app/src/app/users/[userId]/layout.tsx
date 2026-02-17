@@ -28,7 +28,7 @@ export default async function UserLayout({
 
   const session = await auth();
   if (!session) {
-    return <div>読み込み中...</div>;
+    return redirect("/auth/signin");
   }
 
   // セッションからユーザ情報を取得

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 export default async function HomePage() {
   const session = await auth();
   if (!session) {
-    return <div>読み込み中...</div>;
+    return redirect("/auth/signin");
   }
 
   // セッションからユーザ情報を取得
