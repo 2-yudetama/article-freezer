@@ -1,0 +1,52 @@
+import { notFound, redirect } from "next/navigation";
+import type React from "react";
+import * as v from "valibot";
+import { auth } from "@/lib/auth";
+import { UserIdProvider } from "./userIdProvider";
+
+/**
+ * ログインユーザに対して以下のチェックを行う(結果は全て子コンポーネントに引き継がれる)
+ * - userIdの型チェック(UUID)
+ * - ユーザのリソース権限チェック
+ * - ユーザのロールチェック(一時的に利用ユーザを制限するため)
+ */
+export default async function UserLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ userId: string }>;
+}) {
+  const { userId } = await params;
+
+  // userIdの型チェック(UUID)
+  const result = v.safeParse(v.pipe(v.string(), v.uuid()), userId);
+  if (!result.success) {
+    console.error(`Invalid userId: ${new v.ValiError(result.issues).message}`);
+    return notFound();
+  }
+
+  const session = await auth();
+  if (!session) {
+    return redirect("/auth/signin");
+  }
+
+  // セッションからユーザ情報を取得
+  const user = session.user;
+  if (!user.id) {
+    return notFound();
+  }
+
+  // ログインしているユーザに関連しないリソースへのアクセスを禁止
+  if (userId !== user.id) {
+    return notFound();
+  }
+
+  // 暫定的に、roleが1以外のユーザはアクセス制限をかける
+  if (user.role !== 1) {
+    return redirect("/users/forbidden");
+  }
+
+  // チェック通過で子コンポーネントをレンダリング
+  return <UserIdProvider userId={userId}>{children}</UserIdProvider>;
+}

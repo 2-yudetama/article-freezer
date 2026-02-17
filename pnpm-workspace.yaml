@@ -1,12 +1,18 @@
 # https://pnpm.io/ja/pnpm-workspace_yaml
 packages:
   - "packages/*"
-
+catalog:
+  valibot: ^1.2.0
 catalogs:
   ts:
     "@types/node": 22.19.7
     tsx: 4.21.0
     typescript: 5.9.3
+  prisma:
+    "@prisma/adapter-pg": ^7.3.0
+    "@prisma/client": ^7.3.0
+    "pg": ^8.18.0
+    "prisma": ^7.3.0
 
 # https://pnpm.io/ja/workspaces#syncinjecteddepsafterscripts
 syncInjectedDepsAfterScripts:
@@ -17,4 +23,8 @@ minimumReleaseAge: 4320 # 3日間 (4,320分)
 
 # https://pnpm.io/ja/settings#ignoredbuiltdependencies
 ignoredBuiltDependencies:
+  - "@prisma/engines"
+  - esbuild
   - lefthook
+  - prisma
+  - sharp

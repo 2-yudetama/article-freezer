@@ -19,18 +19,19 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate-sql": "prisma migrate dev --create-only",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:reset": "prisma migrate reset"
+    "prisma:reset": "prisma migrate reset",
+    "prisma:seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.3.0",
-    "@prisma/client": "^7.3.0",
+    "@prisma/adapter-pg": "catalog:prisma",
+    "@prisma/client": "catalog:prisma",
     "dotenv": "^17.2.4",
-    "pg": "^8.18.0"
+    "pg": "catalog:prisma",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:ts",
-    "@types/pg": "^8.16.0",
-    "prisma": "^7.3.0",
+    "prisma": "catalog:prisma",
     "tsx": "catalog:ts",
     "typescript": "catalog:ts"
   }

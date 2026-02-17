@@ -2,7 +2,6 @@
 
 import {
   ArrowLeft,
-  Badge,
   Calendar,
   Edit,
   ExternalLink,
@@ -25,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
