@@ -1,7 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
 import * as v from "valibot";
-import { DesktopNavigation, MobileNavigation } from "@/components/navigation";
+import {
+  DesktopNavigation,
+  MobileNavigation,
+} from "@/components/navigation/navigation";
 import { UserIdProvider } from "@/components/providers/user-id-provider";
 import { auth } from "@/lib/auth";
 
