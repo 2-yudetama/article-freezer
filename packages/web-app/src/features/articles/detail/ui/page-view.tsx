@@ -10,11 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { notFound, useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import { MarkdownPreview } from "@/components/markdown-preview";
-import { useUserId } from "@/components/providers/user-id-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,30 +25,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { mockArticles } from "@/lib/mock-data";
+import type { Article } from "@/lib/types";
 
-export default function ArticleDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const userId = useUserId();
-  const article_id = params.article_id as string;
-  const article = mockArticles.find((a) => a.id === article_id);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+type ArticleDetailPageViewProps = {
+  userId: string;
+  article: Article;
+  relatedArticles: Article[];
+  deleteDialogOpen: boolean;
+  setDeleteDialogOpen: (value: boolean) => void;
+  handleDelete: () => void;
+};
 
-  if (!article) {
-    notFound();
-  }
-
-  const handleDelete = () => {
-    toast.success("記事を削除しました", {
-      description: article.title,
-    });
-    router.push(`/users/${userId}/articles`);
-  };
-
+/** 記事詳細ページのUIを表示する関数 */
+export default function ArticleDetailPageView({
+  userId,
+  article,
+  relatedArticles,
+  deleteDialogOpen,
+  setDeleteDialogOpen,
+  handleDelete,
+}: ArticleDetailPageViewProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* 上部ナビゲーション */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 -mx-4 px-4 py-4 mb-6 border-b border-border">
         <div className="flex items-center justify-between">
           <Link href={`/users/${userId}/articles`}>
@@ -86,7 +80,6 @@ export default function ArticleDetailPage() {
         </div>
       </div>
 
-      {/* 記事情報 */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Badge variant="secondary">{article.sourcePlatform}</Badge>
@@ -133,7 +126,6 @@ export default function ArticleDetailPage() {
         </div>
       </div>
 
-      {/* 元記事のリンク */}
       <Card className="mb-6 border-primary/50">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -153,13 +145,11 @@ export default function ArticleDetailPage() {
         </CardContent>
       </Card>
 
-      {/* 要約 */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-4">要約</h2>
         <MarkdownPreview content={article.summary} />
       </div>
 
-      {/* コメント */}
       {article.comment && (
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -176,59 +166,50 @@ export default function ArticleDetailPage() {
 
       <Separator className="my-8" />
 
-      {/* 関連記事 */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">関連記事</h2>
         <div className="grid gap-4">
-          {mockArticles
-            .filter(
-              (a) =>
-                a.id !== article.id &&
-                a.tags.some((tag) => article.tags.some((t) => t.id === tag.id)),
-            )
-            .slice(0, 3)
-            .map((relatedArticle) => (
-              <Link
-                key={relatedArticle.id}
-                href={`/users/${userId}/articles/${relatedArticle.id}`}
-              >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-2 hover:text-primary transition-colors">
-                          {relatedArticle.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                          {relatedArticle.summary}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {relatedArticle.tags.map((tag) => (
-                            <Badge
-                              key={tag.id}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {tag.name}
-                            </Badge>
-                          ))}
-                        </div>
+          {relatedArticles.map((relatedArticle) => (
+            <Link
+              key={relatedArticle.id}
+              href={`/users/${userId}/articles/${relatedArticle.id}`}
+            >
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-2 hover:text-primary transition-colors">
+                        {relatedArticle.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        {relatedArticle.summary}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {relatedArticle.tags.map((tag) => (
+                          <Badge
+                            key={tag.id}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {tag.name}
+                          </Badge>
+                        ))}
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="text-xs whitespace-nowrap"
-                      >
-                        {relatedArticle.sourcePlatform}
-                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    <Badge
+                      variant="secondary"
+                      className="text-xs whitespace-nowrap"
+                    >
+                      {relatedArticle.sourcePlatform}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* 削除確認ダイアログ */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

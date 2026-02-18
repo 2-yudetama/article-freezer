@@ -1,4 +1,4 @@
-import ArticleTagsPage from "@/features/article-tags/article-tags-page";
+import ArticleTagsPage from "@/features/article-tags/page";
 
 export default function Page() {
   return <ArticleTagsPage />;

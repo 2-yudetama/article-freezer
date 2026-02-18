@@ -1,4 +1,4 @@
-import ArticleRegistrationPage from "@/features/articles/article-registration-page";
+import ArticleRegistrationPage from "@/features/articles/registration/page";
 
 export default function Page() {
   return <ArticleRegistrationPage />;

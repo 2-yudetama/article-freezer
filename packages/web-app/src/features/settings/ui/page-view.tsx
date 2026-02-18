@@ -1,8 +1,6 @@
 "use client";
 
 import { Download, Save, Trash2, Upload } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,38 +20,36 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 
-export default function SettingsPage() {
-  const [autoSummary, setAutoSummary] = useState(true);
-  const [defaultView, setDefaultView] = useState("grid");
-  const [itemsPerPage, setItemsPerPage] = useState("9");
-  const [notifications, setNotifications] = useState(false);
+type SettingsPageViewProps = {
+  autoSummary: boolean;
+  defaultView: string;
+  itemsPerPage: string;
+  notifications: boolean;
+  setAutoSummary: (value: boolean) => void;
+  setDefaultView: (value: string) => void;
+  setItemsPerPage: (value: string) => void;
+  setNotifications: (value: boolean) => void;
+  handleSave: () => void;
+  handleExport: () => void;
+  handleImport: () => void;
+  handleDeleteAll: () => void;
+};
 
-  const handleSave = () => {
-    toast.success("設定を保存しました", {
-      description: "変更内容が保存されました",
-    });
-  };
-
-  const handleExport = () => {
-    toast.success("エクスポート完了", {
-      description: "データをダウンロードしました",
-    });
-  };
-
-  const handleImport = () => {
-    toast.success("インポート完了", {
-      description: "データをインポートしました",
-    });
-  };
-
-  const handleDeleteAll = () => {
-    if (confirm("すべてのデータを削除しますか?この操作は取り消せません。")) {
-      toast.success("データを削除しました", {
-        description: "すべての記事とタグが削除されました",
-      });
-    }
-  };
-
+/** 設定ページのUIを表示する関数 */
+export default function SettingsPageView({
+  autoSummary,
+  defaultView,
+  itemsPerPage,
+  notifications,
+  setAutoSummary,
+  setDefaultView,
+  setItemsPerPage,
+  setNotifications,
+  handleSave,
+  handleExport,
+  handleImport,
+  handleDeleteAll,
+}: SettingsPageViewProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
@@ -64,7 +60,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* 表示設定 */}
         <Card>
           <CardHeader>
             <CardTitle>表示設定</CardTitle>
@@ -113,7 +108,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* 機能設定 */}
         <Card>
           <CardHeader>
             <CardTitle>機能設定</CardTitle>
@@ -154,7 +148,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* データ管理 */}
         <Card>
           <CardHeader>
             <CardTitle>データ管理</CardTitle>
@@ -199,7 +192,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* アプリ情報 */}
         <Card>
           <CardHeader>
             <CardTitle>アプリケーション情報</CardTitle>
@@ -217,7 +209,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* 保存ボタン */}
         <div className="flex justify-end">
           <Button onClick={handleSave} size="lg">
             <Save className="w-4 h-4 mr-2" />

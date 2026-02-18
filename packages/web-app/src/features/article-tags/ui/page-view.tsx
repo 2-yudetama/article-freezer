@@ -2,9 +2,6 @@
 
 import { Check, Edit2, Plus, Tag, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useUserId } from "@/components/providers/user-id-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,103 +21,56 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mockArticles, mockTags } from "@/lib/mock-data";
 
-export default function ArticleTagsPage() {
-  const userId = useUserId();
-  const [tags, setTags] = useState(mockTags);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
-  const [editingDescription, setEditingDescription] = useState("");
-  const [newTagName, setNewTagName] = useState("");
-  const [newTagDescription, setNewTagDescription] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+type ArticleTagsPageViewProps = {
+  userId: string;
+  tags: {
+    id: string;
+    name: string;
+    description?: string;
+    color?: string;
+  }[];
+  editingId: string | null;
+  editingName: string;
+  editingDescription: string;
+  newTagName: string;
+  newTagDescription: string;
+  isDialogOpen: boolean;
+  setEditingName: (value: string) => void;
+  setEditingDescription: (value: string) => void;
+  setNewTagName: (value: string) => void;
+  setNewTagDescription: (value: string) => void;
+  setIsDialogOpen: (value: boolean) => void;
+  getArticleCountForTag: (tagId: string) => number;
+  handleAddTag: () => void;
+  handleEditTag: (tagId: string) => void;
+  handleSaveEdit: (tagId: string) => void;
+  handleCancelEdit: () => void;
+  handleDeleteTag: (tagId: string) => void;
+};
 
-  const getArticleCountForTag = (tagId: string) => {
-    return mockArticles.filter((article) =>
-      article.tags.some((tag) => tag.id === tagId),
-    ).length;
-  };
-
-  const handleAddTag = () => {
-    if (!newTagName.trim()) {
-      toast.error("エラー", {
-        description: "タグ名を入力してください",
-      });
-      return;
-    }
-
-    const newTag = {
-      id: String(tags.length + 1),
-      name: newTagName,
-      description: newTagDescription,
-    };
-
-    setTags([...tags, newTag]);
-    setNewTagName("");
-    setNewTagDescription("");
-    setIsDialogOpen(false);
-
-    toast.success("タグを追加しました", {
-      description: `「${newTagName}」が追加されました`,
-    });
-  };
-
-  const handleEditTag = (tagId: string) => {
-    const tag = tags.find((t) => t.id === tagId);
-    if (tag) {
-      setEditingId(tagId);
-      setEditingName(tag.name);
-      setEditingDescription(tag.description || "");
-    }
-  };
-
-  const handleSaveEdit = (tagId: string) => {
-    if (!editingName.trim()) {
-      toast.error("エラー", {
-        description: "タグ名を入力してください",
-      });
-      return;
-    }
-
-    setTags(
-      tags.map((t) =>
-        t.id === tagId
-          ? { ...t, name: editingName, description: editingDescription }
-          : t,
-      ),
-    );
-    setEditingId(null);
-    setEditingName("");
-    setEditingDescription("");
-
-    toast.success("タグを更新しました");
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditingName("");
-    setEditingDescription("");
-  };
-
-  const handleDeleteTag = (tagId: string) => {
-    const articleCount = getArticleCountForTag(tagId);
-
-    if (articleCount > 0) {
-      toast.error("削除できません", {
-        description: `このタグは${articleCount}件の記事で使用されています`,
-      });
-      return;
-    }
-
-    const tag = tags.find((t) => t.id === tagId);
-    setTags(tags.filter((t) => t.id !== tagId));
-
-    toast.success("タグを削除しました", {
-      description: `「${tag?.name}」が削除されました`,
-    });
-  };
-
+/** 記事タグページのUIを表示する関数 */
+export default function ArticleTagsPageView({
+  userId,
+  tags,
+  editingId,
+  editingName,
+  editingDescription,
+  newTagName,
+  newTagDescription,
+  isDialogOpen,
+  setEditingName,
+  setEditingDescription,
+  setNewTagName,
+  setNewTagDescription,
+  setIsDialogOpen,
+  getArticleCountForTag,
+  handleAddTag,
+  handleEditTag,
+  handleSaveEdit,
+  handleCancelEdit,
+  handleDeleteTag,
+}: ArticleTagsPageViewProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8 flex items-end justify-between">

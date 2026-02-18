@@ -1,4 +1,4 @@
-import ArticleEditPage from "@/features/articles/article-edit-page";
+import ArticleEditPage from "@/features/articles/edit/page";
 
 export default function Page({
   params,

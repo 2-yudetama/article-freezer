@@ -2,47 +2,37 @@
 
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
-import { use, useState } from "react";
-import { toast } from "sonner";
-import { useUserId } from "@/components/providers/user-id-provider";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { mockArticles, mockTags } from "@/lib/mock-data";
+import { mockTags } from "@/lib/mock-data";
+import type { Article } from "@/lib/types";
 
-export default function ArticleEditPage({
-  params,
-}: {
-  params: Promise<{ article_id: string }>;
-}) {
-  const router = useRouter();
-  const userId = useUserId();
-  const { article_id } = use(params);
-  const article = mockArticles.find((a) => a.id === article_id);
+type ArticleEditPageViewProps = {
+  userId: string;
+  articleId: string;
+  article: Article;
+  onSave: () => void;
+};
 
-  const [title, setTitle] = useState(article?.title || "");
-  const [summary, setSummary] = useState(article?.summary || "");
-  const [comment, setComment] = useState(article?.comment || "");
-  const [isFavorite, setIsFavorite] = useState(article?.isFavorite || false);
+/** 記事編集ページのUIを表示する関数 */
+export default function ArticleEditPageView({
+  userId,
+  articleId,
+  article,
+  onSave,
+}: ArticleEditPageViewProps) {
+  const [title, setTitle] = useState(article.title);
+  const [summary, setSummary] = useState(article.summary);
+  const [comment, setComment] = useState(article.comment || "");
+  const [isFavorite, setIsFavorite] = useState(article.isFavorite);
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    article?.tags.map((t) => t.id) || [],
+    article.tags.map((tag) => tag.id),
   );
-
-  if (!article) {
-    notFound();
-  }
-
-  const handleSave = () => {
-    // モックなので実際には保存しない
-    toast.success("保存しました", {
-      description: "記事の情報が更新されました",
-    });
-    router.push(`/users/${userId}/articles/${article_id}`);
-  };
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) =>
@@ -56,7 +46,7 @@ export default function ArticleEditPage({
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href={`/users/${userId}/articles/${article_id}`}>
+          <Link href={`/users/${userId}/articles/${articleId}`}>
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               詳細に戻る
@@ -162,10 +152,10 @@ export default function ArticleEditPage({
         </Card>
 
         <div className="flex justify-end gap-4 pt-6">
-          <Link href={`/users/${userId}/articles/${article_id}`}>
+          <Link href={`/users/${userId}/articles/${articleId}`}>
             <Button variant="outline">キャンセル</Button>
           </Link>
-          <Button onClick={handleSave}>
+          <Button onClick={onSave}>
             <Save className="w-4 h-4 mr-2" />
             保存
           </Button>

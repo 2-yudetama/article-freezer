@@ -10,11 +10,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import { MarkdownPreview } from "@/components/markdown-preview";
-import { useUserId } from "@/components/providers/user-id-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,8 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { mockTags } from "@/lib/mock-data";
-import type { RegistrationStep } from "@/lib/types";
+import type { ArticleTag, RegistrationStep } from "@/lib/types";
 
 type Heading = {
   id: string;
@@ -39,123 +34,62 @@ type Heading = {
   selected: boolean;
 };
 
-export default function ArticleRegistrationPage() {
-  const router = useRouter();
-  const userId = useUserId();
+type ArticleRegistrationPageViewProps = {
+  userId: string;
+  step: RegistrationStep;
+  url: string;
+  headings: Heading[];
+  selectedTags: string[];
+  comment: string;
+  summary: string;
+  summaryRetryCount: number;
+  isLoading: boolean;
+  steps: RegistrationStep[];
+  currentStepIndex: number;
+  progress: number;
+  availableTags: ArticleTag[];
+  setUrl: (value: string) => void;
+  setComment: (value: string) => void;
+  setSummary: (value: string) => void;
+  setStep: (value: RegistrationStep) => void;
+  handleUrlSubmit: () => Promise<void>;
+  handleHeadingsSubmit: () => void;
+  handleTagsCommentSubmit: () => void;
+  handleRegenerate: () => Promise<void>;
+  handleSummarySubmit: () => void;
+  handleSave: () => Promise<void>;
+  toggleHeading: (id: string) => void;
+  toggleTag: (tagId: string) => void;
+};
 
-  const [step, setStep] = useState<RegistrationStep>("url");
-  const [url, setUrl] = useState("");
-  const [headings, setHeadings] = useState<Heading[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [comment, setComment] = useState("");
-  const [summary, setSummary] = useState("");
-  const [summaryRetryCount, setSummaryRetryCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const steps: RegistrationStep[] = [
-    "url",
-    "headings",
-    "tags-comment",
-    "summary",
-    "confirm",
-  ];
-  const currentStepIndex = steps.indexOf(step);
-  const progress = ((currentStepIndex + 1) / steps.length) * 100;
-
-  const handleUrlSubmit = async () => {
-    if (!url) {
-      toast.error("エラー", {
-        description: "URLを入力してください",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    // モック: 見出しを取得
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setHeadings([
-      { id: "1", level: 1, text: "はじめに", selected: true },
-      { id: "2", level: 2, text: "背景と課題", selected: false },
-      { id: "3", level: 2, text: "解決策の提案", selected: true },
-      { id: "4", level: 3, text: "技術選定", selected: false },
-      { id: "5", level: 3, text: "実装方法", selected: true },
-      { id: "6", level: 2, text: "まとめ", selected: true },
-    ]);
-    setIsLoading(false);
-    setStep("headings");
-  };
-
-  const handleHeadingsSubmit = () => {
-    const hasSelected = headings.some((h) => h.selected);
-    if (!hasSelected) {
-      toast.info("確認", {
-        description: "見出しが選択されていませんが、このまま進みますか?",
-      });
-    }
-    setStep("tags-comment");
-  };
-
-  const handleTagsCommentSubmit = () => {
-    if (selectedTags.length === 0) {
-      toast.info("確認", {
-        description: "タグが選択されていませんが、このまま進みますか?",
-      });
-    }
-    setStep("summary");
-    generateSummary();
-  };
-
-  const generateSummary = async () => {
-    setIsLoading(true);
-    // モック: 要約を生成
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSummary(
-      "この記事では、最新のWebフレームワークを使用した開発手法について詳しく解説しています。特に、サーバーサイドレンダリングとクライアントサイドレンダリングの適切な使い分けや、パフォーマンス最適化のテクニックに焦点を当てています。実践的なコード例とともに、プロダクション環境での運用ノウハウも紹介されています。",
-    );
-    setIsLoading(false);
-  };
-
-  const handleRegenerate = async () => {
-    if (summaryRetryCount >= 3) {
-      toast.error("エラー", {
-        description: "要約の再生成は3回までです",
-      });
-      return;
-    }
-    setSummaryRetryCount((prev) => prev + 1);
-    await generateSummary();
-  };
-
-  const handleSummarySubmit = () => {
-    setStep("confirm");
-  };
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    // モック: 保存処理
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-
-    toast.success("登録完了", {
-      description: "記事が正常に登録されました",
-    });
-    router.push(`/users/${userId}/articles`);
-  };
-
-  const toggleHeading = (id: string) => {
-    setHeadings((prev) =>
-      prev.map((h) => (h.id === id ? { ...h, selected: !h.selected } : h)),
-    );
-  };
-
-  const toggleTag = (tagId: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId],
-    );
-  };
-
+/** 記事登録ページのUIを表示する関数 */
+export default function ArticleRegistrationPageView({
+  userId,
+  step,
+  url,
+  headings,
+  selectedTags,
+  comment,
+  summary,
+  summaryRetryCount,
+  isLoading,
+  steps,
+  currentStepIndex,
+  progress,
+  availableTags,
+  setUrl,
+  setComment,
+  setSummary,
+  setStep,
+  handleUrlSubmit,
+  handleHeadingsSubmit,
+  handleTagsCommentSubmit,
+  handleRegenerate,
+  handleSummarySubmit,
+  handleSave,
+  toggleHeading,
+  toggleTag,
+}: ArticleRegistrationPageViewProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
@@ -173,7 +107,6 @@ export default function ArticleRegistrationPage() {
 
       <Progress value={progress} className="mb-8" />
 
-      {/* ステップ1: URL入力 */}
       {step === "url" && (
         <Card>
           <CardHeader>
@@ -213,7 +146,6 @@ export default function ArticleRegistrationPage() {
         </Card>
       )}
 
-      {/* ステップ2: 見出し選択 */}
       {step === "headings" && (
         <Card>
           <CardHeader>
@@ -258,7 +190,6 @@ export default function ArticleRegistrationPage() {
         </Card>
       )}
 
-      {/* ステップ3: タグ・コメント */}
       {step === "tags-comment" && (
         <div className="space-y-6">
           <Card>
@@ -270,7 +201,7 @@ export default function ArticleRegistrationPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {mockTags.map((tag) => (
+                {availableTags.map((tag) => (
                   <Button
                     key={tag.id}
                     variant={
@@ -341,7 +272,6 @@ export default function ArticleRegistrationPage() {
         </div>
       )}
 
-      {/* ステップ4: 要約生成 */}
       {step === "summary" && (
         <Card>
           <CardHeader>
@@ -421,7 +351,6 @@ export default function ArticleRegistrationPage() {
         </Card>
       )}
 
-      {/* ステップ5: 確認 */}
       {step === "confirm" && (
         <div className="space-y-6">
           <Card>
@@ -441,11 +370,11 @@ export default function ArticleRegistrationPage() {
                 <Label className="text-muted-foreground">選択した見出し</Label>
                 <ul className="mt-1 space-y-1">
                   {headings
-                    .filter((h) => h.selected)
-                    .map((h) => (
-                      <li key={h.id} className="flex items-center gap-2">
+                    .filter((heading) => heading.selected)
+                    .map((heading) => (
+                      <li key={heading.id} className="flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
-                        {h.text}
+                        {heading.text}
                       </li>
                     ))}
                 </ul>
@@ -455,7 +384,7 @@ export default function ArticleRegistrationPage() {
                 <Label className="text-muted-foreground">タグ</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedTags.map((tagId) => {
-                    const tag = mockTags.find((t) => t.id === tagId);
+                    const tag = availableTags.find((t) => t.id === tagId);
                     return tag ? (
                       <span
                         key={tag.id}
