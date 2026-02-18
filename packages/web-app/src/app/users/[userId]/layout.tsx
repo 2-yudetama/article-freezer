@@ -2,8 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import type React from "react";
 import * as v from "valibot";
 import { DesktopNavigation, MobileNavigation } from "@/components/navigation";
+import { UserIdProvider } from "@/components/providers/user-id-provider";
 import { auth } from "@/lib/auth";
-import { UserIdProvider } from "./userIdProvider";
 
 /**
  * ログインユーザに対して以下のチェックを行う(結果は全て子コンポーネントに引き継がれる)

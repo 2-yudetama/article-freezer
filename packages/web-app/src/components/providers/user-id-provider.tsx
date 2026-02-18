@@ -17,7 +17,6 @@ export function UserIdProvider({
 /**
  * userIdを取得するカスタムフック
  */
-/** @lintignore */
 export function useUserId(): string {
   const value = useContext(ctx);
   if (value === null) {
