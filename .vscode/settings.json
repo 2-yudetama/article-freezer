@@ -17,6 +17,7 @@
     "source.addMissingImports.ts": "explicit",
     "source.organizeImports.biome": "explicit"
   },
+  "css.lint.unknownAtRules": "ignore",
   // biome
   "[typescript][typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
