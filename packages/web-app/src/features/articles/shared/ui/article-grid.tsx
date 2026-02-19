@@ -46,7 +46,8 @@ export default function ArticleGrid({
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(article.id)}
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                aria-label="記事を削除"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -75,25 +76,32 @@ export default function ArticleGrid({
               ))}
             </div>
             <div className="flex items-center gap-2 pt-2">
-              <Link href={`/users/${userId}/articles/${article.id}`}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 bg-transparent"
-                >
-                  詳細を見る
-                </Button>
-              </Link>
-              <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1"
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="flex-1 bg-transparent"
               >
-                <Button variant="ghost" size="sm" className="w-full">
+                <Link href={`/users/${userId}/articles/${article.id}`}>
+                  詳細を見る
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                aria-label="元記事を開く"
+              >
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                >
                   <ExternalLink className="w-4 h-4" />
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
           </CardContent>
         </Card>

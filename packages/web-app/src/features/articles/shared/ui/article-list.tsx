@@ -75,7 +75,12 @@ export default function ArticleList({
                   rel="noopener noreferrer"
                   className="flex-1 md:flex-initial"
                 >
-                  <Button variant="ghost" size="sm" className="w-full">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    aria-label="元記事を開く"
+                  >
                     <ExternalLink className="w-4 h-4" />
                   </Button>
                 </a>
@@ -84,6 +89,7 @@ export default function ArticleList({
                   size="sm"
                   onClick={() => onDelete(article.id)}
                   className="flex-1 md:flex-initial"
+                  aria-label="記事を削除"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

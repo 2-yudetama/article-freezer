@@ -47,7 +47,10 @@ export default function ArticleListControls({
 
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">並び順:</span>
-        <Select value={sortOption} onValueChange={onSortChange}>
+        <Select
+          value={sortOption}
+          onValueChange={(value) => onSortChange(value as SortOption)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>

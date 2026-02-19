@@ -173,6 +173,7 @@ export default function ArticleTagsPageView({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleSaveEdit(tag.id)}
+                        aria-label="タグを保存"
                       >
                         <Check className="w-4 h-4" />
                       </Button>
@@ -180,6 +181,7 @@ export default function ArticleTagsPageView({
                         variant="ghost"
                         size="sm"
                         onClick={handleCancelEdit}
+                        aria-label="編集をキャンセル"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -190,6 +192,7 @@ export default function ArticleTagsPageView({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditTag(tag.id)}
+                        aria-label="タグを編集"
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -198,6 +201,7 @@ export default function ArticleTagsPageView({
                         size="sm"
                         onClick={() => handleDeleteTag(tag.id)}
                         disabled={articleCount > 0}
+                        aria-label="タグを削除"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -239,7 +243,7 @@ export default function ArticleTagsPageView({
           <p className="text-muted-foreground mb-4">
             新しいタグを作成して記事を整理しましょう
           </p>
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
@@ -263,8 +267,23 @@ export default function ArticleTagsPageView({
                     placeholder="例: React"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-tag-description">概要（任意）</Label>
+                  <Input
+                    id="new-tag-description"
+                    value={newTagDescription}
+                    onChange={(e) => setNewTagDescription(e.target.value)}
+                    placeholder="例: Reactライブラリに関する記事"
+                  />
+                </div>
               </div>
               <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  キャンセル
+                </Button>
                 <Button onClick={handleAddTag}>追加</Button>
               </DialogFooter>
             </DialogContent>

@@ -49,13 +49,15 @@ export function useArticleTags(): UseArticleTagsResult {
       return;
     }
 
-    const newTag = {
-      id: String(tags.length + 1),
-      name: newTagName,
-      description: newTagDescription,
-    };
-
-    setTags([...tags, newTag]);
+    setTags((prev) => {
+      const nextId = Math.max(0, ...prev.map((t) => Number(t.id) || 0)) + 1;
+      const newTag = {
+        id: String(nextId),
+        name: newTagName,
+        description: newTagDescription,
+      };
+      return [...prev, newTag];
+    });
     setNewTagName("");
     setNewTagDescription("");
     setIsDialogOpen(false);

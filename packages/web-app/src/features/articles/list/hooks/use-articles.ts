@@ -84,6 +84,7 @@ export function useArticles(): UseArticlesResult {
 
   const clearTags = () => {
     setSelectedTags([]);
+    setCurrentPage(1);
   };
 
   const openDeleteDialog = (articleId: string) => {
@@ -98,6 +99,7 @@ export function useArticles(): UseArticlesResult {
 
     const article = articles.find((a) => a.id === articleToDelete);
     setArticles(articles.filter((a) => a.id !== articleToDelete));
+    setCurrentPage(1);
     setDeleteDialogOpen(false);
     setArticleToDelete(null);
 

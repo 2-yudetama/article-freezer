@@ -106,11 +106,6 @@ export function useArticleRegistration(): UseArticleRegistrationResult {
   };
 
   const handleTagsCommentSubmit = () => {
-    if (selectedTags.length === 0) {
-      toast.info("確認", {
-        description: "タグが選択されていませんが、このまま進みますか?",
-      });
-    }
     setStep("summary");
     generateSummary();
   };
