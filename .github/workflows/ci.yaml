@@ -31,6 +31,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies (offline)
         run: pnpm install --offline --frozen-lockfile
+      - name: db package build
+        run: pnpm db build
       - name: Run biome check
         run: pnpm check # biome check
       - name: Run knip

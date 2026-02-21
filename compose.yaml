@@ -1,0 +1,47 @@
+# DBのDocker Composeを再利用
+include:
+  - path: packages/db/compose.yaml
+    env_file: packages/db/.env
+
+services:
+  # DBマイグレーション
+  db-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # builderステージで実行する
+      target: builder
+    working_dir: /app
+    command: ["sh", "-c", "pnpm -F db prisma:deploy && pnpm -F db prisma:seed"]
+    env_file:
+      - packages/db/.env
+    environment:
+      - POSTGRES_HOST=postgres
+    networks:
+      - article-freezer-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web-app:
+    container_name: article-freezer-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - packages/web-app/.env
+      - packages/db/.env
+    environment:
+      - POSTGRES_HOST=postgres
+    ports:
+      - 3000:3000
+    networks:
+      - article-freezer-network
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+
+networks:
+  article-freezer-network:
+    name: article-freezer-network
+    driver: bridge

@@ -1,0 +1,22 @@
+# 許可制
+*
+
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+
+!packages/*/src
+!packages/*/.env.example
+!packages/*/package.json
+!packages/*/tsconfig.json
+
+# db
+!packages/db/prisma
+!packages/db/prisma.config.ts
+
+# web-app
+!packages/web-app/public
+!packages/web-app/components.json
+!packages/web-app/next-env.d.ts
+!packages/web-app/next.config.ts
+!packages/web-app/postcss.config.mjs

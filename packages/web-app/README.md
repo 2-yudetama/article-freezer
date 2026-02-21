@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# web-app
 
-## Getting Started
+Webアプリケーションのパッケージ
 
-First, run the development server:
+## セットアップ
+
+### 1. 依存関係のインストール
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd packages/web-app
+pnpm -F web-app install
+
+# or ルートディレクトリから
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 環境変数の設定
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd packages/web-app
+cp .env.example .env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. ビルド
 
-## Learn More
+```bash
+pnpm web-app build
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 4. 開発サーバの起動
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### 単体起動
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+[packages/db/README.md - セットアップ](../db/README.md#セットアップ) を参考に、データベースを事前に起動してください。
 
-## Deploy on Vercel
+```bash
+pnpm web-app dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+http://localhost:3000 でアプリが起動します。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### Docker compose
+
+Docker Composeを使用して、DBとWebアプリを一括で起動できます。
+
+```bash
+# 起動
+docker compose up
+
+# 停止
+docker compose down
+```
+
+## プロジェクト構成
+
+```
+web-app/src
+  ├─ app/         # App Router
+  ├─ components/  # 共通コンポーネント
+  ├─ features/    # 機能別コンポーネント
+  ├─ lib/         # ライブラリ
+  │
+  └─ proxy.ts
+```
+
+## 開発コマンド
+
+- `pnpm web-app typecheck`：`tsc`型チェック
+- `pnpm web-app build`：Next.jsアプリビルド
+- `pnpm web-app dev`：開発サーバ起動
+- `pnpm web-app start`：本番サーバ起動
