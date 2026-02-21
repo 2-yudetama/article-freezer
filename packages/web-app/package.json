@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "pnpm -F db prisma:generate && next dev",
+    "build": "pnpm -F db prisma:generate && next build",
     "start": "next start"
   },
   "dependencies": {

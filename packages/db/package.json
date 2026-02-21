@@ -10,7 +10,6 @@
     }
   },
   "scripts": {
-    "prepare": "prisma generate && tsc --build",
     "typecheck": "tsc --noEmit",
     "build": "prisma generate && tsc",
     "db:up": "docker compose up",
