@@ -69,3 +69,6 @@ web-app/src
 - `pnpm web-app build`：Next.jsアプリビルド
 - `pnpm web-app dev`：開発サーバ起動
 - `pnpm web-app start`：本番サーバ起動
+- `pnpm web-app test`：テスト実行
+- `pnpm web-app test:watch`：テスト実行(ウォッチモード)
+- `pnpm web-app test:coverage`：テスト実行(カバレッジ)

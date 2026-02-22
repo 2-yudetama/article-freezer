@@ -6,7 +6,10 @@
     "typecheck": "tsc --noEmit",
     "dev": "pnpm -F db prisma:generate && next dev",
     "build": "pnpm -F db prisma:generate && next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@logtape/logtape": "catalog:",
@@ -44,9 +47,11 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.0.18",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }
