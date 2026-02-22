@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import { notFound, redirect } from "next/navigation";
 import type React from "react";
 import * as v from "valibot";
@@ -21,12 +22,15 @@ export default async function UserLayout({
   children: React.ReactNode;
   params: Promise<{ userId: string }>;
 }) {
+  // LogTapeのロガー作成
+  const logger = getLogger(["web-app", "users"]);
+
   const { userId } = await params;
 
   // userIdの型チェック(UUID)
   const result = v.safeParse(v.pipe(v.string(), v.uuid()), userId);
   if (!result.success) {
-    console.error(`Invalid userId: ${new v.ValiError(result.issues).message}`);
+    logger.error(`Invalid userId: ${new v.ValiError(result.issues).message}`);
     return notFound();
   }
 

@@ -1,7 +1,7 @@
 import { BookOpen, Plus } from "lucide-react";
 import Link from "next/link";
 import type { NavigationItemsResult } from "@/components/navigation/use-navigation-items";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/twMerge";
 
 export function MobileNavigationView({
   navItems,

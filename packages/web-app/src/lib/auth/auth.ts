@@ -1,6 +1,11 @@
+import { getLogger } from "@logtape/logtape";
 import { prisma } from "db";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
+import { authLogger } from "@/lib/auth/logger";
+
+// LogTapeのロガー作成
+const logger = getLogger(["web-app", "auth"]);
 
 export const { handlers, auth } = NextAuth({
   providers: [GitHub],
@@ -8,6 +13,7 @@ export const { handlers, auth } = NextAuth({
     strategy: "jwt",
     maxAge: 86400, // 1 day
   },
+  logger: authLogger(),
   callbacks: {
     /**
      * Authorizedコールバック
@@ -42,8 +48,13 @@ export const { handlers, auth } = NextAuth({
         // パスからuserIdを取得
         const userId = pathname.split("/").filter(Boolean)[1];
         if (userId !== auth.user.id) {
-          console.error(
+          logger.warn(
             "[Auth] Unauthorized user access to other user's resource",
+            {
+              user_id: auth.user.id,
+              target_user_id: userId,
+              pathname,
+            },
           );
           return Response.redirect(new URL("/auth/notfound", origin));
         }
@@ -57,7 +68,7 @@ export const { handlers, auth } = NextAuth({
      */
     signIn: async ({ user, account }) => {
       if (!user || !account) {
-        console.error("[Auth] User or Account is missing");
+        logger.error("[Auth] User or Account is missing");
         return false;
       }
 
@@ -90,11 +101,16 @@ export const { handlers, auth } = NextAuth({
         user.provider_account_id = dbUser.provider_account_id;
         user.role = dbUser.role;
 
-        console.log(`[Auth] Upsert user successfully; User: ${user.id}`);
+        logger.info("[Auth] Upsert user successfully; User: {user_id}", {
+          user_id: user.id,
+        });
         return true;
       } catch (error) {
         // DBエラーは認証エラーとする
-        console.error("[Auth] DB upsert error: ", error);
+        logger.error(
+          "[Auth] DB upsert error: {error.name}",
+          error instanceof Error ? error : new Error("unknown error"),
+        );
         return false;
       }
     },

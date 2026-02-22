@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@logtape/logtape':
+      specifier: ^2.0.2
+      version: 2.0.2
     valibot:
       specifier: ^1.2.0
       version: 1.2.0
@@ -86,6 +89,9 @@ importers:
 
   packages/web-app:
     dependencies:
+      '@logtape/logtape':
+        specifier: 'catalog:'
+        version: 2.0.2
       '@prisma/client':
         specifier: catalog:prisma
         version: 7.3.0(prisma@7.3.0(@types/react@19.2.10)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3))(typescript@5.9.3)
@@ -653,6 +659,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@logtape/logtape@2.0.2':
+    resolution: {integrity: sha512-cveUBLbCMFkvkLycP/2vNWvywl47JcJbazHIju94/QNGboZ/jyYAgZIm0ZXezAOx3eIz8OG1EOZ5CuQP3+2FQg==}
 
   '@mrleebo/prisma-ast@0.13.1':
     resolution: {integrity: sha512-XyroGQXcHrZdvmrGJvsA9KNeOOgGMg1Vg9OlheUsBOSKznLMDl+YChxbkboRHvtFYJEMRYmlV3uoo/njCw05iw==}
@@ -2788,6 +2797,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@logtape/logtape@2.0.2': {}
 
   '@mrleebo/prisma-ast@0.13.1':
     dependencies:
