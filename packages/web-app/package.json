@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@logtape/logtape": "catalog:",
     "@prisma/client": "catalog:prisma",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-checkbox": "1.1.3",
