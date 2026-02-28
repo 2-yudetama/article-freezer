@@ -1,0 +1,36 @@
+[project]
+name = "md-extractor"
+version = "0.1.0"
+description = "FastAPI service for extracting article content as Markdown using MarkItDown."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi>=0.134.0",
+  "markitdown[docx,pdf,pptx]>=0.1.5",
+  "pydantic-settings>=2.13.1",
+  "uvicorn[standard]>=0.41.0",
+]
+
+[dependency-groups]
+dev = [
+  "pyright>=1.1.408",
+  "ruff>=0.15.4",
+]
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/node_modules", "**/__pycache__", "**/.*"]
+typeCheckingMode = "basic"
+pythonVersion = "3.13"
+
+[tool.ruff]
+# Set the maximum line length to 79.
+line-length = 79
+
+[tool.ruff.lint]
+# Add the `line-too-long` rule to the enforced rule set.
+extend-select = ["E501"]
+
+[tool.uv]
+required-version = "0.10.7"
+managed = true

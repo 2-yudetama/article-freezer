@@ -10,6 +10,7 @@
   "scripts": {
     "web-app": "pnpm -F web-app",
     "db": "pnpm -F db",
+    "md": "pnpm -F md-extractor",
     "check": "pnpm exec biome check .",
     "check:write": "pnpm exec biome check --write .",
     "knip": "knip"

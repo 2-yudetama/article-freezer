@@ -1,0 +1,12 @@
+{
+  "name": "md-extractor",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "uv run pyright",
+    "check": "uv run ruff check",
+    "check:write": "uv run ruff check --fix",
+    "dev": "uv run -m src.main",
+    "start": "uv run -m src.main"
+  }
+}
