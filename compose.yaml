@@ -2,6 +2,7 @@
 include:
   - path: packages/db/compose.yaml
     env_file: packages/db/.env
+  - path: packages/md-extractor/compose.yaml
 
 services:
   # DBマイグレーション

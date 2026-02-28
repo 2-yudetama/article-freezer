@@ -6,7 +6,7 @@ pre-commit:
       run: pnpm exec biome check {staged_files}
     check-py:
       glob: "*.{py}"
-      run: pnpm md check {staged_files}
+      run: uv run --project packages/md-extractor ruff check {staged_files}
     knip:
       run: "pnpm knip"
     lock:

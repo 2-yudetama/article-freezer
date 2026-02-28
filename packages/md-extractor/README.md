@@ -19,7 +19,14 @@ uv sync
 - 仮想環境を有効化する場合は、`source .venv/bin/activate` を実行してください。
 - `uv run <command>` を使う場合は、仮想環境を有効化しなくても実行できます。
 
-### 2. 開発サーバの起動
+### 2. 環境変数の設定
+
+```bash
+cd packages/md-extractor
+cp .env.example .env
+```
+
+### 3. 開発サーバの起動
 
 ```bash
 pnpm md dev
@@ -27,7 +34,7 @@ pnpm md dev
 
 http://localhost:8080 で起動します。
 
-### 3. Docker Compose での起動
+### 4. Docker Compose での起動
 
 ```bash
 cd packages/md-extractor

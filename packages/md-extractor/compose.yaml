@@ -1,0 +1,15 @@
+services:
+  python-backend:
+    container_name: article-freezer-md-extractor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - article-freezer-network
+
+networks:
+  article-freezer-network:
+    name: article-freezer-network
+    driver: bridge
