@@ -1,15 +1,9 @@
 import uvicorn
 
-from fastapi import FastAPI
 from src.settings import settings
+from src.app import create_app
 
-app = FastAPI()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
+app = create_app()
 
 if __name__ == "__main__":
     uvicorn.run(
