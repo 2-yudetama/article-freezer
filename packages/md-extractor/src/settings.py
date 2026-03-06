@@ -10,6 +10,9 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
     )
 
+    # API Secret Key
+    api_secret_key: str
+
     # API Server
     server_host: str = "0.0.0.0"
     server_port: int = 8080
