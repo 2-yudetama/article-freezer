@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
-from src.api.model import ExtractReq, ExtractRes, Health
+
 from src.api.auth import verify_api_token
+from src.api.model import ExtractReq, ExtractRes, Health
 from src.services import extract
 
 router = APIRouter()

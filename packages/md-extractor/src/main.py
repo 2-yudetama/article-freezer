@@ -1,7 +1,7 @@
 import uvicorn
 
-from src.settings import settings
 from src.app import create_app
+from src.settings import settings
 
 app = create_app()
 
