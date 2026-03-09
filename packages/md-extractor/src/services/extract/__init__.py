@@ -1,7 +1,7 @@
-from .interactor import extract_from_url
-from .model import Article
+from .port import ExtractGateway
+from .usecase import ExtractUsecase
 
 __all__ = [
-    "Article",
-    "extract_from_url",
+    "ExtractGateway",
+    "ExtractUsecase",
 ]

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, status
 
 from src.api.auth import verify_api_token
 from src.api.model import ExtractReq, ExtractRes, Health
-from src.services import extract
+from src.dependencies import get_extract_usecase
+from src.services.extract import ExtractUsecase
 
 router = APIRouter()
 
@@ -25,6 +26,8 @@ async def get_health() -> Health:
     dependencies=[Depends(verify_api_token)],
     summary="Extract Markdown from URL",
 )
-async def post_extract(req: ExtractReq) -> ExtractRes:
-    article = await extract.extract_from_url(url=req.url)
+async def post_extract(
+    req: ExtractReq, usecase: ExtractUsecase = Depends(get_extract_usecase)
+) -> ExtractRes:
+    article = await usecase.extract_from_url(url=req.url)
     return ExtractRes(**article.model_dump())

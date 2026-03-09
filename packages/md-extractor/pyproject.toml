@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
   "fastapi>=0.134.0",
+  "injector>=0.24.0",
   "markitdown[docx,pdf,pptx]>=0.1.5",
   "pydantic-settings>=2.13.1",
   "uvicorn[standard]>=0.41.0",
