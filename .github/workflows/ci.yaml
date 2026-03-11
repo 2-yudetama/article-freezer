@@ -29,16 +29,27 @@ jobs:
         with:
           node-version-file: package.json
           cache: "pnpm"
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: "packages/md-extractor/.python-version"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          version-file: "packages/md-extractor/pyproject.toml"
       - name: Install dependencies (offline)
         run: pnpm install --offline --frozen-lockfile
+      - name: Sync md-extractor dependencies
+        run: uv sync --project packages/md-extractor --frozen
       - name: db package build
         run: pnpm db build
-      - name: Run biome check
+      - name: Run typescript check
         run: pnpm check # biome check
       - name: Run knip
         run: pnpm knip # knip
+      - name: Run python check
+        run: pnpm md check
       - name: Run typecheck
-        run: pnpm --recursive run typecheck # tsc
+        run: pnpm --recursive run typecheck
   build:
     runs-on: ubuntu-latest
     needs: install

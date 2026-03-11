@@ -1,0 +1,8 @@
+# 許可制
+*
+
+!src
+!.python-version
+!package.json
+!pyproject.toml
+!uv.lock

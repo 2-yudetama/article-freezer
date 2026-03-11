@@ -1,6 +1,9 @@
 {
   /* common settings */
   "files.insertFinalNewline": true,
+  //python
+  "python.terminal.activateEnvironment": false,
+  "python.analysis.typeCheckingMode": "basic",
 
   /* editor */
   "editor.insertSpaces": true,
@@ -21,6 +24,11 @@
   // biome
   "[typescript][typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  // ruff
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
   },
   // yaml

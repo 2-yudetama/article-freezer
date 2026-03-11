@@ -1,3 +1,9 @@
 {
-  "recommendations": ["biomejs.biome", "redhat.vscode-yaml", "prisma.prisma"]
+  "recommendations": [
+    "biomejs.biome",
+    "redhat.vscode-yaml",
+    "prisma.prisma",
+    "ms-python.python",
+    "charliermarsh.ruff"
+  ]
 }

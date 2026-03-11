@@ -3,6 +3,7 @@
   "tags": ["-lintignore"],
   "ignoreExportsUsedInFile": true,
   "ignoreDependencies": ["lefthook"],
+  "ignoreWorkspaces": ["packages/md-extractor"],
   "workspaces": {
     "packages/**": {
       "project": ["**/*.{ts,tsx}"]
