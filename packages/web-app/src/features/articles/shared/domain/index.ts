@@ -52,7 +52,7 @@ export const ArticleSchema = v.object({
   userId: v.pipe(v.string(), v.uuid()),
   articleSource: ArticleSourceSchema,
   title: v.pipe(v.string(), v.minLength(1), v.maxLength(255)),
-  publishedDate: v.pipe(v.string(), v.isoDate()),
+  publishedDate: v.optional(v.pipe(v.string(), v.isoDate())),
   content: v.string(),
   isFavorite: v.boolean(),
   createdAt: v.pipe(v.string(), v.isoTimestamp()),

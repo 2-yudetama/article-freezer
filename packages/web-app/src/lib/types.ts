@@ -24,7 +24,7 @@ export type SortOption = "newest" | "oldest" | "title";
 
 export type RegistrationStep =
   | "url"
-  | "headings"
-  | "tags-comment"
-  | "summary"
+  | "extract-result"
+  | "comment"
+  | "tags"
   | "confirm";
