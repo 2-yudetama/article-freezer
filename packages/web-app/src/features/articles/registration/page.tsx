@@ -22,10 +22,11 @@ export default function ArticleRegistrationPage() {
     totalSteps,
     setUrl,
     setComment,
-    moveToNextStep,
     moveToPreviousStep,
     handleUrlSubmit,
     handleExtractedArticleSubmit,
+    handleCommentSubmit,
+    handleTagsSubmit,
     handleSave,
     toggleTag,
     availableTags,
@@ -62,7 +63,7 @@ export default function ArticleRegistrationPage() {
           comment={comment}
           onCommentChange={setComment}
           onBack={moveToPreviousStep}
-          onNext={moveToNextStep}
+          onNext={handleCommentSubmit}
         />
       )}
 
@@ -72,7 +73,7 @@ export default function ArticleRegistrationPage() {
           selectedTags={selectedTags}
           onToggleTag={toggleTag}
           onBack={moveToPreviousStep}
-          onNext={moveToNextStep}
+          onNext={handleTagsSubmit}
         />
       )}
 
