@@ -2,15 +2,27 @@
 
 import ReactMarkdown from "react-markdown";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils/twMerge";
 
 interface MarkdownPreviewProps {
   content: string;
+  cardClassName?: string;
+  contentClassName?: string;
 }
 
-export function MarkdownPreview({ content }: MarkdownPreviewProps) {
+export function MarkdownPreview({
+  content,
+  cardClassName,
+  contentClassName,
+}: MarkdownPreviewProps) {
   return (
-    <Card>
-      <CardContent className="p-6 prose prose-slate dark:prose-invert max-w-none">
+    <Card className={cn("py-0", cardClassName)}>
+      <CardContent
+        className={cn(
+          "px-6 prose prose-slate dark:prose-invert max-w-none",
+          contentClassName,
+        )}
+      >
         <ReactMarkdown
           components={{
             h1: ({ node, ...props }) => (
