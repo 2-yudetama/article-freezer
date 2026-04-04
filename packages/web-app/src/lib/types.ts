@@ -21,10 +21,3 @@ export type Article = {
 export type ViewMode = "grid" | "list";
 
 export type SortOption = "newest" | "oldest" | "title";
-
-export type RegistrationStep =
-  | "url"
-  | "headings"
-  | "tags-comment"
-  | "summary"
-  | "confirm";
