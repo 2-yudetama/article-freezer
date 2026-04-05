@@ -1,15 +1,15 @@
-from pydantic import HttpUrl
-
 from src.services.extract import ExtractGateway
-from src.services.extract.model import Article
+from src.services.extract.model import Article, ArticleSource
 
 
 class ExtractUsecase:
     def __init__(self, gateway: ExtractGateway) -> None:
         self.__extract_gateway = gateway
 
-    async def extract_from_url(self, url: HttpUrl) -> Article:
-        """URLから記事抽出"""
+    async def extract_from_source(
+        self, article_source: ArticleSource
+    ) -> Article:
+        """記事ソースから記事抽出"""
 
         # 1. URLのバリデーション
 
@@ -17,4 +17,9 @@ class ExtractUsecase:
 
         # 3. MarkItDownでMarkdownに変換
 
-        return Article()
+        return Article(
+            article_source=article_source,
+            title="未抽出",
+            published_date=None,
+            content="未抽出",
+        )

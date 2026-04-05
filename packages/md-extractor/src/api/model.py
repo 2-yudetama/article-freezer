@@ -1,6 +1,8 @@
 from typing import Literal
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
+
+from src.services.extract.model import ArticleSource
 
 
 class Health(BaseModel):
@@ -8,8 +10,11 @@ class Health(BaseModel):
 
 
 class ExtractReq(BaseModel):
-    url: HttpUrl
+    articleSource: ArticleSource
 
 
 class ExtractRes(BaseModel):
-    pass
+    articleSource: ArticleSource
+    title: str
+    publishedDate: str | None = None
+    content: str

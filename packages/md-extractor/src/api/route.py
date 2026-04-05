@@ -29,5 +29,12 @@ async def get_health() -> Health:
 async def post_extract(
     req: ExtractReq, usecase: ExtractUsecase = Depends(get_extract_usecase)
 ) -> ExtractRes:
-    article = await usecase.extract_from_url(url=req.url)
-    return ExtractRes(**article.model_dump())
+    article = await usecase.extract_from_source(
+        article_source=req.articleSource
+    )
+    return ExtractRes(
+        articleSource=article.article_source,
+        title=article.title,
+        publishedDate=article.published_date,
+        content=article.content,
+    )
