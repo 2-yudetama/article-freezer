@@ -12,6 +12,7 @@ class ExtractUsecase:
         """記事ソースから記事抽出"""
 
         # 1. URLのバリデーション
+        self.__extract_gateway.validate_url_safety(article_source.url)
 
         # 2. URLからコンテンツを取得
 

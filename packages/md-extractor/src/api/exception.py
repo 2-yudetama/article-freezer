@@ -8,6 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.services.error import (
     ErrorResponse,
     UnauthorizedError,
+    UnsafeArticleUrlError,
 )
 
 
@@ -45,6 +46,15 @@ def _map_exception_to_response(
     if isinstance(exc, UnauthorizedError):
         return (
             status.HTTP_401_UNAUTHORIZED,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, UnsafeArticleUrlError):
+        return (
+            status.HTTP_400_BAD_REQUEST,
             ErrorResponse(
                 name=exc.__class__.__name__,
                 message=exc.message,

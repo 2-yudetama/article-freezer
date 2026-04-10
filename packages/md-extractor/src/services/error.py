@@ -13,3 +13,11 @@ class UnauthorizedError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class UnsafeArticleUrlError(Exception):
+    """安全ではない記事URLが指定された場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
