@@ -1,8 +1,9 @@
 import hmac
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from src.services.error import UnauthorizedError
 from src.settings import settings
 
 
@@ -21,6 +22,4 @@ async def verify_api_token(
     )
 
     if not result:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
-        )
+        raise UnauthorizedError("Unauthorized")
