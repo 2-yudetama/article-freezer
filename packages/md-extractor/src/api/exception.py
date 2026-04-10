@@ -1,8 +1,10 @@
 from collections.abc import Awaitable, Callable
+from uuid import uuid4
 
 from fastapi import Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.services.error import (
@@ -78,11 +80,56 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        try:
-            return await call_next(request)
-        except Exception as exc:
-            status_code, content = _map_exception_to_response(exc)
-            return JSONResponse(
-                status_code=status_code,
-                content=content.model_dump(mode="json"),
-            )
+        request_id = str(uuid4())
+        is_health_check = request.url.path == "/api/health"
+
+        with logger.contextualize(request_id=request_id):
+            if not is_health_check:
+                logger.info(
+                    "Request started: {method} {path}",
+                    method=request.method,
+                    path=request.url.path,
+                )
+
+            try:
+                response = await call_next(request)
+            except Exception as exc:
+                status_code, content = _map_exception_to_response(exc)
+
+                # クライアントエラーとサーバエラーでログを分岐
+                if status_code >= status.HTTP_500_INTERNAL_SERVER_ERROR:
+                    logger.opt(exception=exc).error(
+                        "Unhandled exception on {method} "
+                        "{path}: {error_message}",
+                        method=request.method,
+                        path=request.url.path,
+                        error_message=str(exc),
+                    )
+                else:
+                    logger.warning(
+                        "Request failed with status {status_code} "
+                        "on {method} {path}: {error_name}: {error_message}",
+                        status_code=status_code,
+                        method=request.method,
+                        path=request.url.path,
+                        error_name=exc.__class__.__name__,
+                        error_message=str(exc),
+                    )
+
+                response = JSONResponse(
+                    status_code=status_code,
+                    content=content.model_dump(mode="json"),
+                )
+
+            response.headers["X-Request-ID"] = request_id
+
+            if not is_health_check:
+                logger.info(
+                    "Request finished with status {status_code}: "
+                    "{method} {path}",
+                    status_code=response.status_code,
+                    method=request.method,
+                    path=request.url.path,
+                )
+
+            return response
