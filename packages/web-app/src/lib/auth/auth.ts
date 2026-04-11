@@ -48,14 +48,11 @@ export const { handlers, auth } = NextAuth({
         // パスからuserIdを取得
         const userId = pathname.split("/").filter(Boolean)[1];
         if (userId !== auth.user.id) {
-          logger.warn(
-            "[Auth] Unauthorized user access to other user's resource",
-            {
-              user_id: auth.user.id,
-              target_user_id: userId,
-              pathname,
-            },
-          );
+          logger.warn("Unauthorized user access to other user's resource", {
+            user_id: auth.user.id,
+            target_user_id: userId,
+            pathname,
+          });
           return Response.redirect(new URL("/auth/notfound", origin));
         }
       }
@@ -68,7 +65,7 @@ export const { handlers, auth } = NextAuth({
      */
     signIn: async ({ user, account }) => {
       if (!user || !account) {
-        logger.error("[Auth] User or Account is missing");
+        logger.error("User or Account is missing");
         return false;
       }
 
@@ -101,14 +98,14 @@ export const { handlers, auth } = NextAuth({
         user.provider_account_id = dbUser.provider_account_id;
         user.role = dbUser.role;
 
-        logger.info("[Auth] Upsert user successfully; User: {user_id}", {
+        logger.info("Upsert user successfully", {
           user_id: user.id,
         });
         return true;
       } catch (error) {
         // DBエラーは認証エラーとする
         logger.error(
-          "[Auth] DB upsert error: {error.name}",
+          "DB upsert error",
           error instanceof Error ? error : new Error("unknown error"),
         );
         return false;
