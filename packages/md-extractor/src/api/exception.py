@@ -36,19 +36,6 @@ def _map_exception_to_response(
 ) -> tuple[int, ErrorResponse]:
     """例外を API レスポンス用の status code と content に変換する"""
 
-    if isinstance(exc, RequestValidationError):
-        details = [
-            _format_validation_error_detail(error) for error in exc.errors()
-        ]
-        return (
-            status.HTTP_400_BAD_REQUEST,
-            ErrorResponse(
-                name=exc.__class__.__name__,
-                message="Request validation failed.",
-                details=details,
-            ),
-        )
-
     if isinstance(exc, UnauthorizedError):
         return (
             status.HTTP_401_UNAUTHORIZED,
@@ -109,6 +96,38 @@ def _map_exception_to_response(
             name=exc.__class__.__name__,
             message="Internal server error.",
         ),
+    )
+
+
+def request_validation_handler(request: Request, exc: Exception) -> Response:
+    """RequestValidationError用のハンドラ"""
+
+    if not isinstance(exc, RequestValidationError):
+        raise exc
+
+    details = [
+        _format_validation_error_detail(error) for error in exc.errors()
+    ]
+    status_code = status.HTTP_400_BAD_REQUEST
+    content = ErrorResponse(
+        name=exc.__class__.__name__,
+        message="Request validation failed.",
+        details=details,
+    )
+
+    logger.warning(
+        "Request failed with status {status_code} "
+        "on {method} {path}: {error_name}: {error_message}",
+        status_code=status_code,
+        method=request.method,
+        path=request.url.path,
+        error_name=exc.__class__.__name__,
+        error_message=str(exc),
+    )
+
+    return JSONResponse(
+        status_code=status_code,
+        content=content.model_dump(mode="json"),
     )
 
 
