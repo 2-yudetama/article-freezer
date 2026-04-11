@@ -14,6 +14,8 @@ type LogLevel = Literal[
 
 type LogFormat = Literal["text", "json"]
 
+type OpenAIModel = Literal["gpt-4o-mini", "gpt-5-nano", "gpt-5.4-nano"]
+
 
 class Settings(BaseSettings):
     """設定モデル"""
@@ -33,6 +35,10 @@ class Settings(BaseSettings):
     hot_reload: bool = False
     log_level: LogLevel = "INFO"
     log_format: LogFormat = "text"
+
+    # OpenAI
+    openai_api_key: str
+    openai_model: OpenAIModel = "gpt-4o-mini"
 
 
 settings = Settings()  # type: ignore

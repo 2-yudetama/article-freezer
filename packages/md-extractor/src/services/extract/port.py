@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from pydantic import HttpUrl
 
-from src.services.extract.model import FetchedContent
+from src.services.extract.model import ExtractedArticle, FetchedContent
 
 
 class ExtractGateway(ABC):
@@ -27,4 +27,9 @@ class ExtractGateway(ABC):
     @abstractmethod
     def convert_to_markdown(self, fetched_content: FetchedContent) -> str:
         """取得したコンテンツをマークダウン化する"""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def extract_article(self, markdown: str) -> ExtractedArticle:
+        """Markdownから記事を抽出する"""
         raise NotImplementedError

@@ -10,6 +10,7 @@ dependencies = [
   "injector>=0.24.0",
   "loguru>=0.7.3",
   "markitdown[docx,pdf,pptx]>=0.1.5",
+  "openai>=2.31.0",
   "pydantic-settings>=2.13.1",
   "uvicorn[standard]>=0.41.0",
 ]

@@ -14,11 +14,13 @@ from src.services.error import (
     ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
+    ArticleExtractionError,
     UnsafeArticleUrlError,
 )
-from src.services.extract.model import FetchedContent
+from src.services.extract.model import ExtractedArticle, FetchedContent
 from src.services.extract.port import ExtractGateway
 from src.settings import settings
+from src.utils.usage_cost import calculate_openai_usage_cost
 
 
 class ExtractGatewayAdapter(ExtractGateway):
@@ -186,3 +188,48 @@ class ExtractGatewayAdapter(ExtractGateway):
         )
 
         return result.text_content
+
+    async def extract_article(self, markdown: str) -> ExtractedArticle:
+        """MarkdownからLLMを使って記事を抽出する"""
+
+        try:
+            response = await self.__openai_client.responses.parse(
+                model=settings.openai_model,
+                instructions=(
+                    "あなたは構造化データ抽出の専門家です。"
+                    "MarkItDownでMarkdownに変換されたWebサイトの記事テキストが与えられるので、"
+                    "指定された構造に変換してください。"
+                ),
+                input=markdown,
+                text_format=ExtractedArticle,
+            )
+        except Exception as exc:
+            raise ArticleExtractionError(
+                "Could not extract the article content."
+            ) from exc
+
+        extracted_article = response.output_parsed
+        if extracted_article is None:
+            raise ArticleExtractionError(
+                "Could not parse the extracted article content."
+            )
+
+        usage_seconds = (
+            None
+            if response.completed_at is None
+            else response.completed_at - response.created_at
+        )
+
+        logger.info(
+            "Extracted article from Markdown",
+            title=extracted_article.title,
+            published_date=str(extracted_article.published_date),
+            content_length=len(extracted_article.content),
+            model=settings.openai_model,
+            usage_seconds=usage_seconds,
+            usage_cost=calculate_openai_usage_cost(
+                settings.openai_model, response.usage
+            ),
+        )
+
+        return extracted_article

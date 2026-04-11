@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel
@@ -16,5 +17,5 @@ class ExtractReq(BaseModel):
 class ExtractRes(BaseModel):
     articleSource: ArticleSource
     title: str
-    publishedDate: str | None = None
+    publishedDate: date | None = None
     content: str

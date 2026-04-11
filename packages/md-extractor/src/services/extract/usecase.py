@@ -32,14 +32,21 @@ class ExtractUsecase:
 
             # 3. MarkItDownでMarkdownに変換
             logger.debug("Start convert content to Markdown")
-            self.__extract_gateway.convert_to_markdown(
+            markdown = self.__extract_gateway.convert_to_markdown(
                 fetched_content=fetched_content
             )
             logger.debug("Finish convert content to Markdown")
 
+            # 4. Markdownから記事を抽出
+            logger.debug("Start extract article from Markdown")
+            article = await self.__extract_gateway.extract_article(
+                markdown=markdown
+            )
+            logger.debug("Finish extract article from Markdown")
+
         return Article(
             article_source=article_source,
-            title="未抽出",
-            published_date=None,
-            content="未抽出",
+            title=article.title,
+            published_date=article.published_date,
+            content=article.content,
         )

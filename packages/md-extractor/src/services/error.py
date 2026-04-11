@@ -45,3 +45,11 @@ class ArticleContentConversionError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class ArticleExtractionError(Exception):
+    """記事抽出に失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message

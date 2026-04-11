@@ -26,6 +26,17 @@ cd packages/md-extractor
 cp .env.example .env
 ```
 
+| 環境変数       | 必須 | デフォルト  | 説明                                               |
+| -------------- | ---- | ----------- | -------------------------------------------------- |
+| API_SECRET_KEY | ○    | -           | サーバの Bearer トークン認証に使うシークレットキー |
+| OPENAI_API_KEY | ○    | -           | OpenAI API キー                                    |
+| SERVER_HOST    | ×    | 0.0.0.0     | サーバホスト                                       |
+| SERVER_PORT    | ×    | 8080        | サーバポート                                       |
+| HOT_RELOAD     | ×    | False       | ホットリロード有効化                               |
+| LOG_LEVEL      | ×    | INFO        | ログ出力レベル                                     |
+| LOG_FORMAT     | ×    | text        | ログ出力形式 (text or json)                        |
+| OPENAI_MODEL   | ×    | gpt-4o-mini | 記事の項目抽出に使う OpenAI モデル                 |
+
 ### 3. 開発サーバの起動
 
 ```bash
