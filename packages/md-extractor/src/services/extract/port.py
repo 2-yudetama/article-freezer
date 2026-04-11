@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from pydantic import HttpUrl
 
+from src.services.extract.model import FetchedContent
+
 
 class ExtractGateway(ABC):
     """外部サービスを利用したユースケース要求"""
@@ -18,7 +20,7 @@ class ExtractGateway(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def fetch_content(self, url: HttpUrl) -> None:
+    async def fetch_content(self, url: HttpUrl) -> FetchedContent:
         """URLからコンテンツを取得する"""
         raise NotImplementedError
 

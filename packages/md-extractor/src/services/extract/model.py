@@ -24,3 +24,12 @@ class Article(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     published_date: str | None = None
     content: str = Field(min_length=1)
+
+
+class FetchedContent(BaseModel):
+    """取得した記事コンテンツ"""
+
+    body: bytes
+    mimetype: str | None = None
+    charset: str | None = None
+    url: HttpUrl | str

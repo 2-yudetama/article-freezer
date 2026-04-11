@@ -1,10 +1,18 @@
 import ipaddress
 import socket
+from email.message import Message
 
+import httpx
 from injector import inject
+from loguru import logger
 from pydantic import HttpUrl
 
-from src.services.error import UnsafeArticleUrlError
+from src.services.error import (
+    ArticleContentFetchError,
+    ArticleContentRequestError,
+    UnsafeArticleUrlError,
+)
+from src.services.extract.model import FetchedContent
 from src.services.extract.port import ExtractGateway
 
 
@@ -63,6 +71,17 @@ class ExtractGatewayAdapter(ExtractGateway):
             )
         )
 
+    def _parse_content_type(
+        self, content_type: str | None
+    ) -> tuple[str | None, str | None]:
+        if content_type is None:
+            return None, None
+
+        message = Message()
+        message["content-type"] = content_type
+
+        return message.get_content_type(), message.get_content_charset()
+
     def validate_url_safety(self, url: HttpUrl) -> None:
         """URLの安全性検証
 
@@ -99,8 +118,41 @@ class ExtractGatewayAdapter(ExtractGateway):
                 "Resolved host points to an unsafe IP address."
             )
 
-    async def fetch_content(self, url: HttpUrl) -> None:
+        logger.info("This URL is safety")
+
+    async def fetch_content(self, url: HttpUrl) -> FetchedContent:
         """URLからコンテンツを取得する"""
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(url=url.encoded_string())
+                response.raise_for_status()
+            except httpx.RequestError as exc:
+                raise ArticleContentRequestError(
+                    "Could not fetch the article content."
+                ) from exc
+            except httpx.HTTPStatusError as exc:
+                raise ArticleContentFetchError(
+                    "The article URL returned an unsuccessful response."
+                ) from exc
+
+        mimetype, charset = self._parse_content_type(
+            response.headers.get("content-type")
+        )
+
+        logger.info(
+            "Fetched content",
+            url=str(url),
+            content_length=len(response.content),
+            mimetype=mimetype,
+            charset=charset,
+        )
+        return FetchedContent(
+            body=response.content,
+            mimetype=mimetype,
+            charset=charset,
+            url=url,
+        )
 
     def convert_to_markdown(self) -> None:
         """取得したコンテンツをマークダウン化する"""

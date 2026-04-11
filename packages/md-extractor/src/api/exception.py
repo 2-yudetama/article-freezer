@@ -8,6 +8,8 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.services.error import (
+    ArticleContentFetchError,
+    ArticleContentRequestError,
     ErrorResponse,
     UnauthorizedError,
     UnsafeArticleUrlError,
@@ -57,6 +59,24 @@ def _map_exception_to_response(
     if isinstance(exc, UnsafeArticleUrlError):
         return (
             status.HTTP_400_BAD_REQUEST,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, ArticleContentFetchError):
+        return (
+            status.HTTP_502_BAD_GATEWAY,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, ArticleContentRequestError):
+        return (
+            status.HTTP_503_SERVICE_UNAVAILABLE,
             ErrorResponse(
                 name=exc.__class__.__name__,
                 message=exc.message,

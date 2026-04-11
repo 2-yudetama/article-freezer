@@ -21,3 +21,19 @@ class UnsafeArticleUrlError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class ArticleContentFetchError(Exception):
+    """記事コンテンツの取得に失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class ArticleContentRequestError(Exception):
+    """記事コンテンツのリクエストに失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
