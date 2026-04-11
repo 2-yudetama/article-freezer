@@ -1,6 +1,6 @@
 # md-extractor
 
-MarkItDown を利用して記事コンテンツを Markdown として抽出する FastAPI サービス
+記事 URL から本文を取得し、MarkItDown と OpenAI を利用して記事項目を抽出する FastAPI サービス
 
 **注意：このパッケージはPythonプロジェクトです。**
 
@@ -62,9 +62,16 @@ docker compose down
 ```
 packages/md-extractor
   ├─ src
-  │  └─ main.py        # FastAPI エントリーポイント
-  ├─ pyproject.toml    # Python 依存関係・ツール設定
-  ├─ uv.lock           # 依存関係ロックファイル
+  │  ├─ api             # HTTP 入出力、認証、例外ハンドリング
+  │  ├─ services        # ユースケース、ドメインモデル、出力ポート
+  │  ├─ infrastructure  # 外部サービスアクセスの実装
+  │  ├─ utils           # ロガー、利用料金計算などの補助処理
+  │  ├─ app.py          # FastAPI app 構築
+  │  ├─ dependencies.py # DI 配線
+  │  ├─ main.py         # サーバ起動エントリーポイント
+  │  └─ settings.py     # 設定値管理
+  ├─ pyproject.toml     # Python 依存関係・ツール設定
+  ├─ uv.lock            # 依存関係ロックファイル
   ├─ Dockerfile
   └─ compose.yaml
 ```
