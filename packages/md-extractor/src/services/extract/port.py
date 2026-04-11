@@ -25,6 +25,6 @@ class ExtractGateway(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def convert_to_markdown(self) -> None:
+    def convert_to_markdown(self, fetched_content: FetchedContent) -> str:
         """取得したコンテンツをマークダウン化する"""
         raise NotImplementedError

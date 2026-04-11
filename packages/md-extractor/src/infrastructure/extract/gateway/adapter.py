@@ -1,19 +1,24 @@
 import ipaddress
 import socket
 from email.message import Message
+from io import BytesIO
 
 import httpx
 from injector import inject
 from loguru import logger
+from markitdown import MarkItDown, StreamInfo
+from openai import AsyncOpenAI
 from pydantic import HttpUrl
 
 from src.services.error import (
+    ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
     UnsafeArticleUrlError,
 )
 from src.services.extract.model import FetchedContent
 from src.services.extract.port import ExtractGateway
+from src.settings import settings
 
 
 class ExtractGatewayAdapter(ExtractGateway):
@@ -22,6 +27,8 @@ class ExtractGatewayAdapter(ExtractGateway):
     @inject
     def __init__(self) -> None:
         super().__init__()
+        self.__markdown_converter = MarkItDown()
+        self.__openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
 
     def _resolve_host_ips(
         self, host: str
@@ -154,5 +161,28 @@ class ExtractGatewayAdapter(ExtractGateway):
             url=url,
         )
 
-    def convert_to_markdown(self) -> None:
+    def convert_to_markdown(self, fetched_content: FetchedContent) -> str:
         """取得したコンテンツをマークダウン化する"""
+
+        stream_info = StreamInfo(
+            mimetype=fetched_content.mimetype,
+            charset=fetched_content.charset,
+            url=str(fetched_content.url),
+        )
+
+        try:
+            result = self.__markdown_converter.convert_stream(
+                BytesIO(fetched_content.body), stream_info=stream_info
+            )
+        except Exception as exc:
+            raise ArticleContentConversionError(
+                "Could not convert the article content to Markdown."
+            ) from exc
+
+        logger.info(
+            "Converted content to Markdown",
+            url=str(fetched_content.url),
+            text_length=len(result.text_content),
+        )
+
+        return result.text_content

@@ -8,6 +8,7 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.services.error import (
+    ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
     ErrorResponse,
@@ -75,6 +76,15 @@ def _map_exception_to_response(
         )
 
     if isinstance(exc, ArticleContentRequestError):
+        return (
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, ArticleContentConversionError):
         return (
             status.HTTP_503_SERVICE_UNAVAILABLE,
             ErrorResponse(

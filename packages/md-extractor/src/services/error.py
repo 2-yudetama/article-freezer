@@ -37,3 +37,11 @@ class ArticleContentRequestError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class ArticleContentConversionError(Exception):
+    """記事コンテンツのMarkdown変換に失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message

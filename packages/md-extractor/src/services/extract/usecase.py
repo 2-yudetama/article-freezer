@@ -25,10 +25,17 @@ class ExtractUsecase:
 
             # 2. URLからコンテンツを取得
             logger.debug("Start fetch content from URL")
-            await self.__extract_gateway.fetch_content(url=article_source.url)
+            fetched_content = await self.__extract_gateway.fetch_content(
+                url=article_source.url
+            )
             logger.debug("Finish fetch content from URL")
 
             # 3. MarkItDownでMarkdownに変換
+            logger.debug("Start convert content to Markdown")
+            self.__extract_gateway.convert_to_markdown(
+                fetched_content=fetched_content
+            )
+            logger.debug("Finish convert content to Markdown")
 
         return Article(
             article_source=article_source,
