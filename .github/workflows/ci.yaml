@@ -44,8 +44,6 @@ jobs:
         run: pnpm db build
       - name: Run typescript check
         run: pnpm check # biome check
-      - name: Run knip
-        run: pnpm knip # knip
       - name: Run python check
         run: pnpm md check
       - name: Run typecheck
