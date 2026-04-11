@@ -2,7 +2,9 @@ import uvicorn
 
 from src.app import create_app
 from src.settings import settings
+from src.utils.logger import create_logger
 
+create_logger()
 app = create_app()
 
 if __name__ == "__main__":

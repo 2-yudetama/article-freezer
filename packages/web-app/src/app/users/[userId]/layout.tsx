@@ -30,7 +30,9 @@ export default async function UserLayout({
   // userIdの型チェック(UUID)
   const result = v.safeParse(v.pipe(v.string(), v.uuid()), userId);
   if (!result.success) {
-    logger.error(`Invalid userId: ${new v.ValiError(result.issues).message}`);
+    logger.error(`Invalid userId: ${userId}`, {
+      message: new v.ValiError(result.issues).message,
+    });
     return notFound();
   }
 

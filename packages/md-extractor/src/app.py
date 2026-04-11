@@ -1,10 +1,20 @@
 from fastapi import APIRouter, FastAPI
+from fastapi.exceptions import RequestValidationError
 
-from src.api.route import router
+from src.api.exception import ExceptionMiddleware, request_validation_handler
+from src.api.router import router
 
 
 def create_app() -> FastAPI:
     app = FastAPI()
+
+    # middleware
+    app.add_middleware(ExceptionMiddleware)
+
+    # exception
+    app.add_exception_handler(
+        RequestValidationError, request_validation_handler
+    )
 
     # router
     app_router = APIRouter(prefix="/api")

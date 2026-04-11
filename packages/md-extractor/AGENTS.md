@@ -2,8 +2,8 @@
 
 ## Role
 
-- 記事 URL から Markdown 抽出を行う FastAPI service。
-- HTTP API は `/api/health` と `/api/extract` を提供する。
+- 記事 URL から記事項目を抽出する FastAPI service。
+- 機能仕様は [docs/features/md-extractor.md](../../docs/features/md-extractor.md) を参照する。
 
 ## Working Rules
 
@@ -25,11 +25,14 @@
 - Hexagonal Architecture (Ports and Adapters) をベースにした構成。
 - `services` を中心に、`api` を入力アダプタ、`infrastructure` を出力アダプタとして分離する。
   - `api`: 入力アダプタ
+  - `api/auth.py`: Bearer トークン認証
+  - `api/exception.py`: 例外とエラーレスポンスの変換、request id 付与
   - `services/*/usecase.py`: アプリケーション層
   - `services/*/model.py`: ドメインモデル
   - `services/*/port.py`: 出力ポート
-  - `infrastructure/*/(repository|gateway)/adapter.py`: 出力アダプタ
+  - `infrastructure/*/gateway/adapter.py`: 外部サービスアクセスの実装
   - `dependencies.py`: Composition Root / DI 配線
+  - `utils`: ユーティリティ
 
 ```text
 src
@@ -39,16 +42,10 @@ src
 │  ├─ model.py                           # ドメインモデル
 │  └─ port.py                            # 出力ポート
 ├─ infrastructure/*/                     # 機能単位の出力アダプタ実装層
-│  ├─ gateway/adapter.py                 # 外部サービスアクセスの実装
-│  └─ repository/adapter.py              # 永続化・CRUD の実装
+│  └─ gateway/adapter.py                 # 外部サービスアクセスの実装
+├─ utils/                                # ユーティリティ
 ├─ dependencies.py                       # Composition Root / DI 配線
 ├─ app.py                                # FastAPI app 構築と router 登録
 ├─ main.py                               # サーバ起動 entrypoint
 └─ settings.py                           # 設定値管理
 ```
-
-## TBD
-
-- `/api/extract` の正式なレスポンス schema
-- 許可する記事ドメインと URL 安全性チェックの要件
-- `web-app` からこの service をどう呼び出すか、同期/非同期どちらを想定するか
