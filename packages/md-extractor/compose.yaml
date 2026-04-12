@@ -1,5 +1,5 @@
 services:
-  python-backend:
+  md-extractor:
     container_name: article-freezer-md-extractor
     build:
       context: .
