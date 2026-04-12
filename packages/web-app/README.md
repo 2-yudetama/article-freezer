@@ -57,6 +57,7 @@ docker compose down
 web-app/src
   ├─ app/         # App Router
   ├─ components/  # 共通コンポーネント
+  ├─ domain/      # ドメインスキーマ・型
   ├─ features/    # 機能別コンポーネント
   ├─ lib/         # ライブラリ
   │

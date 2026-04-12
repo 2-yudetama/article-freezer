@@ -1,8 +1,5 @@
 import * as v from "valibot";
-import {
-  ArticleCommentSchema,
-  ArticleSchema,
-} from "@/features/articles/shared/domain";
+import { ArticleCommentSchema, ArticleSchema } from "@/domain/articles";
 
 /**
  * 記事登録の URL ステップで利用する入力スキーマ。
