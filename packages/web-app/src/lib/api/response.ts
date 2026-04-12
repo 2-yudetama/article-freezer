@@ -3,10 +3,13 @@ import "server-only";
 import { getLogger } from "@logtape/logtape";
 import { NextResponse } from "next/server";
 import {
-  InvalidRequestError,
+  BadRequestError,
+  ForbiddenError,
   InvalidResponseError,
   MdExtractorEnvironmentError,
   MdExtractorRequestError,
+  NotFoundError,
+  UnauthorizedError,
 } from "@/lib/errors";
 import { mapMdExtractorErrorResponse } from "@/lib/md-extractor";
 import {
@@ -50,10 +53,32 @@ export function toApiExceptionResponse(
 ): NextResponse<ApiErrorResponse> {
   logApiError(error);
 
-  if (error instanceof InvalidRequestError) {
+  if (error instanceof BadRequestError) {
     return NextResponse.json(
       toApiErrorResponse(error, "リクエスト内容に不備がないか確認してください"),
       { status: 400 },
+    );
+  }
+
+  if (error instanceof UnauthorizedError) {
+    return NextResponse.json(
+      toApiErrorResponse(error, "ログインしてください"),
+      {
+        status: 401,
+      },
+    );
+  }
+
+  if (error instanceof ForbiddenError) {
+    return NextResponse.json(toApiErrorResponse(error, "権限がありません"), {
+      status: 403,
+    });
+  }
+
+  if (error instanceof NotFoundError) {
+    return NextResponse.json(
+      toApiErrorResponse(error, "リソースが見つかりません"),
+      { status: 404 },
     );
   }
 

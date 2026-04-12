@@ -3,10 +3,34 @@
  */
 
 /** リクエスト形式が不正な場合のエラー */
-export class InvalidRequestError extends Error {
-  constructor(message = "Invalid request.", options?: ErrorOptions) {
+export class BadRequestError extends Error {
+  constructor(message = "Bad request.", options?: ErrorOptions) {
     super(message, options);
-    this.name = "InvalidRequestError";
+    this.name = "BadRequestError";
+  }
+}
+
+/** 認証が必要な場合のエラー */
+export class UnauthorizedError extends Error {
+  constructor(message = "Unauthorized.", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "UnauthorizedError";
+  }
+}
+
+/** 権限が不足している場合のエラー */
+export class ForbiddenError extends Error {
+  constructor(message = "Forbidden.", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "ForbiddenError";
+  }
+}
+
+/** リソースが見つからない場合のエラー */
+export class NotFoundError extends Error {
+  constructor(message = "Not found.", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "NotFoundError";
   }
 }
 
