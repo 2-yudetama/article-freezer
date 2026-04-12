@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { ExtractedArticleMock } from "@/lib/mock-data";
-import { REGISTRATION_STEP_ORDER, type RegistrationStep } from "../domain";
+import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import { REGISTRATION_STEP_ORDER, type RegistrationStep } from "../common";
 
 /**
  * 記事登録フローで利用する画面状態をまとめて管理する。
@@ -12,7 +12,7 @@ export function useArticleRegistrationState() {
   const [step, setStep] = useState<RegistrationStep>("url");
   const [url, setUrl] = useState("");
   const [extractedArticle, setExtractedArticle] =
-    useState<ExtractedArticleMock | null>(null);
+    useState<ArticleExtractResponse | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [comment, setComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);

@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as v from "valibot";
-import { mockExtractedArticles, mockTags } from "@/lib/mock-data";
+import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import {
+  DEFAULT_ERROR_MESSAGE,
+  getApiErrorMessage,
+} from "@/lib/api/response.shared";
+import { mockTags } from "@/lib/mock-data";
 import {
   REGISTRATION_STEP_ORDER,
   RegistrationArticleSourceSchema,
@@ -11,20 +16,18 @@ import {
   RegistrationExtractedArticleSchema,
   RegistrationSaveSchema,
   type RegistrationStep,
-} from "../domain";
+} from "../common";
 
 type Params = {
   userId: string;
   step: RegistrationStep;
   url: string;
-  extractedArticle: (typeof mockExtractedArticles)[number] | null;
+  extractedArticle: ArticleExtractResponse | null;
   comment: string;
   selectedTags: string[];
   setStep: (value: RegistrationStep) => void;
   setUrl: (value: string) => void;
-  setExtractedArticle: (
-    value: (typeof mockExtractedArticles)[number] | null,
-  ) => void;
+  setExtractedArticle: (value: ArticleExtractResponse | null) => void;
   setSelectedTags: (value: string[] | ((prev: string[]) => string[])) => void;
   setIsLoading: (value: boolean) => void;
 };
@@ -141,22 +144,26 @@ export function useArticleRegistrationActions({
       return;
     }
 
-    const matchedArticle = mockExtractedArticles.find(
-      (article) => article.url === normalizedUrl,
-    );
-
-    if (!matchedArticle) {
-      showError("対応する記事を取得できませんでした");
-      return;
-    }
-
     setUrl(result.output.articleSource.url);
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // 実 API 接続前のため、入力 URL に対応するモックを解決して利用する。
-      setExtractedArticle(matchedArticle);
+      const response = await fetch(`/api/users/${userId}/articles/extract`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(result.output),
+      });
+
+      if (!response.ok) {
+        showError(await getApiErrorMessage(response));
+        return;
+      }
+
+      setExtractedArticle(await response.json());
       moveToNextStep();
+    } catch {
+      showError(DEFAULT_ERROR_MESSAGE);
     } finally {
       setIsLoading(false);
     }
