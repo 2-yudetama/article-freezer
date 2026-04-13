@@ -73,6 +73,12 @@ export function MarkdownPreview({
               <ol className="list-decimal pl-4" {...props} />
             ),
             li: ({ node, ...props }) => <li className="ml-4" {...props} />,
+            blockquote: ({ node, ...props }) => (
+              <blockquote
+                className="my-4 border-l-4 border-muted-foreground/40 pl-4 text-muted-foreground [&>p]:my-0"
+                {...props}
+              />
+            ),
             p: ({ node, ...props }) => (
               <p className="mt-2 mb-4 leading-relaxed" {...props} />
             ),
