@@ -19,7 +19,7 @@ export function MarkdownPreview({
     <Card className={cn("py-0", cardClassName)}>
       <CardContent
         className={cn(
-          "px-6 prose prose-slate dark:prose-invert max-w-none",
+          "px-6 py-4 prose prose-slate dark:prose-invert max-w-none scrollbar-readable",
           contentClassName,
         )}
       >
@@ -67,14 +67,14 @@ export function MarkdownPreview({
               return <code className={codeClassName} {...props} />;
             },
             ul: ({ node, ...props }) => (
-              <ul className="list-disc pl-5" {...props} />
+              <ul className="list-disc pl-4" {...props} />
             ),
             ol: ({ node, ...props }) => (
-              <ol className="list-decimal pl-5" {...props} />
+              <ol className="list-decimal pl-4" {...props} />
             ),
             li: ({ node, ...props }) => <li className="ml-4" {...props} />,
             p: ({ node, ...props }) => (
-              <p className="mb-4 leading-relaxed" {...props} />
+              <p className="mt-2 mb-4 leading-relaxed" {...props} />
             ),
           }}
         >
