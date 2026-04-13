@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { ArticleSchema } from "@/domain/articles";
+import { ArticleCommentSchema, ArticleSchema } from "@/domain/articles";
 
 /**
  * 記事 API の request / response スキーマ定義。
@@ -27,4 +27,35 @@ export const ArticleExtractResponseSchema = v.pick(ArticleSchema, [
 ]);
 export type ArticleExtractResponse = v.InferOutput<
   typeof ArticleExtractResponseSchema
+>;
+
+/**
+ * POST /api/users/[userId]/articles/registration のリクエストスキーマ。
+ */
+export const ArticleRegistrationRequestSchema = v.object({
+  article: v.pick(ArticleSchema, [
+    "articleSource",
+    "title",
+    "publishedDate",
+    "content",
+  ]),
+  comment: v.optional(v.pick(ArticleCommentSchema, ["comment"])),
+  selectedTagIds: v.pipe(
+    v.array(v.string()),
+    v.check(
+      (tagIds) => new Set(tagIds).size === tagIds.length,
+      "タグが重複しています",
+    ),
+  ),
+});
+export type ArticleRegistrationRequest = v.InferOutput<
+  typeof ArticleRegistrationRequestSchema
+>;
+
+/**
+ * POST /api/users/[userId]/articles/registration のレスポンススキーマ。
+ */
+export const ArticleRegistrationResponseSchema = ArticleSchema;
+export type ArticleRegistrationResponse = v.InferOutput<
+  typeof ArticleRegistrationResponseSchema
 >;

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import * as v from "valibot";
-import { extractArticle } from "@/features/articles/registration/api/extract.actions";
+import { registerArticle } from "@/features/articles/registration/api/registration.actions";
 import {
-  ArticleExtractRequestSchema,
-  ArticleExtractResponseSchema,
+  ArticleRegistrationRequestSchema,
+  ArticleRegistrationResponseSchema,
 } from "@/features/articles/shared/api";
 import { authorizeUserApiRequest } from "@/lib/api/auth-user";
 import { toApiExceptionResponse } from "@/lib/api/response";
@@ -19,24 +19,27 @@ export async function POST(
     await authorizeUserApiRequest(userId);
 
     const requestResult = v.safeParse(
-      ArticleExtractRequestSchema,
+      ArticleRegistrationRequestSchema,
       await request.json().catch(() => null),
     );
     if (!requestResult.success) {
       throw new BadRequestError();
     }
 
-    const response = await extractArticle(requestResult.output);
+    const response = await registerArticle({
+      userId,
+      input: requestResult.output,
+    });
 
-    const articleResult = v.safeParse(
-      ArticleExtractResponseSchema,
-      response.article,
+    const responseResult = v.safeParse(
+      ArticleRegistrationResponseSchema,
+      response,
     );
-    if (!articleResult.success) {
+    if (!responseResult.success) {
       throw new InvalidResponseError();
     }
 
-    return NextResponse.json(articleResult.output, { status: response.status });
+    return NextResponse.json(responseResult.output, { status: 201 });
   } catch (error) {
     return toApiExceptionResponse(error);
   }

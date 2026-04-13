@@ -1,6 +1,12 @@
 "use client";
 
-import { CheckCircle2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,13 +16,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import type { ExtractedArticleMock } from "@/lib/mock-data";
+import type { ArticleExtractResponse } from "@/features/articles/shared/api";
 import type { ArticleTag } from "@/lib/types";
 
 type ConfirmStepCardProps = {
   url: string;
-  extractedArticle: ExtractedArticleMock | null;
+  extractedArticle: ArticleExtractResponse | null;
   selectedTags: string[];
   availableTags: ArticleTag[];
   comment: string;
@@ -58,17 +71,25 @@ export default function ConfirmStepCard({
             <>
               <div className="space-y-2">
                 <Label className="text-muted-foreground">タイトル</Label>
-                <p>{extractedArticle.title}</p>
+                <p className="font-medium">{extractedArticle.title}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-muted-foreground">公開日</Label>
-                <p>{publishedDateLabel}</p>
+                <p className="font-medium">{publishedDateLabel}</p>
               </div>
             </>
           )}
           <div className="space-y-2">
             <Label className="text-muted-foreground">URL</Label>
-            <p>{url}</p>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-sm text-primary hover:underline inline-flex items-center gap-2"
+            >
+              <span>{url}</span>
+              <ExternalLink className="h-4 w-4 shrink-0" />
+            </a>
           </div>
 
           <div className="space-y-2">
@@ -106,16 +127,26 @@ export default function ConfirmStepCard({
           <div className="space-y-2">
             <Label className="text-muted-foreground">本文</Label>
             {extractedArticle?.content ? (
-              <details className="space-y-4">
-                <summary className="cursor-pointer font-medium">
-                  本文を表示
-                </summary>
-                <MarkdownPreview
-                  content={extractedArticle.content}
-                  cardClassName="overflow-hidden"
-                  contentClassName="max-h-80 overflow-y-auto"
-                />
-              </details>
+              <div className="flex flex-col items-start gap-4 py-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="default" size="lg">
+                      <BookOpen className="h-4 w-4" />
+                      本文を表示
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-5xl">
+                    <DialogHeader>
+                      <DialogTitle>本文プレビュー</DialogTitle>
+                    </DialogHeader>
+                    <MarkdownPreview
+                      content={extractedArticle.content}
+                      cardClassName="overflow-hidden"
+                      contentClassName="max-h-[72vh] overflow-y-auto scrollbar-readable"
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             ) : (
               <p className="text-sm md:text-base text-muted-foreground">なし</p>
             )}
@@ -125,6 +156,7 @@ export default function ConfirmStepCard({
 
       <div className="flex justify-between">
         <Button variant="outline" onClick={onBack}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
           戻る
         </Button>
         <Button onClick={onSave} disabled={isLoading}>

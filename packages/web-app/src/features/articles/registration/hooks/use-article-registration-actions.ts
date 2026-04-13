@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as v from "valibot";
-import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import type {
+  ArticleExtractResponse,
+  ArticleRegistrationRequest,
+} from "@/features/articles/shared/api";
 import {
   DEFAULT_ERROR_MESSAGE,
   getApiErrorMessage,
@@ -11,10 +14,10 @@ import {
 import { mockTags } from "@/lib/mock-data";
 import {
   REGISTRATION_STEP_ORDER,
+  type RegistrationArticleSource,
   RegistrationArticleSourceSchema,
   RegistrationCommentSchema,
   RegistrationExtractedArticleSchema,
-  RegistrationSaveSchema,
   type RegistrationStep,
 } from "../common";
 
@@ -88,7 +91,7 @@ export function useArticleRegistrationActions({
 
   /** 記事抽出 API にリクエストを送る */
   const requestArticleExtraction = async (
-    payload: v.InferOutput<typeof RegistrationArticleSourceSchema>,
+    payload: RegistrationArticleSource,
     onSuccess?: () => void,
   ) => {
     setIsLoading(true);
@@ -140,7 +143,7 @@ export function useArticleRegistrationActions({
   /** 保存前検証に使う登録内容の payload を現在 state から組み立てる。 */
   const buildRegistrationPayload = (
     article: NonNullable<typeof extractedArticle>,
-  ) => {
+  ): ArticleRegistrationRequest => {
     const normalizedComment = comment.trim();
 
     return {
@@ -266,26 +269,36 @@ export function useArticleRegistrationActions({
       return;
     }
 
-    const payload = buildRegistrationPayload(extractedArticle);
-    const result = v.safeParse(RegistrationSaveSchema, payload);
-
-    if (!result.success) {
-      showValidationError("入力内容を確認してください");
-      return;
-    }
-
     if (!validateSelectedTags(selectedTags)) {
       return;
     }
 
+    const payload = buildRegistrationPayload(extractedArticle);
+
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(
+        `/api/users/${userId}/articles/registration`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        showError(await getApiErrorMessage(response));
+        return;
+      }
 
       toast.success("登録完了", {
         description: "記事が正常に登録されました",
       });
       router.push(`/users/${userId}/articles`);
+    } catch {
+      showError(DEFAULT_ERROR_MESSAGE);
     } finally {
       setIsLoading(false);
     }

@@ -29,7 +29,10 @@ export function MarkdownPreview({
               <h1 className="text-3xl font-bold mt-10 mb-5" {...props} />
             ),
             h2: ({ node, ...props }) => (
-              <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />
+              <h2
+                className="text-2xl font-bold mt-8 mb-4 border-b border-border pb-4"
+                {...props}
+              />
             ),
             h3: ({ node, ...props }) => (
               <h3 className="text-xl font-bold mt-6 mb-3" {...props} />
