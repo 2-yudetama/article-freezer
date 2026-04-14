@@ -15,8 +15,24 @@ export async function registerArticle({
   userId: string;
   input: ArticleRegistrationRequest;
 }): Promise<Article> {
-  const { article, comment } = input;
+  const { article, comment, selectedTagIds } = input;
   try {
+    const selectedTags =
+      selectedTagIds.length > 0
+        ? await prisma.articleTag.findMany({
+            where: {
+              tag_id: {
+                in: selectedTagIds,
+              },
+              user_id: userId,
+            },
+          })
+        : [];
+
+    if (selectedTags.length !== selectedTagIds.length) {
+      throw new NotFoundError();
+    }
+
     const createdArticle = await prisma.article.create({
       data: {
         user_id: userId,
@@ -35,6 +51,17 @@ export async function registerArticle({
                 create: {
                   user_id: userId,
                   comment: comment.comment,
+                },
+              },
+            }
+          : {}),
+        ...(selectedTags.length > 0
+          ? {
+              article_tags: {
+                createMany: {
+                  data: selectedTags.map((tag) => ({
+                    tag_id: tag.tag_id,
+                  })),
                 },
               },
             }
@@ -69,7 +96,15 @@ export async function registerArticle({
             updatedAt: createdArticle.comment.updated_at.toISOString(),
           }
         : undefined,
-      tags: [],
+      tags: selectedTags.map((tag) => ({
+        tagId: tag.tag_id,
+        userId: tag.user_id,
+        name: tag.name,
+        color: tag.color,
+        description: tag.description,
+        createdAt: tag.created_at.toISOString(),
+        updatedAt: tag.updated_at.toISOString(),
+      })),
     };
   } catch (error) {
     // P2003は外部キー制約違反
