@@ -29,11 +29,12 @@ export function getMdExtractorSecretKey(): string {
  * md-extractorのエンドポイント
  */
 export const MD_EXTRACTOR_ENDPOINTS = {
-  EXTRACT: "/api/extract",
+  EXTRACT: "api/extract",
 } as const;
 export type MD_EXTRACTOR_ENDPOINTS =
   (typeof MD_EXTRACTOR_ENDPOINTS)[keyof typeof MD_EXTRACTOR_ENDPOINTS];
 
 export function getEndpointUrl(endpoint: MD_EXTRACTOR_ENDPOINTS): URL {
-  return new URL(endpoint, getMdExtractorEnv().MD_EXTRACTOR_BASE_URL);
+  const baseUrl = getMdExtractorEnv().MD_EXTRACTOR_BASE_URL;
+  return new URL(endpoint, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
 }
