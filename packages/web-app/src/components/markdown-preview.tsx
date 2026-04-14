@@ -19,7 +19,7 @@ export function MarkdownPreview({
     <Card className={cn("py-0", cardClassName)}>
       <CardContent
         className={cn(
-          "px-6 prose prose-slate dark:prose-invert max-w-none",
+          "px-6 py-4 prose prose-slate dark:prose-invert max-w-none scrollbar-readable",
           contentClassName,
         )}
       >
@@ -29,7 +29,10 @@ export function MarkdownPreview({
               <h1 className="text-3xl font-bold mt-10 mb-5" {...props} />
             ),
             h2: ({ node, ...props }) => (
-              <h2 className="text-2xl font-bold mt-8 mb-4" {...props} />
+              <h2
+                className="text-2xl font-bold mt-8 mb-4 border-b border-border pb-4"
+                {...props}
+              />
             ),
             h3: ({ node, ...props }) => (
               <h3 className="text-xl font-bold mt-6 mb-3" {...props} />
@@ -67,14 +70,20 @@ export function MarkdownPreview({
               return <code className={codeClassName} {...props} />;
             },
             ul: ({ node, ...props }) => (
-              <ul className="list-disc pl-5" {...props} />
+              <ul className="list-disc pl-4" {...props} />
             ),
             ol: ({ node, ...props }) => (
-              <ol className="list-decimal pl-5" {...props} />
+              <ol className="list-decimal pl-4" {...props} />
             ),
             li: ({ node, ...props }) => <li className="ml-4" {...props} />,
+            blockquote: ({ node, ...props }) => (
+              <blockquote
+                className="my-4 border-l-4 border-muted-foreground/40 pl-4 text-muted-foreground [&>p]:my-0"
+                {...props}
+              />
+            ),
             p: ({ node, ...props }) => (
-              <p className="mb-4 leading-relaxed" {...props} />
+              <p className="mt-2 mb-4 leading-relaxed" {...props} />
             ),
           }}
         >

@@ -8,6 +8,8 @@ type StepNavigationProps = {
   onNext: () => void;
   nextLabel?: string;
   backLabel?: string;
+  nextDisabled?: boolean;
+  backDisabled?: boolean;
 };
 
 /**
@@ -19,14 +21,16 @@ export default function StepNavigation({
   onNext,
   nextLabel = "次へ",
   backLabel = "戻る",
+  nextDisabled = false,
+  backDisabled = false,
 }: StepNavigationProps) {
   return (
     <div className="flex justify-between">
-      <Button variant="outline" onClick={onBack}>
+      <Button variant="outline" onClick={onBack} disabled={backDisabled}>
         <ArrowLeft className="w-4 h-4 mr-2" />
         {backLabel}
       </Button>
-      <Button onClick={onNext}>
+      <Button onClick={onNext} disabled={nextDisabled}>
         {nextLabel}
         <ArrowRight className="w-4 h-4 ml-2" />
       </Button>

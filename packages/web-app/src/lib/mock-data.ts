@@ -1,12 +1,5 @@
 import type { Article, ArticleTag } from "./types";
 
-export type ExtractedArticleMock = {
-  url: string;
-  title: string;
-  publishedDate?: string;
-  content: string;
-};
-
 export const mockTags: ArticleTag[] = [
   {
     id: "1",
@@ -188,67 +181,5 @@ export const mockArticles: Article[] = [
     createdAt: "2024-01-23",
     sourcePlatform: "zenn",
     isFavorite: true,
-  },
-];
-
-export const mockExtractedArticles: ExtractedArticleMock[] = [
-  {
-    url: "https://example.com/articles/react-server-components",
-    title: "React Server Componentsの基礎と実践",
-    publishedDate: "2024-01-15",
-    content: `# React Server Componentsの基礎と実践
-
-React Server Components を利用すると、サーバーで描画した結果を効率的にクライアントへ届けられます。
-
-## ポイント
-
-- サーバーで取得したデータをそのまま描画できる
-- クライアントバンドルを抑えやすい
-- コンポーネントの責務を分けやすい
-
-## 実装の見どころ
-
-データ取得と UI 描画の責務を整理し、必要な箇所だけをクライアントコンポーネントに寄せるのが重要です。`,
-  },
-  {
-    url: "https://example.com/articles/typescript-type-safety",
-    title: "TypeScriptの型安全性を高める実践テクニック",
-    content: `# TypeScriptの型安全性を高める実践テクニック
-
-TypeScriptを活用すると、実装時の安全性と保守性を両立できます。
-
-## この記事で扱うこと
-
-- 型推論を活かした設計
-- 条件型の使いどころ
-- 実務での運用上の注意点
-
-## 実践メモ
-
-\`\`\`ts
-type ApiResponse<T> = {
-  data: T;
-  error?: string;
-};
-\`\`\`
-
-APIレスポンスやフォーム入力の扱いでは、型を先に定義しておくと変更に強くなります。`,
-  },
-  {
-    url: "https://example.com/articles/markdown-extraction",
-    title: "Markdown抽出パイプライン設計メモ",
-    content: `# Markdown抽出パイプライン設計メモ
-
-一部のWebページでは、本文は取得できても公開日メタデータが見つからないケースがあります。
-
-## 方針
-
-- URLは必ず保存する
-- 本文はMarkdownで保持する
-- 公開日が取れない場合でも保存は許可する
-
-## 補足
-
-抽出精度はサイト構造に依存するため、登録前のプレビュー確認が重要です。`,
   },
 ];

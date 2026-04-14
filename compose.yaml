@@ -35,6 +35,7 @@ services:
       - packages/db/.env
     environment:
       - POSTGRES_HOST=postgres
+      - MD_EXTRACTOR_BASE_URL=http://md-extractor:8080
     ports:
       - 3000:3000
     networks:

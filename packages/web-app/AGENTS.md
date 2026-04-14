@@ -25,13 +25,14 @@
 ## Directory Tree
 
 - App Router を入口にし、画面実装を feature 単位で分割する Feature-Based Architecture。
-- routing、feature、shared UI、library の責務を分離し、画面ロジックと描画を分ける。
+- routing、domain、feature、shared UI、library の責務を分離し、画面ロジックと描画を分ける。
 
 ```text
 src
 ├─ app/                  # App Router の route 定義と layout。page は薄く保ち feature に委譲する
 ├─ features/             # 画面単位の実装。page を入口に hooks と ui へ責務を分ける
 ├─ components/           # 再利用 UI、navigation、provider などの画面横断コンポーネント
+├─ domain/               # feature 横断のドメインスキーマ・型
 ├─ lib/                  # auth、utilities、仮データ、共通型
 └─ proxy.ts              # アプリ外縁の補助処理
 ```

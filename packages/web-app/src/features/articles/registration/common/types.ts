@@ -1,8 +1,10 @@
 import * as v from "valibot";
-import {
-  ArticleCommentSchema,
-  ArticleSchema,
-} from "@/features/articles/shared/domain";
+import { ArticleCommentSchema, ArticleSchema } from "@/domain/articles";
+
+/**
+ * 記事登録機能関連の型定義
+ * - Valibotスキーマ + 型定義
+ */
 
 /**
  * 記事登録の URL ステップで利用する入力スキーマ。
@@ -11,6 +13,9 @@ import {
 export const RegistrationArticleSourceSchema = v.pick(ArticleSchema, [
   "articleSource",
 ]);
+export type RegistrationArticleSource = v.InferOutput<
+  typeof RegistrationArticleSourceSchema
+>;
 
 /**
  * 抽出結果ステップと保存前確認で利用する記事本文情報のスキーマ。
@@ -21,6 +26,9 @@ export const RegistrationExtractedArticleSchema = v.pick(ArticleSchema, [
   "publishedDate",
   "content",
 ]);
+export type RegistrationExtractedArticle = v.InferOutput<
+  typeof RegistrationExtractedArticleSchema
+>;
 
 /**
  * 記事登録のコメント入力で利用するスキーマ。
@@ -29,22 +37,6 @@ export const RegistrationExtractedArticleSchema = v.pick(ArticleSchema, [
 export const RegistrationCommentSchema = v.pick(ArticleCommentSchema, [
   "comment",
 ]);
-
-/**
- * 保存直前の最終確認で利用する登録内容全体のスキーマ。
- * 記事本体、任意コメント、選択タグ ID の整合性をまとめて検証する。
- */
-export const RegistrationSaveSchema = v.object({
-  article: v.intersect([
-    RegistrationArticleSourceSchema,
-    RegistrationExtractedArticleSchema,
-  ]),
-  comment: v.optional(RegistrationCommentSchema),
-  selectedTagIds: v.pipe(
-    v.array(v.string()),
-    v.check(
-      (tagIds) => new Set(tagIds).size === tagIds.length,
-      "タグが重複しています",
-    ),
-  ),
-});
+export type RegistrationComment = v.InferOutput<
+  typeof RegistrationCommentSchema
+>;

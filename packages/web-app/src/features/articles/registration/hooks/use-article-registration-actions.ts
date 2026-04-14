@@ -3,28 +3,34 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as v from "valibot";
-import { mockExtractedArticles, mockTags } from "@/lib/mock-data";
+import type {
+  ArticleExtractResponse,
+  ArticleRegistrationRequest,
+} from "@/features/articles/shared/api";
+import {
+  DEFAULT_ERROR_MESSAGE,
+  getApiErrorMessage,
+} from "@/lib/api/response.shared";
+import { mockTags } from "@/lib/mock-data";
 import {
   REGISTRATION_STEP_ORDER,
+  type RegistrationArticleSource,
   RegistrationArticleSourceSchema,
   RegistrationCommentSchema,
   RegistrationExtractedArticleSchema,
-  RegistrationSaveSchema,
   type RegistrationStep,
-} from "../domain";
+} from "../common";
 
 type Params = {
   userId: string;
   step: RegistrationStep;
   url: string;
-  extractedArticle: (typeof mockExtractedArticles)[number] | null;
+  extractedArticle: ArticleExtractResponse | null;
   comment: string;
   selectedTags: string[];
   setStep: (value: RegistrationStep) => void;
   setUrl: (value: string) => void;
-  setExtractedArticle: (
-    value: (typeof mockExtractedArticles)[number] | null,
-  ) => void;
+  setExtractedArticle: (value: ArticleExtractResponse | null) => void;
   setSelectedTags: (value: string[] | ((prev: string[]) => string[])) => void;
   setIsLoading: (value: boolean) => void;
 };
@@ -83,6 +89,35 @@ export function useArticleRegistrationActions({
     });
   };
 
+  /** 記事抽出 API にリクエストを送る */
+  const requestArticleExtraction = async (
+    payload: RegistrationArticleSource,
+    onSuccess?: () => void,
+  ) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userId}/articles/extract`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        showError(await getApiErrorMessage(response));
+        return;
+      }
+
+      setExtractedArticle(await response.json());
+      onSuccess?.();
+    } catch {
+      showError(DEFAULT_ERROR_MESSAGE);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /** 選択されたタグ ID の存在確認と重複確認を行う。 */
   const validateSelectedTags = (tagIds: string[]) => {
     const availableTagIds = new Set(mockTags.map((tag) => tag.id));
@@ -108,7 +143,7 @@ export function useArticleRegistrationActions({
   /** 保存前検証に使う登録内容の payload を現在 state から組み立てる。 */
   const buildRegistrationPayload = (
     article: NonNullable<typeof extractedArticle>,
-  ) => {
+  ): ArticleRegistrationRequest => {
     const normalizedComment = comment.trim();
 
     return {
@@ -141,25 +176,39 @@ export function useArticleRegistrationActions({
       return;
     }
 
-    const matchedArticle = mockExtractedArticles.find(
-      (article) => article.url === normalizedUrl,
-    );
+    const validatedUrl = result.output.articleSource.url;
+    setUrl(validatedUrl);
 
-    if (!matchedArticle) {
-      showError("対応する記事を取得できませんでした");
+    // 抽出済みURLと入力URLが同じ場合はリクエストをスキップ
+    if (extractedArticle?.articleSource.url === validatedUrl) {
+      moveToNextStep();
+      return;
+    }
+
+    await requestArticleExtraction(result.output, moveToNextStep);
+  };
+
+  /** URL が同じ場合でも抽出リクエストを再実行する */
+  const handleReExtract = async () => {
+    const normalizedUrl = url.trim();
+    const result = v.safeParse(RegistrationArticleSourceSchema, {
+      articleSource: {
+        type: "url",
+        url: normalizedUrl,
+      },
+    });
+
+    if (!result.success) {
+      showValidationError("URLを正しい形式で入力してください");
       return;
     }
 
     setUrl(result.output.articleSource.url);
-    setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // 実 API 接続前のため、入力 URL に対応するモックを解決して利用する。
-      setExtractedArticle(matchedArticle);
-      moveToNextStep();
-    } finally {
-      setIsLoading(false);
-    }
+    await requestArticleExtraction(result.output, () => {
+      toast.success("再抽出完了", {
+        description: "記事本文を再取得しました",
+      });
+    });
   };
 
   /** 抽出済み記事の内容を検証し、コメント入力ステップへ進める。 */
@@ -220,26 +269,36 @@ export function useArticleRegistrationActions({
       return;
     }
 
-    const payload = buildRegistrationPayload(extractedArticle);
-    const result = v.safeParse(RegistrationSaveSchema, payload);
-
-    if (!result.success) {
-      showValidationError("入力内容を確認してください");
-      return;
-    }
-
     if (!validateSelectedTags(selectedTags)) {
       return;
     }
 
+    const payload = buildRegistrationPayload(extractedArticle);
+
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(
+        `/api/users/${userId}/articles/registration`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        showError(await getApiErrorMessage(response));
+        return;
+      }
 
       toast.success("登録完了", {
         description: "記事が正常に登録されました",
       });
       router.push(`/users/${userId}/articles`);
+    } catch {
+      showError(DEFAULT_ERROR_MESSAGE);
     } finally {
       setIsLoading(false);
     }
@@ -257,6 +316,7 @@ export function useArticleRegistrationActions({
     moveToNextStep,
     moveToPreviousStep,
     handleUrlSubmit,
+    handleReExtract,
     handleExtractedArticleSubmit,
     handleCommentSubmit,
     handleTagsSubmit,

@@ -24,6 +24,7 @@ export default function ArticleRegistrationPage() {
     setComment,
     moveToPreviousStep,
     handleUrlSubmit,
+    handleReExtract,
     handleExtractedArticleSubmit,
     handleCommentSubmit,
     handleTagsSubmit,
@@ -52,7 +53,9 @@ export default function ArticleRegistrationPage() {
         <ExtractResultStepCard
           url={url}
           extractedArticle={extractedArticle}
+          isLoading={isLoading}
           onBack={moveToPreviousStep}
+          onReExtract={handleReExtract}
           onNext={handleExtractedArticleSubmit}
         />
       )}

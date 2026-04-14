@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, FileEdit } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import {
   Card,
@@ -11,11 +12,11 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import type { ExtractedArticleMock } from "@/lib/mock-data";
+import type { ArticleExtractResponse } from "@/features/articles/shared/api";
 import StepNavigation from "./StepNavigation";
 
 type CommentStepCardProps = {
-  extractedArticle: ExtractedArticleMock | null;
+  extractedArticle: ArticleExtractResponse | null;
   comment: string;
   onCommentChange: (value: string) => void;
   onBack: () => void;
@@ -34,6 +35,33 @@ export default function CommentStepCard({
   onNext,
 }: CommentStepCardProps) {
   const previewPanelClassName = "min-h-40 md:min-h-64";
+
+  const handleCommentKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const textarea = event.currentTarget;
+    const selectionStart = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    const lineStart = comment.lastIndexOf("\n", selectionStart - 1) + 1;
+    const currentLine = comment.slice(lineStart, selectionStart);
+    const indent = currentLine.match(/^[\t ]*/)?.[0] ?? "";
+    const insertText = `\n${indent}`;
+    const nextComment =
+      comment.slice(0, selectionStart) +
+      insertText +
+      comment.slice(selectionEnd);
+    const nextCursorPosition = selectionStart + insertText.length;
+
+    onCommentChange(nextComment);
+
+    requestAnimationFrame(() => {
+      textarea.setSelectionRange(nextCursorPosition, nextCursorPosition);
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -60,7 +88,8 @@ export default function CommentStepCard({
               <Textarea
                 value={comment}
                 onChange={(e) => onCommentChange(e.target.value)}
-                className={`${previewPanelClassName} text-sm placeholder:text-sm  md:text-base md:placeholder:text-base mb-0.5`}
+                onKeyDown={handleCommentKeyDown}
+                className={`${previewPanelClassName} font-mono text-sm placeholder:text-sm md:text-sm md:placeholder:text-sm leading-normal mb-0.5`}
                 placeholder="マークダウン記法が使用できます"
                 rows={6}
               />

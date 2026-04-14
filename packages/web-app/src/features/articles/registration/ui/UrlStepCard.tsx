@@ -23,38 +23,41 @@ export default function UrlStepCard({
   onSubmit,
 }: UrlStepCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>記事のURLを入力</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="url">URL</Label>
-          <Input
-            id="url"
-            type="url"
-            value={url}
-            onChange={(e) => onUrlChange(e.target.value)}
-            placeholder="https://example.com/articles/react-server-components"
-            disabled={isLoading}
-          />
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={onSubmit} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                取得中
-              </>
-            ) : (
-              <>
-                次へ
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>記事のURLを入力</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="url">URL</Label>
+            <Input
+              id="url"
+              type="url"
+              value={url}
+              onChange={(e) => onUrlChange(e.target.value)}
+              placeholder="https://example.com/articles/react-server-components"
+              disabled={isLoading}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={onSubmit} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              取得中
+            </>
+          ) : (
+            <>
+              次へ
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
