@@ -31,7 +31,7 @@ export async function authorizeUserApiRequest(userId: string) {
 
   // セッションからユーザ情報を取得
   const user = session.user;
-  if (!user.id) {
+  if (!user?.id) {
     throw new NotFoundError();
   }
 
