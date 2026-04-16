@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import * as v from "valibot";
 import { extractArticle } from "@/features/articles/registration/api/extract.actions";
+import { authorizeUserApiRequest } from "@/lib/api/auth-user";
+import { toApiExceptionResponse } from "@/lib/api/response";
 import {
   ArticleExtractRequestSchema,
   ArticleExtractResponseSchema,
-} from "@/features/articles/shared/api";
-import { authorizeUserApiRequest } from "@/lib/api/auth-user";
-import { toApiExceptionResponse } from "@/lib/api/response";
+} from "@/lib/api/schemas";
 import { BadRequestError, InvalidResponseError } from "@/lib/errors";
 
 export async function POST(

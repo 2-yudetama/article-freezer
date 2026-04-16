@@ -9,13 +9,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { SortOption, ViewMode } from "@/lib/types";
+import type {
+  ArticleListSortOption,
+  ArticleListViewMode,
+} from "@/features/articles/list/common/types";
 
 type ArticleListControlsProps = {
-  viewMode: ViewMode;
-  sortOption: SortOption;
-  onViewModeChange: (value: ViewMode) => void;
-  onSortChange: (value: SortOption) => void;
+  viewMode: ArticleListViewMode;
+  sortOption: ArticleListSortOption;
+  onViewModeChange: (value: ArticleListViewMode) => void;
+  onSortChange: (value: ArticleListSortOption) => void;
 };
 
 /** 記事一覧の操作UIを表示する関数 */
@@ -33,7 +36,7 @@ export default function ArticleListControls({
           type="single"
           value={viewMode}
           onValueChange={(value) =>
-            value && onViewModeChange(value as ViewMode)
+            value && onViewModeChange(value as ArticleListViewMode)
           }
         >
           <ToggleGroupItem value="grid" aria-label="グリッド表示">
@@ -49,7 +52,9 @@ export default function ArticleListControls({
         <span className="text-sm text-muted-foreground">並び順:</span>
         <Select
           value={sortOption}
-          onValueChange={(value) => onSortChange(value as SortOption)}
+          onValueChange={(value) =>
+            onSortChange(value as ArticleListSortOption)
+          }
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue />

@@ -9,10 +9,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { ArticleTag } from "@/lib/types";
+import type { ArticleListTag } from "@/features/articles/list/common/types";
 
 type ArticleTagFilterProps = {
-  tags: ArticleTag[];
+  tags: ArticleListTag[];
   selectedTags: string[];
   onToggleTag: (tagId: string) => void;
   onClear: () => void;
@@ -44,12 +44,12 @@ export default function ArticleTagFilter({
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <Button
-                  key={tag.id}
+                  key={tag.tagId}
                   variant={
-                    selectedTags.includes(tag.id) ? "default" : "outline"
+                    selectedTags.includes(tag.tagId) ? "default" : "outline"
                   }
                   size="sm"
-                  onClick={() => onToggleTag(tag.id)}
+                  onClick={() => onToggleTag(tag.tagId)}
                 >
                   {tag.name}
                 </Button>

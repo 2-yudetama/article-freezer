@@ -3,14 +3,14 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as v from "valibot";
-import type {
-  ArticleExtractResponse,
-  ArticleRegistrationRequest,
-} from "@/features/articles/shared/api";
 import {
   DEFAULT_ERROR_MESSAGE,
   getApiErrorMessage,
 } from "@/lib/api/response.shared";
+import type {
+  ArticleExtractResponse,
+  ArticleRegistrationRequest,
+} from "@/lib/api/schemas";
 import { mockTags } from "@/lib/mock-data";
 import {
   REGISTRATION_STEP_ORDER,
