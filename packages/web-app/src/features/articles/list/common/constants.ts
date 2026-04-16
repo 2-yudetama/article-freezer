@@ -19,3 +19,8 @@ export const ARTICLE_LIST_SORT_OPTIONS = [
   value: ArticleListSortOption;
   label: string;
 }[];
+
+/**
+ * 1ページあたりに表示する記事数
+ */
+export const ARTICLE_ITEMS_PER_PAGE = 6;

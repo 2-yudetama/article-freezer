@@ -7,14 +7,13 @@ import type {
   ArticleListSortOption,
   ArticleListTag,
 } from "@/features/articles/list/common";
-import { useArticles } from "@/features/articles/list/hooks/use-articles";
+import { useArticleList } from "@/features/articles/list/hooks/use-article-list";
 import ArticleGrid from "@/features/articles/list/ui/article-grid";
 import ArticleList from "@/features/articles/list/ui/article-list";
 import ArticleListControls from "@/features/articles/list/ui/article-list-controls";
 import ArticleTagFilter from "@/features/articles/list/ui/article-tag-filter";
 
 type ArticlesPageClientProps = {
-  userId: string;
   articles: ArticleListItem[];
   availableTags: ArticleListTag[];
   selectedTagIds: string[];
@@ -22,11 +21,11 @@ type ArticlesPageClientProps = {
   currentPage: number;
   totalPages: number;
   totalCount: number;
+  errorMessage?: string;
 };
 
 /** 記事一覧ページの状態管理と表示をつなぐ関数 */
 export default function ArticlesPageClient({
-  userId,
   articles,
   availableTags,
   selectedTagIds,
@@ -34,9 +33,9 @@ export default function ArticlesPageClient({
   currentPage,
   totalPages,
   totalCount,
+  errorMessage,
 }: ArticlesPageClientProps) {
-  const articlesPage = useArticles({
-    userId,
+  const articlesPage = useArticleList({
     articles,
     availableTags,
     selectedTagIds,
@@ -69,7 +68,11 @@ export default function ArticlesPageClient({
         onSortChange={articlesPage.setSortOption}
       />
 
-      {articlesPage.articles.length === 0 ? (
+      {errorMessage ? (
+        <Card className="p-12 text-center">
+          <p className="text-destructive">{errorMessage}</p>
+        </Card>
+      ) : articlesPage.articles.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-muted-foreground">記事が見つかりませんでした</p>
         </Card>

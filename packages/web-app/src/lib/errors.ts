@@ -42,6 +42,14 @@ export class InvalidResponseError extends Error {
   }
 }
 
+/** 保存済みデータの整合性が取れていない場合のエラー */
+export class DataIntegrityError extends Error {
+  constructor(message = "Data integrity error.", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "DataIntegrityError";
+  }
+}
+
 /** md-extractor 接続に必要な環境変数が設定されていない場合のエラー */
 export class MdExtractorEnvironmentError extends Error {
   constructor(
