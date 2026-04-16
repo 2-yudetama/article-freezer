@@ -9,10 +9,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type {
-  ArticleListSortOption,
-  ArticleListViewMode,
-} from "@/features/articles/list/common/types";
+import {
+  ARTICLE_LIST_SORT_OPTIONS,
+  type ArticleListSortOption,
+  type ArticleListViewMode,
+} from "@/features/articles/list/common";
 
 type ArticleListControlsProps = {
   viewMode: ArticleListViewMode;
@@ -30,8 +31,8 @@ export default function ArticleListControls({
 }: ArticleListControlsProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">表示形式:</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">表示形式</span>
         <ToggleGroup
           type="single"
           value={viewMode}
@@ -49,7 +50,7 @@ export default function ArticleListControls({
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">並び順:</span>
+        <span className="text-sm text-muted-foreground">並び順</span>
         <Select
           value={sortOption}
           onValueChange={(value) =>
@@ -59,10 +60,12 @@ export default function ArticleListControls({
           <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">新しい順</SelectItem>
-            <SelectItem value="oldest">古い順</SelectItem>
-            <SelectItem value="title">タイトル順</SelectItem>
+          <SelectContent align="end" position="popper">
+            {ARTICLE_LIST_SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
