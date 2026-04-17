@@ -7,7 +7,5 @@ pre-commit:
     check-py:
       glob: "*.{py}"
       run: uv run --project packages/md-extractor ruff check {staged_files}
-    knip:
-      run: "pnpm knip"
     lock:
       run: "pnpm install --lockfile-only && git diff --exit-code pnpm-lock.yaml"

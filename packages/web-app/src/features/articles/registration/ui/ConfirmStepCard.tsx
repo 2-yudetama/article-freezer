@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import type { ArticleExtractResponse } from "@/lib/api/schemas";
 import type { ArticleTag } from "@/lib/types";
 
 type ConfirmStepCardProps = {

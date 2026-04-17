@@ -2,7 +2,7 @@ import "server-only";
 
 import { Prisma, prisma } from "db";
 import type { Article } from "@/domain/articles";
-import type { ArticleRegistrationRequest } from "@/features/articles/shared/api";
+import type { ArticleRegistrationRequest } from "@/lib/api/schemas";
 import { NotFoundError } from "@/lib/errors";
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import type { ArticleExtractResponse } from "@/lib/api/schemas";
 import { REGISTRATION_STEP_ORDER, type RegistrationStep } from "../common";
 
 /**

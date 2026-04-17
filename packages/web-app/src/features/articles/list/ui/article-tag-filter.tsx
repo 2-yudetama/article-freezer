@@ -9,10 +9,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { ArticleTag } from "@/lib/types";
+import type { ArticleListTag } from "@/features/articles/list/common";
 
 type ArticleTagFilterProps = {
-  tags: ArticleTag[];
+  tags: ArticleListTag[];
   selectedTags: string[];
   onToggleTag: (tagId: string) => void;
   onClear: () => void;
@@ -27,14 +27,12 @@ export default function ArticleTagFilter({
 }: ArticleTagFilterProps) {
   return (
     <Collapsible className="mb-6">
-      <Card>
-        <CardHeader>
+      <Card className="py-4">
+        <CardHeader className="flex items-start">
           <CollapsibleTrigger className="flex items-center justify-between w-full group">
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg">タグで絞り込み</CardTitle>
-              {selectedTags.length > 0 && (
-                <Badge variant="secondary">{selectedTags.length}件選択中</Badge>
-              )}
+              <Badge variant="secondary">{selectedTags.length}件選択中</Badge>
             </div>
             <ChevronDown className="w-5 h-5 transition-transform group-data-[state=open]:rotate-180" />
           </CollapsibleTrigger>
@@ -44,12 +42,12 @@ export default function ArticleTagFilter({
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <Button
-                  key={tag.id}
+                  key={tag.tagId}
                   variant={
-                    selectedTags.includes(tag.id) ? "default" : "outline"
+                    selectedTags.includes(tag.tagId) ? "default" : "outline"
                   }
                   size="sm"
-                  onClick={() => onToggleTag(tag.id)}
+                  onClick={() => onToggleTag(tag.tagId)}
                 >
                   {tag.name}
                 </Button>

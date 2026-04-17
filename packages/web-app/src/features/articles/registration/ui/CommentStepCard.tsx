@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import type { ArticleExtractResponse } from "@/features/articles/shared/api";
+import type { ArticleExtractResponse } from "@/lib/api/schemas";
 import StepNavigation from "./StepNavigation";
 
 type CommentStepCardProps = {

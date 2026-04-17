@@ -1,7 +1,7 @@
 import "server-only";
 
 import * as v from "valibot";
-import type { ArticleExtractRequest } from "@/features/articles/shared/api";
+import type { ArticleExtractRequest } from "@/lib/api/schemas";
 import { InvalidResponseError } from "@/lib/errors";
 import {
   type ExtractResponse,

@@ -2,12 +2,12 @@ import * as v from "valibot";
 import { ArticleCommentSchema, ArticleSchema } from "@/domain/articles";
 
 /**
- * 記事 API の request / response スキーマ定義。
- * App Router で公開する API 契約を Article ドメインから切り出して扱う。
+ * API の request / response スキーマ定義
+ * App Router で公開する API 契約をドメインから切り出して扱う
  */
 
 /**
- * POST /api/users/[userId]/articles/extract のリクエストスキーマ。
+ * POST /api/users/[userId]/articles/extract のリクエストスキーマ
  */
 export const ArticleExtractRequestSchema = v.pick(ArticleSchema, [
   "articleSource",
@@ -17,7 +17,7 @@ export type ArticleExtractRequest = v.InferOutput<
 >;
 
 /**
- * POST /api/users/[userId]/articles/extract のレスポンススキーマ。
+ * POST /api/users/[userId]/articles/extract のレスポンススキーマ
  */
 export const ArticleExtractResponseSchema = v.pick(ArticleSchema, [
   "articleSource",
@@ -30,7 +30,7 @@ export type ArticleExtractResponse = v.InferOutput<
 >;
 
 /**
- * POST /api/users/[userId]/articles/registration のリクエストスキーマ。
+ * POST /api/users/[userId]/articles/registration のリクエストスキーマ
  */
 export const ArticleRegistrationRequestSchema = v.object({
   article: v.pick(ArticleSchema, [
@@ -53,7 +53,7 @@ export type ArticleRegistrationRequest = v.InferOutput<
 >;
 
 /**
- * POST /api/users/[userId]/articles/registration のレスポンススキーマ。
+ * POST /api/users/[userId]/articles/registration のレスポンススキーマ
  */
 export const ArticleRegistrationResponseSchema = ArticleSchema;
 export type ArticleRegistrationResponse = v.InferOutput<

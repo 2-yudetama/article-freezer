@@ -7,6 +7,7 @@
 ## Working Rules
 
 - データ構造を変えるときは `prisma/schema.prisma` を正本として編集する。
+- 記事・タグなど機能仕様に関わる schema 変更時は `docs/features` も確認する。
 - `src/generated/prisma` は `prisma generate` の生成物。手編集しない。
 - 接続設定と PrismaClient 初期化の変更時は `src/env.ts` と `src/client.ts` を起点に確認する。
 

@@ -38,6 +38,7 @@
 
 ## Documentation Rules
 
+- 機能仕様は `docs/features` を参照し、機能の挙動や責務を変更した場合は該当ドキュメントも同期して更新する。
 - package 固有の制約はルートに書かず、対象 package の `AGENTS.md` に記載する。
 - コマンド・構成・アーキテクチャを変更した場合は、対応する `AGENTS.md` / `README.md` も同期して更新する。
 
