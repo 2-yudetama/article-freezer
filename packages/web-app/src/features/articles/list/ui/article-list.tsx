@@ -32,7 +32,7 @@ export default function ArticleList({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                  {article.articleSource.type}
+                  {article.articleSource.type.toUpperCase()}
                 </Badge>
                 {article.isFavorite && (
                   <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
