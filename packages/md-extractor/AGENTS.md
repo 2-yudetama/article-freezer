@@ -3,7 +3,7 @@
 ## Role
 
 - 記事 URL から記事項目を抽出する FastAPI service。
-- 機能仕様は [docs/features/md-extractor.md](../../docs/features/md-extractor.md) を参照する。
+- 機能仕様は `docs/features/md-extractor.md` を中心に、関連する `docs/features` 配下も参照する。
 
 ## Working Rules
 
