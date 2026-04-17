@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getLogger } from "@logtape/logtape";
 import { type Prisma, prisma } from "db";
 import {
   ARTICLE_ITEMS_PER_PAGE,
@@ -10,6 +11,8 @@ import {
 } from "@/features/articles/list/common";
 import { DataIntegrityError } from "@/lib/errors";
 import { getPagination } from "@/lib/pagination/server";
+
+const logger = getLogger(["web-app", "articles", "list"]);
 
 type ArticlesListPageData = {
   articles: ArticleListItem[];
@@ -91,6 +94,22 @@ function toArticleListItem(article: ArticleListRecord): ArticleListItem {
   };
 }
 
+function toValidArticleListItems(articles: ArticleListRecord[]) {
+  return articles.flatMap((article) => {
+    try {
+      return [toArticleListItem(article)];
+    } catch (error) {
+      logger.warn("Invalid article skipped", {
+        articleId: article.article_id,
+        title: article.title,
+        errorName: error instanceof Error ? error.name : "Error",
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }
+  });
+}
+
 /**
  * 記事一覧ページに必要な記事とタグを取得する
  */
@@ -142,7 +161,7 @@ export async function getArticlesListPageData({
 
   // DBの取得結果を画面表示用のデータへ変換する
   return {
-    articles: articles.map(toArticleListItem),
+    articles: toValidArticleListItems(articles),
     availableTags: articleTags.map((tag) => ({
       tagId: tag.tag_id,
       name: tag.name,
