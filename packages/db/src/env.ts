@@ -29,5 +29,7 @@ export function getDatabaseUrl(): string {
   const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_DB } =
     result.output;
 
-  return `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}`;
+  return process.env.POSTGRES_URI
+    ? process.env.POSTGRES_URI
+    : `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}`;
 }
