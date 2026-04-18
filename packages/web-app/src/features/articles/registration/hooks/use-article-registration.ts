@@ -6,7 +6,7 @@ import { useArticleRegistrationActions } from "./use-article-registration-action
 import { useArticleRegistrationState } from "./use-article-registration-state";
 
 /**
- * 記事登録画面で利用する facade hook。
+ * 記事保存画面で利用する facade hook。
  * state 管理と副作用を束ね、page から扱いやすい形で公開する。
  */
 export function useArticleRegistration() {

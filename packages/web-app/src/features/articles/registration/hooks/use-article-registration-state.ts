@@ -5,7 +5,7 @@ import type { ArticleExtractResponse } from "@/lib/api/schemas";
 import { REGISTRATION_STEP_ORDER, type RegistrationStep } from "../common";
 
 /**
- * 記事登録フローで利用する画面状態をまとめて管理する。
+ * 記事保存フローで利用する画面状態をまとめて管理する。
  * ステップ遷移に必要な入力値と進捗表示用の派生値を返す。
  */
 export function useArticleRegistrationState() {

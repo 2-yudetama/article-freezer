@@ -1,5 +1,5 @@
 /**
- * 記事登録フローで扱うステップ種別。
+ * 記事保存フローで扱うステップ種別。
  */
 export type RegistrationStep =
   | "url"
@@ -9,7 +9,7 @@ export type RegistrationStep =
   | "confirm";
 
 /**
- * 記事登録フローの進捗表示で利用するステップ順序。
+ * 記事保存フローの進捗表示で利用するステップ順序。
  */
 export const REGISTRATION_STEP_ORDER = {
   url: 0,

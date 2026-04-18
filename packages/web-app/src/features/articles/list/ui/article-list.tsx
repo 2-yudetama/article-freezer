@@ -66,7 +66,7 @@ export default function ArticleList({
             <CardDescription className="text-xs">
               {article.publishedDate
                 ? new Date(article.publishedDate).toLocaleDateString("ja-JP")
-                : "公開日不明"}
+                : "投稿日不明"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

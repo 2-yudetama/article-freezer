@@ -14,7 +14,7 @@ type RegistrationLayoutProps = {
 };
 
 /**
- * 記事登録画面全体の共通レイアウト。
+ * 記事保存画面全体の共通レイアウト。
  * 戻る導線と進捗表示だけを担当し、各ステップの中身は children に委譲する。
  */
 export default function RegistrationLayout({
@@ -34,7 +34,7 @@ export default function RegistrationLayout({
             一覧に戻る
           </Button>
         </Link>
-        <h1 className="text-4xl font-bold mb-2">記事を登録</h1>
+        <h1 className="text-4xl font-bold mb-2">記事を保存</h1>
         <p className="text-muted-foreground">
           ステップ {currentStepIndex + 1} / {totalSteps}
         </p>
