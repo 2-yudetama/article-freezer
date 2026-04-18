@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Article } from "@/domain/articles";
+import { formatDateInTokyo } from "@/lib/utils/data-format";
 
 type ArticleMetadataProps = {
   userId: string;
@@ -40,15 +41,13 @@ export default function ArticleMetadata({
           <span>
             投稿日：
             {article.publishedDate
-              ? new Date(article.publishedDate).toLocaleDateString("ja-JP")
+              ? formatDateInTokyo(article.publishedDate)
               : "投稿日不明"}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
-          <span>
-            保存日：{new Date(article.createdAt).toLocaleDateString("ja-JP")}
-          </span>
+          <span>保存日：{formatDateInTokyo(article.createdAt)}</span>
         </div>
       </div>
 

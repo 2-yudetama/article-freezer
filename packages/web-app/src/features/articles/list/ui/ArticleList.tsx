@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { ArticleListItem } from "@/features/articles/list/common";
+import { formatDateInTokyo } from "@/lib/utils/data-format";
 
 /** 記事リストを表示する関数 */
 export default function ArticleList({
@@ -65,7 +66,7 @@ export default function ArticleList({
             </CardTitle>
             <CardDescription className="text-xs">
               {article.publishedDate
-                ? new Date(article.publishedDate).toLocaleDateString("ja-JP")
+                ? formatDateInTokyo(article.publishedDate)
                 : "投稿日不明"}
             </CardDescription>
           </CardHeader>

@@ -3,6 +3,7 @@
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Badge } from "@/components/ui/badge";
 import type { Article } from "@/domain/articles";
+import { formatDateTimeInTokyo } from "@/lib/utils/data-format";
 
 /** 記事コメントを表示する関数 */
 export default function ArticleComment({
@@ -14,14 +15,7 @@ export default function ArticleComment({
     return null;
   }
 
-  const updatedAtLabel = new Date(comment.updatedAt).toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const updatedAtLabel = formatDateTimeInTokyo(comment.updatedAt);
 
   return (
     <div className="space-y-4">
