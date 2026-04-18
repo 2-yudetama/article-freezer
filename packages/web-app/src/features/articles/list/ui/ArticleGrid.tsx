@@ -12,9 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { ArticleListItem } from "@/features/articles/list/common";
+import { formatDateInTokyo } from "@/lib/utils/data-format";
 
-/** 記事リストを表示する関数 */
-export default function ArticleList({
+/** 記事グリッドを表示する関数 */
+export default function ArticleGrid({
   userId,
   articles,
 }: {
@@ -22,7 +23,7 @@ export default function ArticleList({
   articles: ArticleListItem[];
 }) {
   return (
-    <div className="space-y-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
       {articles.map((article) => (
         <Card
           key={article.articleId}
@@ -65,13 +66,13 @@ export default function ArticleList({
             </CardTitle>
             <CardDescription className="text-xs">
               {article.publishedDate
-                ? new Date(article.publishedDate).toLocaleDateString("ja-JP")
-                : "公開日不明"}
+                ? formatDateInTokyo(article.publishedDate)
+                : "投稿日不明"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground line-clamp-3">
-              {article.content || "本文がありません"}
+              {article.content}
             </p>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (

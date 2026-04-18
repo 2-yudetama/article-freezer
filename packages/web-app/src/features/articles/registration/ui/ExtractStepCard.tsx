@@ -37,7 +37,7 @@ type ExtractResultStepCardProps = {
 
 /**
  * 抽出した記事内容を確認するステップ。
- * タイトル・公開日・元URL・本文プレビューを表示する。
+ * タイトル・投稿日・元URL・本文プレビューを表示する。
  */
 export default function ExtractResultStepCard({
   url,
@@ -47,7 +47,7 @@ export default function ExtractResultStepCard({
   onReExtract,
   onNext,
 }: ExtractResultStepCardProps) {
-  const publishedDateLabel = extractedArticle.publishedDate ?? "公開日不明";
+  const publishedDateLabel = extractedArticle.publishedDate ?? "投稿日不明";
 
   return (
     <div className="space-y-6">
@@ -62,7 +62,7 @@ export default function ExtractResultStepCard({
               <p className="font-medium">{extractedArticle.title}</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-muted-foreground">公開日</Label>
+              <Label className="text-muted-foreground">投稿日</Label>
               <p className="font-medium">{publishedDateLabel}</p>
             </div>
             <div className="space-y-2">

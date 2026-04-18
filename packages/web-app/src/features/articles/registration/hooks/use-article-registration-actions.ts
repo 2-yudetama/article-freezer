@@ -36,7 +36,7 @@ type Params = {
 };
 
 /**
- * 記事登録フローの副作用とステップ遷移を管理する。
+ * 記事保存フローの副作用とステップ遷移を管理する。
  * state 自体は持たず、必要な setter を受け取って操作だけを担当する。
  */
 export function useArticleRegistrationActions({
@@ -140,7 +140,7 @@ export function useArticleRegistrationActions({
     return true;
   };
 
-  /** 保存前検証に使う登録内容の payload を現在 state から組み立てる。 */
+  /** 保存前検証に使う保存内容の payload を現在 state から組み立てる。 */
   const buildRegistrationPayload = (
     article: NonNullable<typeof extractedArticle>,
   ): ArticleRegistrationRequest => {
@@ -262,7 +262,7 @@ export function useArticleRegistrationActions({
     moveToNextStep();
   };
 
-  /** 登録内容全体を検証したうえで保存処理を実行する。 */
+  /** 保存内容全体を検証したうえで保存処理を実行する。 */
   const handleSave = async () => {
     if (!extractedArticle) {
       showError("抽出結果がありません");
@@ -293,8 +293,8 @@ export function useArticleRegistrationActions({
         return;
       }
 
-      toast.success("登録完了", {
-        description: "記事が正常に登録されました",
+      toast.success("保存完了", {
+        description: "記事が正常に保存されました",
       });
       router.push(`/users/${userId}/articles`);
     } catch {

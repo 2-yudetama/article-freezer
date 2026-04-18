@@ -8,10 +8,10 @@ import type {
   ArticleListTag,
 } from "@/features/articles/list/common";
 import { useArticleList } from "@/features/articles/list/hooks/use-article-list";
-import ArticleGrid from "@/features/articles/list/ui/article-grid";
-import ArticleList from "@/features/articles/list/ui/article-list";
-import ArticleListControls from "@/features/articles/list/ui/article-list-controls";
-import ArticleTagFilter from "@/features/articles/list/ui/article-tag-filter";
+import ArticleGrid from "@/features/articles/list/ui/ArticleGrid";
+import ArticleList from "@/features/articles/list/ui/ArticleList";
+import ArticleListControls from "@/features/articles/list/ui/ArticleListControls";
+import ArticleTagFilter from "@/features/articles/list/ui/ArticleTagFilter";
 
 type ArticlesPageClientProps = {
   articles: ArticleListItem[];

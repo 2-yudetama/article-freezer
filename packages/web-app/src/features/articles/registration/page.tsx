@@ -8,7 +8,7 @@ import RegistrationLayout from "@/features/articles/registration/ui/Registration
 import TagsStepCard from "@/features/articles/registration/ui/TagsStepCard";
 import UrlStepCard from "@/features/articles/registration/ui/UrlStepCard";
 
-/** 記事登録ページを表示する関数 */
+/** 記事保存ページを表示する関数 */
 export default function ArticleRegistrationPage() {
   const {
     userId,

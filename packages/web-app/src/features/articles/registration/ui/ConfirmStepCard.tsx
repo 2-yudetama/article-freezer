@@ -52,7 +52,7 @@ export default function ConfirmStepCard({
   onBack,
   onSave,
 }: ConfirmStepCardProps) {
-  const publishedDateLabel = extractedArticle?.publishedDate ?? "公開日不明";
+  const publishedDateLabel = extractedArticle?.publishedDate ?? "投稿日不明";
   const selectedTagItems = selectedTags
     .map((tagId) => availableTags.find((item) => item.id === tagId))
     .filter((tag): tag is ArticleTag => tag !== undefined);
@@ -61,9 +61,9 @@ export default function ConfirmStepCard({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>登録内容の確認</CardTitle>
+          <CardTitle>保存内容の確認</CardTitle>
           <CardDescription>
-            以下の内容で問題なければ「登録」ボタンを押してください
+            以下の内容で問題なければ「保存」ボタンを押してください
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -74,7 +74,7 @@ export default function ConfirmStepCard({
                 <p className="font-medium">{extractedArticle.title}</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-muted-foreground">公開日</Label>
+                <Label className="text-muted-foreground">投稿日</Label>
                 <p className="font-medium">{publishedDateLabel}</p>
               </div>
             </>
@@ -163,12 +163,12 @@ export default function ConfirmStepCard({
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              登録中
+              保存中
             </>
           ) : (
             <>
               <CheckCircle2 className="w-4 h-4 mr-2" />
-              登録
+              保存
             </>
           )}
         </Button>

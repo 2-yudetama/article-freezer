@@ -8,10 +8,11 @@
 ## Working Rules
 
 - `src/app/users/[userId]/*` の route は薄く保ち、実処理は `src/features/*/page.tsx` に委譲する構成を維持する。
-- `src/features/*/page.tsx` は `hook + view` 構成が基本。状態取得は hooks、表示は `ui/page-view.tsx` に寄せる。
+- `src/features/*/page.tsx` / `page-client.tsx` は薄く保ち、状態取得や操作は `hooks`、表示は `ui` 配下のコンポーネントに分ける。
+- `src/features/*/ui` の UI コンポーネントは `ArticleHeader.tsx` のように PascalCase のファイル名にする。
 - 記事一覧・登録などの機能仕様は `docs/features` を参照する。
 - 認証・認可の変更時は `src/lib/auth/auth.ts` と `src/app/users/[userId]/layout.tsx` を起点に確認する。
-- 記事・タグ系画面は現状 `src/lib/mock-data.ts` を参照している。永続化済みとみなして実装しない。
+- タグ系画面は現状 `src/lib/mock-data.ts` を参照している。永続化済みとみなして実装しない。
 
 ## Common Commands
 
