@@ -3,7 +3,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils/twMerge";
+import { cn } from "@/lib/utils/tw-merge";
 
 interface MarkdownPreviewProps {
   content: string;

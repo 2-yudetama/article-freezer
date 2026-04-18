@@ -3,7 +3,7 @@
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import type * as React from "react";
 
-import { cn } from "@/lib/utils/twMerge";
+import { cn } from "@/lib/utils/tw-merge";
 
 function Switch({
   className,
