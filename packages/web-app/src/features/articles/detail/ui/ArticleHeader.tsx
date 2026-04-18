@@ -40,20 +40,22 @@ export default function ArticleHeader({
   return (
     <>
       <header className="py-4 flex items-center justify-between border-b border-border">
-        <Link href={`/users/${userId}/articles`}>
-          <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={`/users/${userId}/articles`}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             一覧に戻る
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         {canShowArticleActions && (
           <div className="flex items-center gap-2">
-            <Link href={`/users/${userId}/articles/${article.articleId}/edit`}>
-              <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                href={`/users/${userId}/articles/${article.articleId}/edit`}
+              >
                 <Edit className="w-4 h-4 mr-2" />
                 編集
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <Button
               variant="outline"
               size="sm"
