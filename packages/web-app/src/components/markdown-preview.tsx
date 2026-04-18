@@ -1,6 +1,7 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils/twMerge";
 
@@ -24,18 +25,22 @@ export function MarkdownPreview({
         )}
       >
         <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
           components={{
             h1: ({ node, ...props }) => (
-              <h1 className="text-3xl font-bold mt-10 mb-5" {...props} />
+              <h1 className="text-3xl font-bold mt-7 mb-5" {...props} />
             ),
             h2: ({ node, ...props }) => (
               <h2
-                className="text-2xl font-bold mt-8 mb-4 border-b border-border pb-4"
+                className="text-2xl font-bold mt-6 mb-4 border-b border-border pb-2"
                 {...props}
               />
             ),
             h3: ({ node, ...props }) => (
-              <h3 className="text-xl font-bold mt-6 mb-3" {...props} />
+              <h3 className="text-xl font-bold mt-5 mb-3" {...props} />
+            ),
+            h4: ({ node, ...props }) => (
+              <h4 className="text-lg font-bold mt-4 mb-2" {...props} />
             ),
             strong: ({ node, ...props }) => (
               <strong className="font-bold" {...props} />
@@ -43,7 +48,7 @@ export function MarkdownPreview({
             em: ({ node, ...props }) => <em className="italic" {...props} />,
             a: ({ node, ...props }) => (
               <a
-                className="text-primary underline hover:no-underline"
+                className="break-all text-primary underline hover:no-underline"
                 target="_blank"
                 rel="noopener noreferrer"
                 {...props}
@@ -82,8 +87,31 @@ export function MarkdownPreview({
                 {...props}
               />
             ),
+            table: ({ node, ...props }) => (
+              <div className="my-4 overflow-x-auto scrollbar-readable">
+                <table className="w-full border-collapse text-sm" {...props} />
+              </div>
+            ),
+            thead: ({ node, ...props }) => (
+              <thead className="bg-muted" {...props} />
+            ),
+            th: ({ node, ...props }) => (
+              <th
+                className="border border-border px-3 py-2 text-left font-semibold"
+                {...props}
+              />
+            ),
+            td: ({ node, ...props }) => (
+              <td
+                className="border border-border px-3 py-2 align-top"
+                {...props}
+              />
+            ),
             p: ({ node, ...props }) => (
-              <p className="mt-2 mb-4 leading-relaxed" {...props} />
+              <p
+                className="mt-2 mb-4 whitespace-pre-wrap leading-relaxed"
+                {...props}
+              />
             ),
           }}
         >
