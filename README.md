@@ -144,6 +144,32 @@ pnpm db db:up
 pnpm db db:down
 ```
 
+## リリース
+
+`v` prefix付きのSemantic Versionタグをpushすると、GitHub ActionsでReleaseが自動作成されます。
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+タグは`v1.2.3`形式を基本とし、プレリリースやビルドメタデータも利用できます。
+
+```bash
+git tag v1.0.0-beta.1
+git tag v1.0.0+build.1
+```
+
+Release作成時はGitHubの自動リリースノート生成を使用します。リリースノートの分類は[.github/release.yaml](./.github/release.yaml)で管理します。
+
+リリースノートに含めるPRは、以下のラベルで分類されます。
+
+- `feature`: ✨ Features
+- `enhancement`: ⚡️ Enhancements
+- `bug`: 🐛 Bug Fixes
+- `documentation`: 📝 Documentation
+- `refactoring`: ♻️ Refactoring
+
 ## License
 
 No License
