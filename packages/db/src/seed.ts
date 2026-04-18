@@ -24,7 +24,9 @@ try {
       image: "seed_image",
       role: 1, // アプリ利用権限を持つユーザとする
     },
-    update: {},
+    update: {
+      role: 1, // アプリ利用権限を持つユーザとする
+    },
   });
 
   console.log("[Seed] Upsert seed user successfully: ", dbUser);
