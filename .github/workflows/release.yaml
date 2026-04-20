@@ -41,21 +41,21 @@ jobs:
     steps:
       # actions/checkout v6.0.2
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      # docker/login-action v3.6.0
-      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+      # docker/login-action v4.1.0
+      - uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      # docker/metadata-action v5.8.0
+      # docker/metadata-action v6.0.0
       - id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.image.name }}
           tags: |
             type=ref,event=tag
-      # docker/build-push-action v6.18.0
-      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+      # docker/build-push-action v7.1.0
+      - uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f
         with:
           context: ${{ matrix.image.context }}
           file: ${{ matrix.image.file }}
