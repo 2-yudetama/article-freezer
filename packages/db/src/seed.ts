@@ -29,7 +29,7 @@ try {
     },
   });
 
-  console.log("[Seed] Upsert seed user successfully: ", dbUser);
+  console.log("[Seed] Upsert seed user successfully: ", dbUser.user_id);
 } catch (error) {
   console.error("[Seed] Upsert Create error: ", error);
   process.exitCode = 1;
