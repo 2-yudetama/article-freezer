@@ -31,13 +31,15 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icons/icon512_rounded.png",
+        url: "/icons/icon-512-rounded.png",
         sizes: "512x512",
         type: "image/png",
       },
+    ],
+    apple: [
       {
-        url: "/icons/icon512_maskable.png",
-        sizes: "512x512",
+        url: "/icons/icon-192x192.png",
+        sizes: "192x192",
         type: "image/png",
       },
     ],

@@ -12,7 +12,9 @@ export function ServiceWorkerRegister() {
     }
 
     // installability 判定に必要な service worker を登録する
-    void navigator.serviceWorker.register("/pwa/sw.js");
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.error("[PWA] Service worker registration failed", error);
+    });
   }, []);
 
   return null;

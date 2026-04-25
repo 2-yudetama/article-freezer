@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/auth";
 export const config = {
   // ?!で否定となるため、下記に指定したものはプロキシが実行されない
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|pwa/|icons/).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|pwa/|icons/).*)",
   ],
 };
 
