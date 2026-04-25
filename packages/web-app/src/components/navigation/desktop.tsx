@@ -1,4 +1,5 @@
-import { BookOpen, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { NavigationItemsResult } from "@/components/navigation/use-navigation-items";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,18 @@ export function DesktopNavigationView({
 }: NavigationItemsResult) {
   return (
     <aside className="hidden md:flex md:flex-col md:w-64 border-r border-border bg-card fixed left-0 top-0 h-screen">
-      <div className="flex items-center gap-2 p-6 border-b border-border">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <BookOpen className="w-5 h-5 text-primary-foreground" />
+      <div className="flex items-center gap-2 p-4 border-b border-border">
+        <div className="w-10 h-10">
+          <Image
+            src="/icons/icon512_rounded.png"
+            alt="記事冷凍庫"
+            width={32}
+            height={32}
+            unoptimized
+            className="w-10 h-10"
+          />
         </div>
-        <span className="font-semibold text-lg">記事コレクション</span>
+        <span className="font-semibold text-xl">記事冷凍庫</span>
       </div>
 
       <nav className="flex-1 p-4">
