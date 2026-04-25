@@ -25,10 +25,7 @@ const _lora = V0_Font_Lora({
 });
 
 export const metadata: Metadata = {
-  title: "記事コレクション - 技術記事管理アプリ",
-  description:
-    "お気に入りの技術記事を収集・整理して、効率的に学習を進めましょう",
-  generator: "v0.app",
+  title: "Article Freezer - 記事管理アプリ",
   icons: {
     icon: [
       {
