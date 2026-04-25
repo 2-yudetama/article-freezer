@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import type React from "react";
 import { Toaster } from "sonner";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import "./globals.css";
 
 import {
@@ -25,23 +26,23 @@ const _lora = V0_Font_Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Article Freezer - 記事管理アプリ",
+  title: "記事冷凍庫 - Article Freezer",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
+        url: "/icons/icon-512-rounded.png",
+        sizes: "512x512",
+        type: "image/png",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: [
+      {
+        url: "/icons/icon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+    ],
   },
 };
 
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className="dark">
       <body className={`font-sans antialiased`}>
+        <ServiceWorkerRegister />
         <main className="min-h-screen">{children}</main>
         <Toaster />
         <Analytics />
