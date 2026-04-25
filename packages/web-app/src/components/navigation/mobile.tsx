@@ -1,13 +1,24 @@
-import { Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { NavigationItemsResult } from "@/components/navigation/use-navigation-items";
 import { cn } from "@/lib/utils/tw-merge";
 
+function isActiveItem(
+  pathname: string,
+  href: string,
+  matchMode = "startsWith",
+  excludedHrefs: string[] = [],
+) {
+  if (excludedHrefs.some((excludedHref) => pathname.startsWith(excludedHref))) {
+    return false;
+  }
+
+  return matchMode === "exact" ? pathname === href : pathname.startsWith(href);
+}
+
 export function MobileNavigationView({
   navItems,
   pathname,
-  registrationHref,
 }: NavigationItemsResult) {
   return (
     <>
@@ -29,7 +40,12 @@ export function MobileNavigationView({
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-center z-10">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = isActiveItem(
+            pathname,
+            item.href,
+            item.matchMode,
+            item.excludedHrefs,
+          );
           const Icon = item.icon;
 
           return (
@@ -46,19 +62,6 @@ export function MobileNavigationView({
             </Link>
           );
         })}
-
-        <Link
-          href={registrationHref}
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 flex-1 h-full",
-            pathname.startsWith(registrationHref)
-              ? "text-primary"
-              : "text-muted-foreground",
-          )}
-        >
-          <Plus className="w-5 h-5" />
-          <span className="text-xs font-medium">記事保存</span>
-        </Link>
       </nav>
     </>
   );

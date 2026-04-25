@@ -1,14 +1,24 @@
-import { Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { NavigationItemsResult } from "@/components/navigation/use-navigation-items";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/tw-merge";
+
+function isActiveItem(
+  pathname: string,
+  href: string,
+  matchMode = "startsWith",
+  excludedHrefs: string[] = [],
+) {
+  if (excludedHrefs.some((excludedHref) => pathname.startsWith(excludedHref))) {
+    return false;
+  }
+
+  return matchMode === "exact" ? pathname === href : pathname.startsWith(href);
+}
 
 export function DesktopNavigationView({
   navItems,
   pathname,
-  registrationHref,
 }: NavigationItemsResult) {
   return (
     <aside className="hidden md:flex md:flex-col md:w-64 border-r border-border bg-card fixed left-0 top-0 h-screen">
@@ -29,7 +39,12 @@ export function DesktopNavigationView({
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive = isActiveItem(
+              pathname,
+              item.href,
+              item.matchMode,
+              item.excludedHrefs,
+            );
             const Icon = item.icon;
 
             return (
@@ -51,15 +66,6 @@ export function DesktopNavigationView({
           })}
         </ul>
       </nav>
-
-      <div className="p-4 border-t border-border">
-        <Link href={registrationHref}>
-          <Button className="w-full" size="lg">
-            <Plus className="w-5 h-5 mr-2" />
-            記事を保存
-          </Button>
-        </Link>
-      </div>
     </aside>
   );
 }
