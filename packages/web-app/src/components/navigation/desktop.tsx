@@ -1,20 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { NavigationItemsResult } from "@/components/navigation/use-navigation-items";
+import {
+  isActiveItem,
+  type NavigationItemsResult,
+} from "@/components/navigation/use-navigation-items";
 import { cn } from "@/lib/utils/tw-merge";
-
-function isActiveItem(
-  pathname: string,
-  href: string,
-  matchMode = "startsWith",
-  excludedHrefs: string[] = [],
-) {
-  if (excludedHrefs.some((excludedHref) => pathname.startsWith(excludedHref))) {
-    return false;
-  }
-
-  return matchMode === "exact" ? pathname === href : pathname.startsWith(href);
-}
 
 export function DesktopNavigationView({
   navItems,
@@ -25,10 +15,10 @@ export function DesktopNavigationView({
       <div className="flex items-center gap-2 p-4 border-b border-border">
         <div className="w-10 h-10">
           <Image
-            src="/icons/icon512_rounded.png"
+            src="/icons/icon-512-rounded.png"
             alt="記事冷凍庫"
-            width={32}
-            height={32}
+            width={40}
+            height={40}
             unoptimized
             className="w-10 h-10"
           />

@@ -18,6 +18,19 @@ export type NavigationItemsResult = {
   pathname: string;
 };
 
+export function isActiveItem(
+  pathname: string,
+  href: string,
+  matchMode: "exact" | "startsWith" = "startsWith",
+  excludedHrefs: string[] = [],
+) {
+  if (excludedHrefs.some((excludedHref) => pathname.startsWith(excludedHref))) {
+    return false;
+  }
+
+  return matchMode === "exact" ? pathname === href : pathname.startsWith(href);
+}
+
 export function useNavigationItems(): NavigationItemsResult {
   const pathname = usePathname();
   const userId = useUserId();
@@ -27,14 +40,12 @@ export function useNavigationItems(): NavigationItemsResult {
       href: `/users/${userId}/articles`,
       icon: BookOpen,
       label: "記事一覧",
-      matchMode: "startsWith",
       excludedHrefs: [registrationHref],
     },
     {
       href: registrationHref,
       icon: FilePlusCorner,
       label: "記事を保存",
-      matchMode: "startsWith",
     },
     { href: `/users/${userId}/article-tags`, icon: Tags, label: "タグ管理" },
     { href: `/users/${userId}/settings`, icon: Settings, label: "設定" },
