@@ -1,0 +1,121 @@
+# 文脈が不要で、常に禁止したいコマンドだけを rules で制御する
+# ロール判定、issue スコープ判定、ブランチ状態の確認など文脈依存の制御は hooks やドキュメント運用に委ねる
+
+prefix_rule(
+    pattern = ["git", "add", [".", "-A", "--all", "-u", ":/"]],
+    decision = "forbidden",
+    justification = "対象ファイルを明示して stage してください",
+    match = [
+        "git add .",
+        "git add -A",
+        "git add --all",
+        "git add -u",
+        "git add :/",
+    ],
+    not_match = [
+        "git add docs/draft/ai-harness/workflow.md",
+        "git add packages/web-app/src/app/page.tsx",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "変更破棄を伴う git reset は禁止です",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "forbidden",
+    justification = "未追跡ファイルの一括削除は禁止です",
+    match = [
+        "git clean -fd",
+        "git clean -xdf",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["merge", "rebase"]],
+    decision = "forbidden",
+    justification = "merge / rebase はハーネスの自動操作では禁止です",
+    match = [
+        "git merge main",
+        "git rebase main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "forbidden",
+    justification = "変更破棄を伴う checkout は禁止です",
+    match = [
+        "git checkout -- docs/draft/ai-harness/workflow.md",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", ["repo", "issue"], "delete"],
+    decision = "forbidden",
+    justification = "DELETE 系 GitHub 操作は禁止です",
+    match = [
+        "gh repo delete 2-yudetama/article-freezer",
+        "gh issue delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "close"],
+    decision = "forbidden",
+    justification = "PR close はハーネスの自動操作対象外です",
+    match = [
+        "gh pr close 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api", "--method", "DELETE"],
+    decision = "forbidden",
+    justification = "DELETE 系 GitHub API 操作は禁止です",
+    match = [
+        "gh api --method DELETE repos/2-yudetama/article-freezer/issues/123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr", "-r", "-R", "--recursive"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -rf docs",
+        "rm -fr packages/web-app",
+        "rm -r tmp",
+        "rm -R tmp",
+        "rm --recursive tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-f"], ["-r", "-R", "--recursive"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -f -r tmp",
+        "rm -f -R tmp",
+        "rm -f --recursive tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-r", "-R", "--recursive"], ["-f"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -r -f tmp",
+        "rm -R -f tmp",
+        "rm --recursive -f tmp",
+    ],
+)
