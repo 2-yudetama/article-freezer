@@ -11,7 +11,6 @@
 - `packages/db`: Prisma + PostgreSQL の管理、Prisma Client 生成、seed、compose。
 - `packages/web-app`: Next.js 16 + React 19 の Web アプリ。
 - `packages/md-extractor`: Python 3.13 + FastAPI の Markdown 抽出 API。
-- `docs`: ER 図、記事登録フロー図などの補助資料。
 
 ## Shared Commands
 
@@ -39,11 +38,7 @@
 ## Documentation Rules
 
 - 機能仕様は `docs/features` を参照し、機能の挙動や責務を変更した場合は該当ドキュメントも同期して更新する。
+- エージェント開発ワークフローの運用仕様は `docs/agent` を参照し、通常の単発作業ルールとしては扱わない。
+- package 間の責務境界、横断データフロー、認証・認可、ER などの横断設計は `docs/architecture` を参照する。
 - package 固有の制約はルートに書かず、対象 package の `AGENTS.md` に記載する。
 - コマンド・構成・アーキテクチャを変更した場合は、対応する `AGENTS.md` / `README.md` も同期して更新する。
-
-## TBD
-
-- `web-app` から `md-extractor` を呼び出す正式な接続方法と責務分界
-- 記事・タグの永続化をどの package / 層で担うか
-- 本番運用での compose / deploy の正規フロー
