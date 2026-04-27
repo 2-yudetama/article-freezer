@@ -2,8 +2,8 @@
 
 ## 目的
 
-AI ハーネス運用時に、文脈不要で危険と判断できる操作を rules で機械的に止める。
-rules はロール判定や issue スコープ判定を置き換えるものではなく、明確な禁止操作に対する guardrail として扱う。
+- AI ハーネス運用時に、文脈不要で危険と判断できる操作を rules で機械的に止める。
+- rules はロール判定や issue スコープ判定を置き換えるものではなく、明確な禁止操作に対する guardrail として扱う。
 
 ## 基本方針
 
@@ -11,16 +11,32 @@ rules はロール判定や issue スコープ判定を置き換えるもので�
 - rules は文脈が不要で、常に禁止したいコマンドだけを制御する
 - ロール判定、issue スコープ判定、Planner Output からの逸脱判定はドキュメント運用と Evaluator のレビューで扱う
 - rules で表現しにくい引数順・文脈依存チェックは hooks で補完する
+- 自動運用を優先するため、approval は原則 `never` とする
+- Manager / Generator / Evaluator は検証や生成物の書き込みを考慮して `workspace-write` とする
+- Planner は計画専任のため `read-only` とする
+- Codex の仕様上、実行中のエージェントは `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下を直接変更できない
 
 ## 配置
 
 ```txt
+.codex/config.toml
 .codex/rules/default.rules
 ```
 
-## forbidden 対象
+## Sandbox
 
-### 広範囲 stage
+### ロール別 sandbox / approval
+
+- Manager: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
+- Planner: `approval_policy = "never"`、`sandbox_mode = "read-only"`
+- Generator: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
+- Evaluator: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
+
+## Rules
+
+### forbidden 対象
+
+#### 広範囲 stage
 
 - `git add .`
 - `git add -A`
@@ -28,7 +44,7 @@ rules はロール判定や issue スコープ判定を置き換えるもので�
 - `git add -u`
 - `git add :/`
 
-### 破壊的または履歴を複雑化する git 操作
+#### 破壊的または履歴を複雑化する git 操作
 
 - `git reset --hard`
 - `git clean`
@@ -36,14 +52,14 @@ rules はロール判定や issue スコープ判定を置き換えるもので�
 - `git rebase`
 - `git checkout --`
 
-### DELETE 系 GitHub 操作
+#### DELETE 系 GitHub 操作
 
 - `gh repo delete`
 - `gh issue delete`
 - `gh pr close`
 - `gh api --method DELETE`
 
-### 再帰削除系の `rm`
+#### 再帰削除系の `rm`
 
 - `rm -rf`
 - `rm -fr`
@@ -53,7 +69,7 @@ rules はロール判定や issue スコープ判定を置き換えるもので�
 - `rm -f -r`
 - `rm -r -f`
 
-## 許可する代表操作
+### 許可する代表操作
 
 - `git status`
 - `git diff`
@@ -62,7 +78,7 @@ rules はロール判定や issue スコープ判定を置き換えるもので�
 - `git add <明示ファイル>`
 - `git commit`
 
-## 運用上の注意
+### 運用上の注意
 
 - `git add <明示ファイル>` や `git commit` は通常のハーネス運用で使うため禁止しない
 - `git push` や `gh pr create` は Manager の責務として扱い、ロール判定は rules では行わない
