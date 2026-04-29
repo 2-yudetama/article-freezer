@@ -29,16 +29,15 @@
 ## Shared Constraints
 
 - **`.env`などの環境変数ファイルは参照しない。環境変数を確認したい場合は`.env.example`を参照する。**
+- DELETE 系 GitHub 操作は禁止する。
+- git の破壊的操作は原則禁止し、必要な場合は人間確認へフォールバックする。
 - JavaScript/TypeScript workspace は `pnpm` 前提。`npm` / `yarn` を混在させない。
 - 依存関係は責務のある package に追加し、workspace 共通の開発依存だけをルートに置く。
-- TypeScript/TSX は Biome 前提。インデントはスペース 2、import 整理は自動化されている。
-- pre-commit では Biome、Ruff、Knip、lockfile 整合性チェックが走る。
-- 現状、専用テストファイルは見当たらない。挙動変更時は何を確認したかを明記する。
 
 ## Documentation Rules
 
-- 機能仕様は `docs/features` を参照し、機能の挙動や責務を変更した場合は該当ドキュメントも同期して更新する。
 - エージェント開発ワークフローの運用仕様は `docs/agent` を参照し、通常の単発作業ルールとしては扱わない。
 - package 間の責務境界、横断データフロー、認証・認可、ER などの横断設計は `docs/architecture` を参照する。
+- 機能仕様は `docs/features` を参照し、機能の挙動や責務を変更した場合は該当ドキュメントも同期して更新する。
 - package 固有の制約はルートに書かず、対象 package の `AGENTS.md` に記載する。
 - コマンド・構成・アーキテクチャを変更した場合は、対応する `AGENTS.md` / `README.md` も同期して更新する。
