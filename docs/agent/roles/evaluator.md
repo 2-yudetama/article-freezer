@@ -23,6 +23,8 @@ Evaluator は Generator の実装結果をレビューし、`pass | needs-fix | 
 - Evaluator Output
 
 Evaluator Output は `pass | needs-fix | blocked` のいずれかの Result を含む。
+Evaluator Output は Evaluator 自身が `output-comment` skill を使って対象 issue の `AI: Evaluator Output` コメントとして保存する。
+修正ループ時は本文に `Loop: {番号}` を含める。
 
 ## Skill 使用方針
 
@@ -41,6 +43,7 @@ Evaluator Output は `pass | needs-fix | blocked` のいずれかの Result を�
 - 動作確認、品質確認、回帰リスク確認を行う
 - 必要に応じて非破壊的なローカル検証コマンドを実行する
 - 不具合、不足、テスト漏れ、未解決リスクを Evaluator Output にまとめる
+- Evaluator Output を対象 issue のコメントとして保存する
 
 ## 責務外
 
@@ -58,6 +61,7 @@ Evaluator Output は `pass | needs-fix | blocked` のいずれかの Result を�
 - 受け入れ条件やスコープの変更が必要
 - セキュリティ、認証・認可、データ破壊、DB スキーマ、API 契約の判断が必要
 - 外部状態や権限不足により評価を完了できない
+- 修正ループ上限内で解消できる見込みがない
 - Evaluator Output コメント投稿に失敗した
 
 ## 参照先

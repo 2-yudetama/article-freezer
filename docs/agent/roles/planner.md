@@ -28,6 +28,8 @@ Planner Output は次のいずれかを含む。
 - `implementation-plan`
 - `split-proposal`
 
+Planner Output は Planner 自身が `output-comment` skill を使って対象 issue の `AI: Planner Output` コメントとして保存する。
+
 ## Skill 使用方針
 
 | 状況                                               | 使用 skill                                           | Planner の行動                                                           |
@@ -43,6 +45,7 @@ Planner Output は次のいずれかを含む。
 - 1 PR で扱える場合は `implementation-plan` を作成する
 - 分割が必要な場合は `split-proposal` を作成する
 - 未決定事項、リスク、人間確認が必要な事項を明示する
+- Planner Output を対象 issue のコメントとして保存する
 
 ## 責務外
 
