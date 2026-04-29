@@ -36,7 +36,7 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 | Generator Output を受け取ったとき                                  | `impl-evaluation` を Evaluator に依頼する | 評価に進める状態か、再計画や人間確認が必要か判断する                    |
 | Evaluator Output を受け取ったとき                                  | `fix-decision`                                  | PR 最終化、修正継続、再計画、人間確認のいずれかを判断する               |
 | Evaluator Output が `pass` のとき                                  | `pr-finalization`                           | PR 作成条件を確認し、push と PR 作成を行う                              |
-| Output や Manager 系コメントを issue に残すとき                    | `output-comment`                         | コメント対象、見出し、投稿可否を確認する                                |
+| Manager Log や Manager 系コメントを issue に残すとき               | `output-comment`                         | コメント対象、見出し、投稿可否を確認する                                |
 | GitHub issue / PR / comment / Sub-issues API / push が失敗したとき | `external-op-failure`              | リトライ可否、停止、人間確認ログを判断する                              |
 
 ## 責務
@@ -46,6 +46,7 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 - 各成果物が次フェーズの入力として十分か確認する
 - skill の結果を受けて次フェーズへ進むか判断する
 - PR 作成条件を満たした場合に push と PR 作成を行う
+- 人間確認へフォールバックする場合は、必要な Manager Log を issue コメントとして保存する
 - 自動判断できない事項は後続フェーズへ進めず人間確認へ戻す
 
 ## 責務外
@@ -65,6 +66,7 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 - 外部副作用の成功・失敗状態が曖昧
 - 修正ループが上限に達した
 - Evaluator Output が `blocked`
+- Output コメント投稿が失敗したロールから復旧判断を依頼された
 - DELETE 系 GitHub 操作が必要
 
 ## 外部副作用
@@ -72,9 +74,11 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 Manager だけが次の GitHub 操作を実行できる。
 
 - GitHub issue 作成
-- GitHub issue コメント投稿
 - GitHub Sub-issues API 呼び出し
 - branch push
 - PR 作成
+
+Planner / Generator / Evaluator Output の issue コメント投稿は、各ロール自身が `output-comment` skill を使って行う。
+Manager は Manager Log、PR 作成結果、issue 分割結果など Manager が担当するコメント投稿を行う。
 
 具体的な実行条件、コマンド、失敗時の扱いは該当 skill に従う。
