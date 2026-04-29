@@ -2,7 +2,7 @@
 
 ## 目的
 
-- AI ハーネス運用時に、文脈不要で危険と判断できる操作を rules で機械的に止める。
+- エージェント開発ワークフローの運用時に、文脈不要で危険と判断できる操作を rules で機械的に止める。
 - rules はロール判定や issue スコープ判定を置き換えるものではなく、明確な禁止操作に対する guardrail として扱う。
 
 ## 基本方針
@@ -12,8 +12,7 @@
 - ロール判定、issue スコープ判定、Planner Output からの逸脱判定はドキュメント運用と Evaluator のレビューで扱う
 - rules で表現しにくい引数順・文脈依存チェックは hooks で補完する
 - 自動運用を優先するため、approval は原則 `never` とする
-- Manager / Generator / Evaluator は検証や生成物の書き込みを考慮して `workspace-write` とする
-- Planner は計画専任のため `read-only` とする
+- Manager / Planner / Generator / Evaluator は、Output コメント投稿や検証、生成物の書き込みを考慮して `workspace-write` とする
 - Codex の仕様上、実行中のエージェントは `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下を直接変更できない
 
 ## 配置
@@ -28,7 +27,7 @@
 ### ロール別 sandbox / approval
 
 - Manager: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
-- Planner: `approval_policy = "never"`、`sandbox_mode = "read-only"`
+- Planner: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
 - Generator: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
 - Evaluator: `approval_policy = "never"`、`sandbox_mode = "workspace-write"`
 
@@ -80,6 +79,6 @@
 
 ### 運用上の注意
 
-- `git add <明示ファイル>` や `git commit` は通常のハーネス運用で使うため禁止しない
+- `git add <明示ファイル>` や `git commit` は通常のエージェント開発ワークフローで使うため禁止しない
 - `git push` や `gh pr create` は Manager の責務として扱い、ロール判定は rules では行わない
 - rules / hooks は完全な enforcement boundary ではなく guardrail として扱う

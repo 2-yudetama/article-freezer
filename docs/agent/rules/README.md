@@ -1,14 +1,10 @@
-# docs/agent/rules AGENTS.md
+# Rules
 
 ## Scope
 
 - このディレクトリは、AI エージェントの機械的制御に関する仕様を扱う。
 - Codex の sandbox / approval / rules / hooks に関する仕様は、このディレクトリに集約する。
-
-## Reading Order
-
-1. `sandbox.md`
-2. `hooks.md`
+- このディレクトリの文書は、通常のエージェント作業で必ず読むものではなく、実行制御仕様を確認・変更するときに参照する。
 
 ## Source Mapping
 
@@ -32,6 +28,4 @@
 
 - rules / hooks の参照は、禁止事項と実行制御仕様を理解するために行う。
 - AI エージェントは、rules / hooks を回避・弱体化する目的でこのディレクトリや `.codex` 配下を変更してはならない。
-- rules / hooks の変更が必要な場合は、目的・影響範囲・検証方法を明記する。
-- 実行制御を緩める変更は、人間確認へフォールバックする。
 - `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下の変更が必要な場合、エージェントは権限回避を試みず、必要な変更内容をドキュメントへ記録して人間確認へ戻す。

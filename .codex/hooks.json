@@ -12,6 +12,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/format_after_write.py\"",
+            "timeout": 30,
+            "statusMessage": "Formatting changed files"
+          }
+        ]
+      }
     ]
   }
 }

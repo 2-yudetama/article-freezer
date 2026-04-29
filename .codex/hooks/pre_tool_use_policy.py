@@ -21,6 +21,13 @@ def deny(reason: str) -> None:
     )
 
 
+def deny_with_output(reason: str, output: str) -> None:
+    details = output.strip()
+    if details:
+        reason = f"{reason}\n\n{details}"
+    deny(reason)
+
+
 def load_command() -> str:
     try:
         payload = json.load(sys.stdin)
@@ -128,6 +135,31 @@ def staged_files(cwd: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+def run_check(cwd: str, command: list[str]) -> tuple[bool, str]:
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as error:
+        return False, str(error)
+
+    output = "\n".join(part for part in (result.stdout, result.stderr) if part)
+    return result.returncode == 0, output
+
+
+def run_checks(cwd: str, checks: list[list[str]]) -> tuple[bool, str]:
+    failures = []
+    for check in checks:
+        ok, output = run_check(cwd, check)
+        if not ok:
+            failures.append(f"$ {shlex.join(check)}\n{output}")
+    return not failures, "\n\n".join(failures)
+
+
 def main() -> int:
     command = load_command()
     argv = split_command(command)
@@ -158,9 +190,32 @@ def main() -> int:
             deny("git push は issue/{issue番号} ブランチでのみ実行してください")
             return 0
 
+        ok, output = run_checks(
+            cwd,
+            [
+                ["pnpm", "check"],
+                ["pnpm", "--recursive", "run", "typecheck"],
+                ["pnpm", "knip"],
+            ],
+        )
+        if not ok:
+            deny_with_output("git push 前の検証に失敗しました", output)
+            return 0
+
     if len(argv) >= 2 and argv[:2] == ["git", "commit"]:
         if not staged_files(cwd):
             deny("staged files がない状態での commit は実行できません")
+            return 0
+
+        ok, output = run_checks(
+            cwd,
+            [
+                ["pnpm", "check"],
+                ["pnpm", "--recursive", "run", "typecheck"],
+            ],
+        )
+        if not ok:
+            deny_with_output("git commit 前の検証に失敗しました", output)
             return 0
 
     return 0
