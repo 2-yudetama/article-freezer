@@ -1,0 +1,4 @@
+interface:
+  display_name: "issue 分割"
+  short_description: "採用済み issue 分割を実行"
+  default_prompt: "$issue-splitting を使って、採用済み split-proposal からサブ issue を作成・記録してください。"

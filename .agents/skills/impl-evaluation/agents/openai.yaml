@@ -1,0 +1,4 @@
+interface:
+  display_name: "レビュー評価"
+  short_description: "実装結果をレビュー"
+  default_prompt: "$impl-evaluation を使って、Generator の commit を評価し Evaluator Output を作成してください。"

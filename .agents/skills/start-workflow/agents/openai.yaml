@@ -1,0 +1,4 @@
+interface:
+  display_name: "サイクル開始"
+  short_description: "issue サイクル開始条件を確認"
+  default_prompt: "$start-workflow を使って、この issue 起点のエージェント開発サイクルを開始できるか確認してください。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "計画判断"
+  short_description: "Planner Output の扱いを判断"
+  default_prompt: "$plan-review を使って、Planner Output を確認し次のワークフロー手順を選んでください。"

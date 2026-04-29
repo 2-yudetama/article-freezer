@@ -1,0 +1,4 @@
+interface:
+  display_name: "issue 計画"
+  short_description: "issue 実装計画を作成"
+  default_prompt: "$issue-planning を使って、対象 issue を分析し適切な Planner Output を作成してください。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "修正ループ"
+  short_description: "評価後の修正ループを判断"
+  default_prompt: "$fix-decision を使って、最新の Evaluator Output から正しい次手順へ振り分けてください。"

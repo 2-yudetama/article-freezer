@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR 最終化"
+  short_description: "pass 済み作業を PR 化"
+  default_prompt: "$pr-finalization を使って、pass 済み作業を push し PR 作成と結果記録を行ってください。"

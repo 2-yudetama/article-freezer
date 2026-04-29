@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Output コメント"
+  short_description: "AI ワークフローコメントを投稿"
+  default_prompt: "$output-comment を使って、ワークフロー Output を issue コメントとして整形・投稿してください。"
