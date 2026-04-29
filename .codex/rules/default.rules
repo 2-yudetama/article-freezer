@@ -1,5 +1,7 @@
-# 文脈が不要で、常に禁止したいコマンドだけを rules で制御する
+# 文脈が不要で常に禁止したいコマンドと、自動運用で必要な代表コマンドを rules で制御する
 # ロール判定、issue スコープ判定、ブランチ状態の確認など文脈依存の制御は hooks やドキュメント運用に委ねる
+
+# 禁止系
 
 prefix_rule(
     pattern = ["git", "add", [".", "-A", "--all", "-u", ":/"]],
@@ -117,5 +119,76 @@ prefix_rule(
         "rm -r -f tmp",
         "rm -R -f tmp",
         "rm --recursive -f tmp",
+    ],
+)
+
+# 許可系
+
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+    justification = "明示ファイルの stage は Generator の commit 作成に必要です",
+    match = [
+        "git add docs/agent/workflow.md",
+        "git add packages/web-app/src/app/page.tsx",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "Generator の issue スコープ内 commit 作成に必要です",
+    match = [
+        "git commit -m \"📝 エージェントワークフロー手順を整理 (#123)\"",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "allow",
+    justification = "Manager の PR 最終化で branch push が必要です",
+    match = [
+        "git push -u origin issue/123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["comment", "create", "view"]],
+    decision = "allow",
+    justification = "ワークフロー Output 投稿、issue 分割、状態確認に必要です",
+    match = [
+        "gh issue comment 123 --body \"AI: Planner Output\"",
+        "gh issue create --title \"サブ issue\" --body \"body\"",
+        "gh issue view 123 --comments",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", ["create", "list"]],
+    decision = "allow",
+    justification = "PR 最終化と既存 PR 確認に必要です",
+    match = [
+        "gh pr create --base main --head issue/123 --title \"title\" --body \"body\"",
+        "gh pr list --head issue/123 --state all",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "allow",
+    justification = "Sub-issues API と GitHub 状態確認に必要です",
+    match = [
+        "gh api repos/2-yudetama/article-freezer/issues/123 --jq .id",
+        "gh api -X POST repos/2-yudetama/article-freezer/issues/123/sub_issues -F sub_issue_id=456",
+    ],
+)
+
+prefix_rule(
+    pattern = ["uv", "run"],
+    decision = "allow",
+    justification = "md-extractor の typecheck と Python formatter hook に必要です",
+    match = [
+        "uv run pyright",
+        "uv run --project packages/md-extractor ruff check --fix packages/md-extractor/src/main.py",
     ],
 )

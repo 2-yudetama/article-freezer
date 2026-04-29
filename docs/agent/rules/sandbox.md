@@ -33,6 +33,27 @@
 
 ## Rules
 
+### allow 対象
+
+自動運用で sandbox 外実行が必要になる代表操作は `allow` する。
+文脈依存の妥当性は hooks とロール運用で確認する。
+
+#### git / GitHub 操作
+
+- `git add <明示ファイル>`
+- `git commit`
+- `git push`
+- `gh issue comment`
+- `gh issue create`
+- `gh issue view`
+- `gh pr create`
+- `gh pr list`
+- `gh api`
+
+#### Python package 操作
+
+- `uv run`
+
 ### forbidden 対象
 
 #### 広範囲 stage
@@ -76,9 +97,19 @@
 - `git branch --show-current`
 - `git add <明示ファイル>`
 - `git commit`
+- `git push`
+- `gh issue comment`
+- `gh issue create`
+- `gh issue view`
+- `gh pr create`
+- `gh pr list`
+- `gh api`
+- `uv run`
 
 ### 運用上の注意
 
-- `git add <明示ファイル>` や `git commit` は通常のエージェント開発ワークフローで使うため禁止しない
+- `git add <明示ファイル>` や `git commit` は通常のエージェント開発ワークフローで使うため allow する
 - `git push` や `gh pr create` は Manager の責務として扱い、ロール判定は rules では行わない
+- `gh api` は Sub-issues API の GET / POST で使うため allow し、DELETE 系は forbidden と hook で止める
+- `uv run` は `pnpm --recursive run typecheck` 配下の `pyright` と Python formatter hook で必要なため allow する
 - rules / hooks は完全な enforcement boundary ではなく guardrail として扱う
