@@ -1,4 +1,4 @@
 interface:
-  display_name: "AI Output コメント"
-  short_description: "AI ワークフローコメントを投稿"
-  default_prompt: "$output-comment を使って、ワークフロー Output を issue コメントとして整形・投稿してください。"
+  display_name: "Output コメント投稿"
+  short_description: "AI ワークフロー Output を issue コメント化"
+  default_prompt: "$output-comment を使って、各ロールが作成した Output を内容判断せず、AI: ... 見出しの issue コメントとして投稿してください。"

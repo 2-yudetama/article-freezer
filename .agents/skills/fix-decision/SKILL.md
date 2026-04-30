@@ -53,11 +53,13 @@ Evaluator Output の Result に基づき、Manager が修正継続、PR 作成�
 3. `needs-fix` の場合は修正ループ回数を確認する
 4. 修正ループが 2 回未満なら Generator に修正を依頼する
 5. 修正ループ 2 回到達または `blocked` の場合は人間確認へフォールバックする
-6. フォールバック時は `AI: Manager Log` を残す
+6. 受け入れ条件やスコープ変更が必要な場合は Generator に直接修正依頼せず、再計画または人間確認へ進む
+7. フォールバック時は `AI: Manager Log` を残す
 
 ## この skill が判断しないこと
 
 - コード修正
 - Evaluator の Result 上書き
-- 受け入れ条件やスコープの変更
+- 受け入れ条件やスコープの独断変更
 - push / PR 作成
+- Evaluator Output 本文の作成や投稿

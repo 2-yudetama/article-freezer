@@ -9,12 +9,12 @@ metadata:
 
 ## 目的
 
-Generator が `implementation-plan` に沿って実装し、issue スコープ内の変更を検証して commit する。
+Generator が採用済み `implementation-plan` に沿って実装し、issue スコープ内の変更を検証して commit し、Generator Output を対象 issue に保存する。
 
 ## 使用フェーズ
 
 - 実装
-- 修正判断
+- 修正ループでの実装
 
 ## 実行ロール
 
@@ -32,6 +32,7 @@ Generator が `implementation-plan` に沿って実装し、issue スコープ�
 
 - issue スコープ内の commit
 - Generator Output
+- 対象 issue の `AI: Generator Output` コメント
 
 ## 参照する正式ドキュメント
 
@@ -55,12 +56,15 @@ Generator が `implementation-plan` に沿って実装し、issue スコープ�
 6. 対象ファイルを明示して stage する
 7. staged diff が issue スコープ内だけか確認する
 8. issue スコープ内の変更だけを commit する
-9. commit hash と検証結果を Generator Output に記録する
+9. commit hash、検証結果、未解決事項を Generator Output に記録する
+10. `output-comment` skill を使い、対象 issue に `AI: Generator Output` として投稿する
+11. 修正ループ時は Generator Output 本文に `Loop: {番号}` を含める
 
 ## この skill が判断しないこと
 
 - Planner Output の採用可否
 - 受け入れ条件やスコープの変更
 - push / PR 作成
+- 実装結果の評価
 - Generator Output 以外の issue コメント投稿
 - unrelated changes の stage / commit

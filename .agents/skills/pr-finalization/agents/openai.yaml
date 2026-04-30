@@ -1,4 +1,4 @@
 interface:
   display_name: "PR 最終化"
-  short_description: "pass 済み作業を PR 化"
-  default_prompt: "$pr-finalization を使って、pass 済み作業を push し PR 作成と結果記録を行ってください。"
+  short_description: "pass 済み作業を push して PR 作成"
+  default_prompt: "$pr-finalization を使って、Evaluator Output が pass の場合だけ PR 作成条件を確認し、push、PR 作成、AI: PR Created 記録を行ってください。"

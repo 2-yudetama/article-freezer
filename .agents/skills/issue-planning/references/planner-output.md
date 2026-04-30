@@ -9,6 +9,15 @@
 5. 関連 issue / PR が明示されている場合だけ確認する
 6. 判断できない事項は推測で埋めず、`リスク・確認事項` に残す
 
+## Planner Output 契約
+
+- Planner Output は `implementation-plan` または `split-proposal` のどちらか一方を必ず含める
+- 1 PR で扱える場合は `Type: implementation-plan` を明記する
+- 分割が必要な場合は `Type: split-proposal` を明記する
+- 両方を同時に含めない
+- Planner 自身が `output-comment` skill を使い、対象 issue に `AI: Planner Output` として投稿する
+- Planner Output の採用可否、差し戻し、分割実行、人間確認は Manager が `plan-review` で判断する
+
 ## implementation-plan
 
 - 対象 issue

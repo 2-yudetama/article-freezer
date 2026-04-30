@@ -1,4 +1,4 @@
 interface:
-  display_name: "外部副作用失敗"
-  short_description: "外部副作用の失敗を処理"
-  default_prompt: "$external-op-failure を使って、失敗した外部操作をリトライ、停止、記録のどれで扱うか判断してください。"
+  display_name: "外部副作用失敗判断"
+  short_description: "失敗した外部副作用の停止や記録を判断"
+  default_prompt: "$external-op-failure を使って、失敗した外部操作の成功状態とリトライ可否を確認し、必要なら停止と Manager Log 記録へ進めてください。"

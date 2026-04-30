@@ -9,12 +9,12 @@ metadata:
 
 ## 目的
 
-Evaluator が Generator の実装結果をレビューし、`pass | needs-fix | blocked` を判定する。
+Evaluator が Generator の commit と差分を非破壊的にレビューし、`pass | needs-fix | blocked` のいずれかを Result として記録する。
 
 ## 使用フェーズ
 
 - 評価
-- 修正判断
+- 修正ループ後の再評価
 
 ## 実行ロール
 
@@ -32,6 +32,7 @@ Evaluator が Generator の実装結果をレビューし、`pass | needs-fix | 
 
 - Evaluator Output
 - `pass | needs-fix | blocked` の Result
+- 対象 issue の `AI: Evaluator Output` コメント
 
 ## 参照する正式ドキュメント
 
@@ -52,12 +53,15 @@ Evaluator が Generator の実装結果をレビューし、`pass | needs-fix | 
 3. 受け入れ条件を満たしているか確認する
 4. 必要な非破壊的検証を実行する
 5. 発見した問題を修正必須と任意改善に分類する
-6. `pass | needs-fix | blocked` を判定する
-7. Evaluator Output に根拠を記録する
+6. `pass | needs-fix | blocked` のいずれかを判定する
+7. Evaluator Output に Result と根拠を記録する
+8. `output-comment` skill を使い、対象 issue に `AI: Evaluator Output` として投稿する
+9. 修正ループ時は Evaluator Output 本文に `Loop: {番号}` を含める
 
 ## この skill が判断しないこと
 
 - コード修正
 - stage / commit / push / PR 作成
+- 受け入れ条件やスコープの変更
 - Evaluator Output 以外の issue コメント投稿
-- issue スコープや受け入れ条件の変更
+- 破壊的検証や DELETE 系 GitHub 操作
