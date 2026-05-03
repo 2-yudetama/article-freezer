@@ -20,6 +20,7 @@
         "@radix-ui/react-checkbox",
         "clsx",
         "pg",
+        "server-only",
         "tailwind-merge"
       ]
     },
