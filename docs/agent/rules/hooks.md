@@ -78,6 +78,7 @@ commit 前検証は lefthook を正本とし、Codex hook では検証内容を�
 
 push 前 hook では commit 前検証との重複を許容し、リモートへ出る直前の確認を優先する。
 将来テストを追加する場合は、push 前検証へより広い範囲のテストを追加する。
+PreToolUse hook 全体の timeout は 390 秒、個別検証コマンドの timeout は 120 秒とする。
 
 ### rules で拾いきれない広範囲 stage
 

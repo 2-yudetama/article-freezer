@@ -196,6 +196,9 @@ def staged_files(cwd: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+CHECK_TIMEOUT_SECONDS = 120
+
+
 def run_check(cwd: str, command: list[str]) -> tuple[bool, str]:
     try:
         result = subprocess.run(
@@ -204,7 +207,14 @@ def run_check(cwd: str, command: list[str]) -> tuple[bool, str]:
             check=False,
             capture_output=True,
             text=True,
+            timeout=CHECK_TIMEOUT_SECONDS,
         )
+    except subprocess.TimeoutExpired as error:
+        output = "\n".join(part for part in (error.stdout, error.stderr) if part)
+        details = output.strip()
+        if details:
+            return False, f"{details}\n{CHECK_TIMEOUT_SECONDS}秒で timeout しました"
+        return False, f"{CHECK_TIMEOUT_SECONDS}秒で timeout しました"
     except OSError as error:
         return False, str(error)
 
