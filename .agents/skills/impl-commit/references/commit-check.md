@@ -21,6 +21,9 @@ git diff --cached
 {Gitmoji} {メッセージタイトル} (#{issue番号})
 ```
 
+英語の Conventional Commits 形式ではなく、Gitmoji、変更内容を表す日本語タイトル、対象 issue 番号を含める。
+複数 commit になる場合も、全て同じ issue 番号を含める。
+
 例:
 
 ```txt

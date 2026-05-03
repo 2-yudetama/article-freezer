@@ -58,6 +58,8 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 ### `git push` 前のブランチ名不一致
 
 現在ブランチが `issue/` で始まらない場合は deny する。
+push コマンドは `git push origin issue/{issue番号}` のように remote と branch を明示する。
+引数なし `git push` は rules の sandbox bypass allow に一致しないため使わない。
 
 ### staged files がない状態での `git commit`
 
@@ -67,6 +69,7 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 
 `--no-verify`、`-n`、`--amend` が含まれる場合は deny する。
 commit 前検証は lefthook を正本とし、Codex hook では検証内容を重複管理しない。
+commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` 形式にする。
 
 ### `git push` 前の検証失敗
 

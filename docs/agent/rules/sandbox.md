@@ -48,6 +48,9 @@ filesystem の許可範囲は `.codex/rules/default.rules` ではなく `.codex/
 
 - `git push origin ...`
 
+rules の allow は `git push origin` prefix を対象にする。
+`git push` のような引数なし push は sandbox bypass 対象外のため使わない。
+
 #### commit 作成
 
 - `git commit`
@@ -99,6 +102,7 @@ filesystem の許可範囲は `.codex/rules/default.rules` ではなく `.codex/
 - `git add <明示ファイル>`、`git commit` などのロール別妥当性は rules では判定しない
 - commit 前検証は lefthook を正本とし、Codex hook では staged files と検証 bypass / 履歴修正禁止だけを確認する
 - push は `git push origin issue/{issue番号}` のように remote と branch を明示し、引数なし push / upstream 設定に依存しない
+- commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` 形式にする
 - issue ブランチかどうか、push 前検証が通っているかなどの文脈依存チェックは hooks で扱う
 - `gh` 系操作は sandbox 内の挙動確認後に allow 対象へ追加する
 - rules / hooks は完全な enforcement boundary ではなく guardrail として扱う

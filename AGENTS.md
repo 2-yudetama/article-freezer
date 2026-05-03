@@ -36,6 +36,13 @@
 - JavaScript/TypeScript workspace は `pnpm` 前提。`npm` / `yarn` を混在させない。
 - 依存関係は責務のある package に追加し、workspace 共通の開発依存だけをルートに置く。
 
+## Git Rules
+
+- commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` 形式にする。
+- 例: `📝 mise セットアップ手順を追加 (#56)`
+- push は `git push origin issue/{issue番号}` のように remote と branch を明示する。
+- 引数なし `git push` や upstream 設定に依存した push は使わない。
+
 ## Documentation Rules
 
 - エージェント開発ワークフローの運用仕様は `docs/agent` を参照し、通常の単発作業ルールとしては扱わない。
