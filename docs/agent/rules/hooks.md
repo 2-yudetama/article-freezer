@@ -43,6 +43,18 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 
 `--method DELETE`、`--method=DELETE`、`-X DELETE`、引数内の `DELETE` を検出した場合は deny する。
 
+### `git reset --hard`
+
+`--hard` が含まれる場合は、引数順に依存せず deny する。
+
+### `git push` の force / delete 相当操作
+
+`--force`、`-f`、`--force-with-lease`、`--delete`、`-d`、`+` で始まる refspec、`:` で始まる refspec を検出した場合は deny する。
+
+### `gh issue delete` / `gh pr close`
+
+`gh` の global option が途中に含まれていても、`issue delete` と `pr close` を検出した場合は deny する。
+
 ### `git push` 前のブランチ名不一致
 
 現在ブランチが `issue/` で始まらない場合は deny する。
