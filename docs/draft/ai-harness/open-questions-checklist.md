@@ -576,7 +576,7 @@ GitHub Sub-issues API は利用する。
 
 #### `.codex`
 
-- `.codex/config.toml` は `approval_policy = "never"`、`sandbox_mode = "workspace-write"`、`multi_agent = true`、`codex_hooks = true`、`max_threads = 1`、`max_depth = 1` で、決定済み方針と一致している
+- `.codex/config.toml` は `approval_policy = "never"`、`sandbox_mode = "workspace-write"`、`default_permissions = "workspace"`、`[permissions.workspace.filesystem]`、`multi_agent = true`、`codex_hooks = true`、`goals = true`、`max_threads = 1`、`max_depth = 1` で、決定済み方針と一致している
 - `.codex/agents/planner.toml`、`.codex/agents/generator.toml`、`.codex/agents/evaluator.toml` は存在し、各 role の `docs/agent/roles/*.md` を参照する構成になっている
 - `.codex/rules/default.rules` は、広範囲 stage、破壊的 git 操作、DELETE 系 GitHub 操作、再帰削除系 `rm` の禁止方針と一致している
 - `.codex/hooks.json` と `.codex/hooks/pre_tool_use_policy.py` は、`PreToolUse` の `Bash` hook として、`gh api DELETE`、`git push` のブランチ名、空 stage commit、広範囲 stage、再帰削除、`git checkout --` を補完している

@@ -3,9 +3,6 @@
 name = "planner"
 description = "Issue を分析し、要件・スコープ・受け入れ条件・Generator が満たすべき実装契約を整理する。"
 
-approval_policy = "never"
-sandbox_mode = "workspace-write"
-
 developer_instructions = """
 あなたは Planner です。
 docs/agent/roles/planner.md を読み、その内容を Planner ロールの正本として従うこと。

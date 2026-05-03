@@ -107,6 +107,15 @@ def is_delete_gh_api(argv: list[str]) -> bool:
     return False
 
 
+def is_commit_verification_bypass(argv: list[str]) -> bool:
+    return len(argv) >= 2 and argv[:2] == ["git", "commit"] and has_option(
+        argv,
+        "--no-verify",
+        "-n",
+        "--amend",
+    )
+
+
 def current_branch(cwd: str) -> str:
     try:
         result = subprocess.run(
@@ -180,6 +189,10 @@ def main() -> int:
         deny("DELETE 系 GitHub API 操作は禁止です")
         return 0
 
+    if is_commit_verification_bypass(argv):
+        deny("commit 前検証の bypass や履歴修正は禁止です")
+        return 0
+
     if is_recursive_rm(argv):
         deny("再帰削除はハーネスの自動操作では禁止です")
         return 0
@@ -205,17 +218,6 @@ def main() -> int:
     if len(argv) >= 2 and argv[:2] == ["git", "commit"]:
         if not staged_files(cwd):
             deny("staged files がない状態での commit は実行できません")
-            return 0
-
-        ok, output = run_checks(
-            cwd,
-            [
-                ["pnpm", "check"],
-                ["pnpm", "--recursive", "run", "typecheck"],
-            ],
-        )
-        if not ok:
-            deny_with_output("git commit 前の検証に失敗しました", output)
             return 0
 
     return 0

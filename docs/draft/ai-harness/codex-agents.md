@@ -62,9 +62,24 @@ docs/
 approval_policy = "never"
 sandbox_mode = "workspace-write"
 
+default_permissions = "workspace"
+
+[permissions.workspace.filesystem]
+":minimal" = "read"
+"/tmp" = "write"
+glob_scan_max_depth = 5
+
+[permissions.workspace.filesystem.":project_roots"]
+"." = "write"
+".codex" = "write"
+".agents" = "write"
+".git" = "write"
+"**/*.env" = "none"
+
 [features]
 multi_agent = true
 codex_hooks = true
+goals = true
 
 [agents]
 max_threads = 1
@@ -91,7 +106,12 @@ docs/agent/roles/planner.md を読み、その内容を Planner ロールの正�
 - Planner は計画専任のため `approval_policy = "never"`、`sandbox_mode = "read-only"` とする
 - Generator は実装と commit を担うため `approval_policy = "never"`、`sandbox_mode = "workspace-write"` とする
 - Evaluator は検証コマンドがキャッシュや生成物を書く可能性があるため `approval_policy = "never"`、`sandbox_mode = "workspace-write"` とする
-- GitHub DELETE 系操作、Generator の push / PR / issue 操作、Evaluator の stage / commit / push / PR / issue 操作は rules / hooks で制御する
+- filesystem の許可範囲は `.codex/config.toml` の `[permissions.workspace.filesystem]` で管理する
+- commit 前検証は lefthook を正本とし、`git commit` は `.codex/rules/default.rules` の `allow` で sandbox bypass 対象として扱う
+- GitHub への push は `.codex/rules/default.rules` の `allow` で sandbox bypass 対象として扱う
+- `pnpm install` は依存関係インストールと lockfile 検証のため `.codex/rules/default.rules` の `allow` で sandbox bypass 対象として扱う
+- PR / issue 操作の `allow` は sandbox 内の挙動確認後に追加する
+- GitHub DELETE 系操作、Generator の push / PR / issue 操作、Evaluator の stage / commit / push / PR / issue 操作の文脈依存チェックは rules / hooks で制御する
 
 ## skill 参照方針
 

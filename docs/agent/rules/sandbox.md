@@ -2,17 +2,19 @@
 
 ## 目的
 
-- エージェント開発ワークフローの運用時に、文脈不要で危険と判断できる操作を rules で機械的に止める。
-- rules はロール判定や issue スコープ判定を置き換えるものではなく、明確な禁止操作に対する guardrail として扱う。
+- エージェント開発ワークフローの運用時に、sandbox 内で扱う filesystem 境界と、sandbox bypass を明示許可するコマンドを分けて管理する。
+- rules はロール判定や issue スコープ判定を置き換えるものではなく、明確な許可操作と禁止操作に対する guardrail として扱う。
 
 ## 基本方針
 
 - `prompt` は人間の介入が必須になるため使わない
-- rules は文脈が不要で、常に禁止したいコマンドだけを制御する
+- rules は sandbox bypass を明示許可するコマンドと、文脈が不要で常に禁止したいコマンドを制御する
 - ロール判定、issue スコープ判定、Planner Output からの逸脱判定はドキュメント運用と Evaluator のレビューで扱う
 - rules で表現しにくい引数順・文脈依存チェックは hooks で補完する
 - 自動運用を優先するため、approval は原則 `never` とする
 - Manager / Planner / Generator / Evaluator は、Output コメント投稿や検証、生成物の書き込みを考慮して `workspace-write` とする
+- filesystem の許可範囲は `.codex/config.toml` の `[permissions.workspace.filesystem]` で管理する
+- 外部副作用を伴う GitHub 操作は `.codex/rules/default.rules` で明示許可し、sandbox bypass 対象として扱う
 - Codex の仕様上、実行中のエージェントは `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下を直接変更できない
 
 ## 配置
@@ -33,28 +35,28 @@
 
 ## Rules
 
+### forbidden 対象
+
+rules は sandbox bypass を明示許可するコマンドと、文脈が不要で常に禁止したいコマンドを制御する。
+filesystem の許可範囲は `.codex/rules/default.rules` ではなく `.codex/config.toml` で管理する。
+
 ### allow 対象
 
-自動運用で sandbox 外実行が必要になる代表操作は `allow` する。
-文脈依存の妥当性は hooks とロール運用で確認する。
+`allow` は通常の sandbox 制約を bypass しうるため、外部副作用を伴い、かつワークフロー上必要な代表コマンドだけを対象にする。
 
-#### git / GitHub 操作
+#### GitHub への push
 
-- `git add <明示ファイル>`
+- `git push origin ...`
+
+#### commit 作成
+
 - `git commit`
-- `git push`
-- `gh issue comment`
-- `gh issue create`
-- `gh issue view`
-- `gh pr create`
-- `gh pr list`
-- `gh api`
 
-#### Python package 操作
+#### 依存関係インストール
 
-- `uv run`
-
-### forbidden 対象
+- `pnpm install`
+- `pnpm install --lockfile-only`
+- `pnpm install --frozen-lockfile`
 
 #### 広範囲 stage
 
@@ -71,6 +73,9 @@
 - `git merge`
 - `git rebase`
 - `git checkout --`
+- `git push --force`
+- `git push -f`
+- `git push --force-with-lease`
 
 #### DELETE 系 GitHub 操作
 
@@ -89,27 +94,11 @@
 - `rm -f -r`
 - `rm -r -f`
 
-### 許可する代表操作
-
-- `git status`
-- `git diff`
-- `git log`
-- `git branch --show-current`
-- `git add <明示ファイル>`
-- `git commit`
-- `git push`
-- `gh issue comment`
-- `gh issue create`
-- `gh issue view`
-- `gh pr create`
-- `gh pr list`
-- `gh api`
-- `uv run`
-
 ### 運用上の注意
 
-- `git add <明示ファイル>` や `git commit` は通常のエージェント開発ワークフローで使うため allow する
-- `git push` や `gh pr create` は Manager の責務として扱い、ロール判定は rules では行わない
-- `gh api` は Sub-issues API の GET / POST で使うため allow し、DELETE 系は forbidden と hook で止める
-- `uv run` は `pnpm --recursive run typecheck` 配下の `pyright` と Python formatter hook で必要なため allow する
+- `git add <明示ファイル>`、`git commit` などのロール別妥当性は rules では判定しない
+- commit 前検証は lefthook を正本とし、Codex hook では staged files と検証 bypass / 履歴修正禁止だけを確認する
+- push は `git push origin issue/{issue番号}` のように remote と branch を明示し、引数なし push / upstream 設定に依存しない
+- issue ブランチかどうか、push 前検証が通っているかなどの文脈依存チェックは hooks で扱う
+- `gh` 系操作は sandbox 内の挙動確認後に allow 対象へ追加する
 - rules / hooks は完全な enforcement boundary ではなく guardrail として扱う

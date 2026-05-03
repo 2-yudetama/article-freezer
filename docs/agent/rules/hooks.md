@@ -10,6 +10,7 @@ hooks は rules と同じく guardrail として扱い、ロール判定や issu
 - 実行前の禁止操作チェックは `PreToolUse` の `Bash` に限定する
 - rules で制御できる文脈不要の禁止操作は rules に寄せる
 - hooks では引数順・現在ブランチ・staged files など、実行直前の状態が必要なものを確認する
+- commit 前検証の正本は lefthook とし、Codex hook は commit の文脈チェックだけを扱う
 - `PostToolUse` の `Edit|MultiEdit|Write` では、変更ファイルのみを対象に formatter を自動実行する
 - hook で自動修正する対象は formatter に限定し、検証に失敗した場合は停止する
 
@@ -50,15 +51,10 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 
 `git diff --cached --name-only` が空の場合は deny する。
 
-### `git commit` 前の検証失敗
+### `git commit` の検証 bypass / 履歴修正
 
-`git commit` 実行前に以下を実行し、いずれかが失敗した場合は deny する。
-
-- `pnpm check`
-- `pnpm --recursive run typecheck`
-
-commit 前 hook では Lint と型チェックを必須にする。
-将来テストを追加する場合は、影響範囲を絞れる単位で commit 前検証へ追加する。
+`--no-verify`、`-n`、`--amend` が含まれる場合は deny する。
+commit 前検証は lefthook を正本とし、Codex hook では検証内容を重複管理しない。
 
 ### `git push` 前の検証失敗
 
