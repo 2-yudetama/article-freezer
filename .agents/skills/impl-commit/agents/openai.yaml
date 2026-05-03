@@ -1,4 +1,4 @@
 interface:
-  display_name: "実装 commit"
-  short_description: "スコープ内の実装と commit"
-  default_prompt: "$impl-commit を使って、採用済み計画を実装しスコープ内の変更を commit してください。"
+  display_name: "実装と commit"
+  short_description: "採用済み計画に沿って実装し commit"
+  default_prompt: "$impl-commit を使って、採用済み implementation-plan に沿って実装、検証、明示 stage、スコープ内 commit、Generator Output 作成を行ってください。"

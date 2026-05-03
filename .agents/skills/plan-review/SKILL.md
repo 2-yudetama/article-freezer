@@ -46,15 +46,17 @@ Manager が Planner Output を確認し、採用、差し戻し、分割フロ�
 ## 実行手順
 
 1. Planner Output の Type を確認する
-2. 必須要素がそろっているか確認する
-3. スコープ、スコープ外、受け入れ条件に矛盾がないか確認する
-4. `implementation-plan` の場合は Generator が実装契約として使える粒度か確認する
-5. `split-proposal` の場合は各サブ issue が 1 PR で完了できる粒度か確認する
-6. 採用、差し戻し、人間確認のいずれかを決める
+2. `implementation-plan` または `split-proposal` のどちらか一方だけが含まれているか確認する
+3. 必須要素がそろっているか確認する
+4. スコープ、スコープ外、受け入れ条件に矛盾がないか確認する
+5. `implementation-plan` の場合は Generator が実装契約として使える粒度か確認する
+6. `split-proposal` の場合は各サブ issue が 1 PR で完了できる粒度か確認する
+7. 採用、差し戻し、人間確認のいずれかを決める
 
 ## この skill が判断しないこと
 
 - 実装そのもの
 - Evaluator の判定
-- サブ issue 作成コマンドの詳細
+- サブ issue 作成コマンドの実行
 - 受け入れ条件やスコープの独断変更
+- Planner Output 本文の作成や投稿

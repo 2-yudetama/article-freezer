@@ -9,7 +9,7 @@ metadata:
 
 ## 目的
 
-Evaluator Output が `pass` の場合に、Manager が push、PR 作成、PR 作成結果コメントを行う。
+Evaluator Output の Result が `pass` の場合に、Manager が push、PR 作成、PR 作成結果コメントを行う。
 
 ## 使用フェーズ
 
@@ -56,12 +56,14 @@ Evaluator Output が `pass` の場合に、Manager が push、PR 作成、PR 作
 4. Evaluator Output の Result が `pass` であることを確認する
 5. branch を push する
 6. PR を作成する
-7. 対象 issue に `AI: PR Created` をコメントする
+7. `output-comment` skill を使い、対象 issue に `AI: PR Created` をコメントする
 8. 失敗時は外部副作用失敗時の扱いに従う
 
 ## この skill が判断しないこと
 
 - `pass` ではない実装の PR 作成
 - 実装 commit の作成
+- 評価 Result の作成や上書き
 - 受け入れ条件やスコープの変更
 - DELETE 系 GitHub 操作
+- 作成済み PR、branch、コメントの削除

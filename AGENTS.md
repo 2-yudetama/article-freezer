@@ -14,6 +14,7 @@
 
 ## Shared Commands
 
+- `mise install`: Node.js / pnpm / Python / uv のバージョン同期
 - `pnpm install`: workspace 全体の依存関係インストール
 - `pnpm check`: Biome Lint
 - `pnpm check:write`: Biome Lint(自動修正)
@@ -31,8 +32,16 @@
 - **`.env`などの環境変数ファイルは参照しない。環境変数を確認したい場合は`.env.example`を参照する。**
 - DELETE 系 GitHub 操作は禁止する。
 - git の破壊的操作は原則禁止し、必要な場合は人間確認へフォールバックする。
+- 開発ツールのバージョンは `.mise.toml` を正本とする。
 - JavaScript/TypeScript workspace は `pnpm` 前提。`npm` / `yarn` を混在させない。
 - 依存関係は責務のある package に追加し、workspace 共通の開発依存だけをルートに置く。
+
+## Git Rules
+
+- commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` 形式にする。
+- 例: `📝 mise セットアップ手順を追加 (#56)`
+- push は `git push origin issue/{issue番号}` のように remote と branch を明示する。
+- 引数なし `git push` や upstream 設定に依存した push は使わない。
 
 ## Documentation Rules
 

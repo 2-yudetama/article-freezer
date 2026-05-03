@@ -167,8 +167,10 @@ git commit -m "📝 Sub-issues 運用フローを追加 (#54)"
 ## push
 
 ```bash
-git push -u origin issue/54
+git push origin issue/54
 ```
+
+push は remote と branch を明示し、引数なし push / upstream 設定に依存しない。
 
 ## PR 作成
 

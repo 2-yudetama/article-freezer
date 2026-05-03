@@ -9,7 +9,7 @@ metadata:
 
 ## 目的
 
-Planner / Generator / Evaluator Output と Manager 系コメントを GitHub issue コメントとして保存する。
+Planner / Generator / Evaluator Output と Manager 系コメントを GitHub issue コメントとして保存する共通手順を提供する。
 
 ## 使用フェーズ
 
@@ -58,14 +58,17 @@ Planner / Generator / Evaluator Output と Manager 系コメントを GitHub iss
 1. コメント対象 issue を確認する
 2. コメント見出しを `AI: ...` 形式で付ける
 3. 修正ループがある場合は `Loop: {番号}` を含める
-4. Output 本文が必須要素を満たしているか確認する
-5. 一時ファイルを作らず `--body` または標準入力で issue コメントを投稿する
-6. Output またはコメントを作成したロールが issue コメントを投稿する
-7. 投稿失敗時は外部副作用失敗時の扱いに従う
+4. Output 本文が各ロールのテンプレートに沿っているか確認する
+5. Output の内容や採用可否は変更せず、投稿形式だけを整える
+6. 一時ファイルを作らず `--body` または標準入力で issue コメントを投稿する
+7. Output またはコメントを作成したロールが issue コメントを投稿する
+8. 投稿失敗時は外部副作用失敗時の扱いに従う
 
 ## この skill が判断しないこと
 
 - Planner Output の採用可否
 - Generator / Evaluator Output の内容の改変
+- Manager のフェーズ移行判断
 - 既存コメントの削除
 - 既存コメントの原則編集
+- DELETE 系 GitHub 操作

@@ -14,10 +14,12 @@
 ## 実行コマンド
 
 ```bash
-git push -u origin issue/{issue番号}
+git push origin issue/{issue番号}
 gh pr create --base {baseブランチ} --head issue/{issue番号} --title "{PRタイトル}" --body "{PR本文}"
 ```
 
+- push は remote と branch を明示し、引数なし push / upstream 設定に依存しない
+- `git push origin issue/{issue番号}` は rules の sandbox bypass allow 対象であり、`git push` は対象外
 - `{baseブランチ}` はリポジトリの既定ブランチまたは対象 issue で指定されたブランチにする
 - PR body が長い場合は shell の標準入力を使って `gh pr create --base {baseブランチ} --head issue/{issue番号} --title "{PRタイトル}" --body-file -` で作成する
 - 一時ファイルは原則として作らない
