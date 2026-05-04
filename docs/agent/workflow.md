@@ -130,7 +130,7 @@ flowchart TD
 | 修正判断 | 実装 | Evaluator Output の Result が `needs-fix` で、修正ループ回数が 2 回未満である |
 | 修正判断 | 計画作成 | Planner Output の前提や受け入れ条件の見直しが必要で、issue スコープ内で再計画できる |
 | 修正判断 | 人間確認 | Result が `blocked`、修正ループ回数が 2 回に到達、または自動判断できない |
-| PR 最終化 | PR 作成完了 | Manager が PR 作成条件を満たすことを確認し、push と PR 作成を完了した |
+| PR 最終化 | PR 作成完了 | Manager が PR 作成条件を満たすことを確認し、対象 issue のメタデータを可能な範囲で引き継いで push と PR 作成を完了した |
 
 PR 最終化へ進めるのは、Evaluator Output の Result が `pass` の場合だけとする。
 

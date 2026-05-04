@@ -28,6 +28,7 @@ Evaluator Output の Result が `pass` の場合に、Manager が push、PR 作�
 - commit 一覧
 - 現在ブランチ
 - 作業ツリー状態
+- 対象 issue の assignee / label / milestone / project
 
 ## 出力
 
@@ -54,10 +55,11 @@ Evaluator Output の Result が `pass` の場合に、Manager が push、PR 作�
 2. 現在ブランチが `issue/{issue番号}` 形式か確認する
 3. 未コミット変更や untracked file がないか確認する
 4. Evaluator Output の Result が `pass` であることを確認する
-5. branch を push する
-6. PR を作成する
-7. `output-comment` skill を使い、対象 issue に `AI: PR Created` をコメントする
-8. 失敗時は外部副作用失敗時の扱いに従う
+5. 対象 issue の assignee / label / milestone / project を取得する
+6. branch を push する
+7. 対象 issue のメタデータを引き継いで PR を作成する
+8. `output-comment` skill を使い、対象 issue に `AI: PR Created` をコメントする
+9. 失敗時は外部副作用失敗時の扱いに従う
 
 ## この skill が判断しないこと
 

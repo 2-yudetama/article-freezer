@@ -46,6 +46,7 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 - 各成果物が次フェーズの入力として十分か確認する
 - skill の結果を受けて次フェーズへ進むか判断する
 - PR 作成条件を満たした場合に push と PR 作成を行う
+- PR 作成時は対象 issue の assignee / label / milestone / project を可能な範囲で引き継ぐ
 - 人間確認へフォールバックする場合は、必要な Manager Log を issue コメントとして保存する
 - 自動判断できない事項は後続フェーズへ進めず人間確認へ戻す
 

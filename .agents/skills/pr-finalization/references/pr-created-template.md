@@ -10,4 +10,10 @@
 ## Branch
 
 ## Commit
+
+## Metadata
+
+引き継ぎ済み:
+
+未引き継ぎ:
 ```
