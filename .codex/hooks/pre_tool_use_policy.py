@@ -132,6 +132,15 @@ def is_destructive_git_push(argv: list[str]) -> bool:
     return any(arg.startswith("+") or arg.startswith(":") for arg in args)
 
 
+def is_incomplete_git_push(argv: list[str]) -> bool:
+    args = git_subcommand_args(argv, "push")
+    if args is None:
+        return False
+
+    positional = [arg for arg in args if not arg.startswith("-")]
+    return len(positional) < 2 or positional[0] != "origin"
+
+
 def is_destructive_gh_issue(argv: list[str]) -> bool:
     return gh_subcommand_args(argv, "issue", "delete") is not None
 
@@ -276,6 +285,10 @@ def main() -> int:
         return 0
 
     if len(argv) >= 2 and argv[:2] == ["git", "push"]:
+        if is_incomplete_git_push(argv):
+            deny("git push は remote と branch を明示してください")
+            return 0
+
         branch = current_branch(cwd)
         if not branch.startswith("issue/"):
             deny("git push は issue/{issue番号} ブランチでのみ実行してください")

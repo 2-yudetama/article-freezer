@@ -59,7 +59,7 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 
 現在ブランチが `issue/` で始まらない場合は deny する。
 push コマンドは `git push origin issue/{issue番号}` のように remote と branch を明示する。
-引数なし `git push` は rules の sandbox bypass allow に一致しないため使わない。
+引数なし `git push` と `origin` 以外への push は deny する。
 
 ### staged files がない状態での `git commit`
 
