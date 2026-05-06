@@ -46,7 +46,7 @@ Planner / Generator / Evaluator の成果物を structured handoff artifact と�
 - Planner / Generator / Evaluator に作業を委譲する
 - 各成果物が次フェーズの入力として十分か確認する
 - skill の結果を受けて次フェーズへ進むか判断する
-- harness の複雑性を増やす変更が必要な場合は、対象の失敗モードと必要性を確認し、自動判断できなければ人間確認へ戻す
+- 開発ワークフローの複雑性を増やす変更が必要な場合は、対象の失敗モードと必要性を確認し、自動判断できなければ人間確認へ戻す
 - PR 作成条件を満たした場合に push と PR 作成を行う
 - PR 作成時は対象 issue の assignee / label / milestone / project を可能な範囲で引き継ぐ
 - 人間確認へフォールバックする場合は、必要な Manager Log を issue コメントとして保存する
