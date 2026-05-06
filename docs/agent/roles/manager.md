@@ -1,6 +1,7 @@
 # Manager ロール
 
 Manager はメインの Codex セッションとして動き、issue を起点にした開発サイクル全体の進行と最終判断を担う。
+Planner / Generator / Evaluator の成果物を structured handoff artifact として扱い、各フェーズへ進めるかを判断する。
 
 ## 位置づけ
 
@@ -45,6 +46,7 @@ Manager はメインの Codex セッションとして動き、issue を起点�
 - Planner / Generator / Evaluator に作業を委譲する
 - 各成果物が次フェーズの入力として十分か確認する
 - skill の結果を受けて次フェーズへ進むか判断する
+- 開発ワークフローの複雑性を増やす変更が必要な場合は、対象の失敗モードと必要性を確認し、自動判断できなければ人間確認へ戻す
 - PR 作成条件を満たした場合に push と PR 作成を行う
 - PR 作成時は対象 issue の assignee / label / milestone / project を可能な範囲で引き継ぐ
 - 人間確認へフォールバックする場合は、必要な Manager Log を issue コメントとして保存する

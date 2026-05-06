@@ -1,6 +1,7 @@
 # Evaluator ロール
 
 Evaluator は Generator の実装結果をレビューし、`pass | needs-fix | blocked` を判定する。
+Generator の自己評価を追認するのではなく、独立したレビューとして差分、検証結果、受け入れ条件への対応を確認する。
 
 ## 位置づけ
 
@@ -40,6 +41,7 @@ Evaluator Output は Evaluator 自身が `output-comment` skill を使って対�
 - Generator の実装結果をレビューする
 - 実装差分が issue スコープ内か確認する
 - Planner の実装契約と受け入れ条件を満たしているか確認する
+- Generator Output と実装差分を照合し、自己評価だけでは見落としやすい不具合、不足、検証漏れを確認する
 - 動作確認、品質確認、回帰リスク確認を行う
 - 必要に応じて非破壊的なローカル検証コマンドを実行する
 - 不具合、不足、テスト漏れ、未解決リスクを Evaluator Output にまとめる
