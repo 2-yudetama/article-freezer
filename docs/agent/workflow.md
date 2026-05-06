@@ -164,6 +164,62 @@ flowchart TD
 | 修正判断   | Manager   | `fix-decision`              | Evaluator の成果物に基づいて修正継続可否を判断する     |
 | PR 最終化  | Manager   | `pr-finalization`       | PR 作成条件を確認し、push と PR 作成を行う             |
 
+## 最小ドライラン
+
+ハーネス運用のドライランは、issue 起点の 1 サイクルを `start-workflow` から `pr-finalization` 直前まで確認し、外部副作用を伴う操作は実行しない。
+目的は、各ロールの入力、Output、フェーズ遷移、記録の不足を見つけ、後続 issue 化できる粒度で残すことである。
+
+### 確認できる範囲
+
+- 対象 issue が 1 つに確定しているか確認する
+- 現在ブランチ、作業ツリー、必要な `AGENTS.md` を確認し、開始可否を判断できるか確認する
+- Planner Output が `implementation-plan` または `split-proposal` のどちらか一方として読めるか確認する
+- Manager が Planner Output の採用、差し戻し、分割、人間確認のいずれかを判断できるか確認する
+- Generator が採用済み `implementation-plan` に沿って issue スコープ内の変更、検証、明示 stage、commit、Generator Output 作成を行えるか確認する
+- Evaluator が Generator Output と commit を基に `pass`、`needs-fix`、`blocked` のいずれかを判断できるか確認する
+- Manager が Evaluator Output を基に修正継続、再計画、人間確認、PR 最終化のいずれへ進めるか判断できるか確認する
+- `pr-finalization` の PR 作成前チェックを、push と PR 作成を行わずに確認する
+- 各 Output に対象 issue、Type または Result、commit、検証結果、未解決事項が記録されているか確認する
+
+### 実行しない外部副作用
+
+ドライラン中は、次の操作を実行しない。
+これらが必要になる地点では、実行予定のコマンド、前提、未確認事項を記録して停止する。
+
+- 既存 issue 本文や既存コメントの編集
+- 実際のサブ issue 作成
+- 実際の push
+- 実際の PR 作成
+- 実際の PR 編集
+- 作成済み issue、コメント、PR、branch の削除
+- 破壊的 git 操作
+
+### Manager が本番実行時に責任を持つ範囲
+
+ドライランで外部副作用を止めた後、本番実行に進めるかは Manager が判断する。
+Manager は本番実行時に次を確認し、実行結果を必要な Output または Manager Log に残す。
+
+- `issue/{issue番号}` ブランチで作業していること
+- `git status --short` に未コミット変更や untracked file がないこと
+- Evaluator Output の `Result` が `pass` であること
+- 対象 issue の assignee、label、milestone、project を取得できること
+- `git push origin issue/{issue番号}` を remote と branch 明示で実行すること
+- `gh pr create` で対象 issue と 1 対 1 の PR を作成すること
+- issue メタデータを可能な範囲で PR に引き継ぐこと
+- `AI: PR Created` を `output-comment` skill で投稿すること
+- push、PR 作成、メタデータ引き継ぎ、コメント投稿の失敗時は `external-op-failure` skill に従うこと
+
+### 不足記録
+
+ドライランで不足や曖昧さを見つけた場合は、後続 issue に移せるように次の粒度で記録する。
+
+- 対象フェーズ
+- 対象 skill または正式ドキュメント
+- 観測した不足
+- 期待される判断または記録
+- 外部副作用を伴うかどうか
+- 後続 issue 化する場合の最小スコープ
+
 ## フェーズ遷移条件
 
 | 現在フェーズ | 次フェーズ | 条件 |
