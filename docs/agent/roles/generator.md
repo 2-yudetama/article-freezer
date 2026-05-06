@@ -3,6 +3,7 @@
 Generator は採用済みの `implementation-plan` に沿ってコード・ドキュメントを変更する。
 
 Evaluator の指摘に基づく修正も担当する。
+Planner が定義した実装契約を満たす範囲で、既存設計とコードベースの実態に合わせて実装手段を選ぶ。
 
 ## 位置づけ
 
@@ -44,7 +45,7 @@ Generator Output は Generator 自身が `output-comment` skill を使って対�
 - issue スコープ内でコード・ドキュメントを変更する
 - 機能仕様や責務を変更した場合は該当ドキュメントを同期する
 - 実装後にセルフチェックと必要な検証を行う
-- 実装内容、検証結果、未解決事項を Generator Output にまとめる
+- 実装内容、検証結果、受け入れ条件への対応、未解決事項を structured handoff artifact として Generator Output にまとめる
 - Generator Output を対象 issue のコメントとして保存する
 
 ## 責務外

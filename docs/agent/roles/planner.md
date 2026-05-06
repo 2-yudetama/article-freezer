@@ -3,6 +3,7 @@
 Planner は issue を分析し、Manager 判断用の Planner Output を作る。
 
 実装手順を細かく固定するのではなく、Generator が満たすべき実装契約を整理する。
+これは誤った詳細手順を下流へ固定せず、Generator がコードベースの実態に合わせて実装手段を選べる余地を残すためである。
 
 ## 位置づけ
 
@@ -44,6 +45,7 @@ Planner Output は Planner 自身が `output-comment` skill を使って対象 i
 - 1 PR で扱える粒度か判断する
 - 1 PR で扱える場合は `implementation-plan` を作成する
 - 分割が必要な場合は `split-proposal` を作成する
+- `implementation-plan` では、期待される振る舞い、責務境界、検証観点、Generator の実装裁量を structured handoff artifact として明確にする
 - 未決定事項、リスク、人間確認が必要な事項を明示する
 - Planner Output を対象 issue のコメントとして保存する
 
