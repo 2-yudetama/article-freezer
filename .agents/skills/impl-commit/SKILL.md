@@ -56,9 +56,8 @@ Generator が採用済み `implementation-plan` に沿って実装し、issue �
 6. 対象ファイルを明示して stage する
 7. staged diff が issue スコープ内だけか確認する
 8. issue スコープ内の変更だけを commit する
-9. commit hash、検証結果、未解決事項を Generator Output に記録する
+9. commit hash、検証結果、未解決事項を Generator Output に記録する。修正ループ時は `references/generator-output.md` に従い、本文に `Loop: {番号}` と対応した Evaluator 指摘を含める
 10. `output-comment` skill を使い、対象 issue に `AI: Generator Output` として投稿する
-11. 修正ループ時は Generator Output 本文に `Loop: {番号}` を含める
 
 ## この skill が判断しないこと
 

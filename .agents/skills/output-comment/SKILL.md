@@ -52,17 +52,18 @@ Planner / Generator / Evaluator Output と Manager 系コメントを GitHub iss
 
 - `references/comment-format.md`: コメント見出し、投稿手順、失敗時の扱い
 - `references/comment-template.md`: issue コメントテンプレート
+- `.agents/skills/external-op-failure/SKILL.md`: 投稿失敗時の外部副作用失敗処理
 
 ## 実行手順
 
 1. コメント対象 issue を確認する
 2. コメント見出しを `AI: ...` 形式で付ける
-3. 修正ループがある場合は `Loop: {番号}` を含める
+3. 修正ループがある場合は `Loop: {番号}` を含める。番号は最初の修正ループを 1 とし、Generator と Evaluator の再実行サイクルごとに 1 ずつ増やす
 4. Output 本文が各ロールのテンプレートに沿っているか確認する
 5. Output の内容や採用可否は変更せず、投稿形式だけを整える
 6. 一時ファイルを作らず `--body` または標準入力で issue コメントを投稿する
 7. Output またはコメントを作成したロールが issue コメントを投稿する
-8. 投稿失敗時は外部副作用失敗時の扱いに従う
+8. 投稿失敗時は `external-op-failure` skill に従う
 
 ## この skill が判断しないこと
 

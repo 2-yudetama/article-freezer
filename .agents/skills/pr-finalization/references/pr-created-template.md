@@ -13,7 +13,26 @@
 
 ## Metadata
 
-引き継ぎ済み:
+Labels:
+Reviewers:
+Assignees:
+PR number:
+Milestone:
+Release / Deployment target:
+Testing status:
+Short summary:
 
-未引き継ぎ:
+## 引き継ぎ済み
+
+- Owner:
+- Action item:
+- Date:
+- Status / ETA:
+
+## 未引き継ぎ
+
+- Owner:
+- Action item:
+- Date:
+- Status / ETA:
 ```

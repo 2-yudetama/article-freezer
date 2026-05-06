@@ -48,6 +48,7 @@ Evaluator Output の Result が `pass` の場合に、Manager が push、PR 作�
 - `references/pr-finalization.md`: PR 作成前チェック、実行コマンド、PR body、作成後記録
 - `references/pr-body-template.md`: PR body テンプレート
 - `references/pr-created-template.md`: `AI: PR Created` テンプレート
+- `.agents/skills/external-op-failure/SKILL.md`: push / PR 作成 / コメント失敗時の外部副作用失敗処理
 
 ## 実行手順
 
@@ -59,7 +60,7 @@ Evaluator Output の Result が `pass` の場合に、Manager が push、PR 作�
 6. branch を push する
 7. 対象 issue のメタデータを引き継いで PR を作成する
 8. `output-comment` skill を使い、対象 issue に `AI: PR Created` をコメントする
-9. 失敗時は外部副作用失敗時の扱いに従う
+9. 失敗時は `external-op-failure` skill に従う
 
 ## この skill が判断しないこと
 

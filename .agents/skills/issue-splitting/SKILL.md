@@ -54,7 +54,7 @@ metadata:
 4. 必要に応じて Sub-issues API で親子関係を作る
 5. `output-comment` skill を使い、親 issue に `AI: Split Result` を投稿する
 6. 親 issue の直接実装を停止する
-7. 失敗時は外部副作用失敗時の扱いに従う
+7. 失敗時は `external-op-failure` skill に従う
 
 ## この skill が判断しないこと
 

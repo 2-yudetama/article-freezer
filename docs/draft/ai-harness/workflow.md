@@ -102,7 +102,7 @@ Manager
 
 ## 修正ループ上限
 
-- 同じ issue で `Generator -> Evaluator` の修正ループは最大 3 回までとする
+- 同じ issue で `Generator -> Evaluator` の修正ループは最大 2 回までとする
 - 3 回で `pass` しない場合、Manager は人間確認へフォールバックする
 - Evaluator が `blocked` を出した場合も、人間確認へフォールバックする
 - フォールバック時は、必ず対象 issue に `AI: Manager Log` コメントを残し、Generator Output と Evaluator Output を添えて状況を報告する

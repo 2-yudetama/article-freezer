@@ -90,20 +90,29 @@ def payload_paths(root: pathlib.Path, payload: dict) -> list[pathlib.Path]:
 
 
 def changed_paths(root: pathlib.Path) -> list[pathlib.Path]:
-    result = subprocess.run(
+    commands = [
         ["git", "diff", "--name-only"],
-        cwd=root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        return []
-    return [
-        pathlib.Path(line)
-        for line in result.stdout.splitlines()
-        if line.strip() and (root / line).is_file()
+        ["git", "ls-files", "--others", "--exclude-standard"],
     ]
+    paths: set[pathlib.Path] = set()
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            continue
+        paths.update(
+            pathlib.Path(line)
+            for line in result.stdout.splitlines()
+            if line.strip() and (root / line).is_file()
+        )
+    if not paths:
+        return []
+    return sorted(paths)
 
 
 def format_targets(root: pathlib.Path, payload: dict) -> tuple[list[str], list[str]]:
@@ -127,7 +136,10 @@ def format_targets(root: pathlib.Path, payload: dict) -> tuple[list[str], list[s
         str(path)
         for path in unique_paths
         if path.suffix in PYTHON_EXTENSIONS
-        and path.parts[:2] == ("packages", "md-extractor")
+        and (
+            path.parts[:2] == ("packages", "md-extractor")
+            or path.parts[:2] == (".codex", "hooks")
+        )
     ]
     return biome, python
 

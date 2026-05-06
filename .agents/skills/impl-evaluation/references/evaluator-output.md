@@ -1,6 +1,6 @@
 # Evaluator Output template
 
-修正ループ時は `Loop: {番号}` を含める。
+修正ループ時は `Loop: {番号}` を含める。初回評価では `Loop:` 行を省略する。
 
 ```md
 # Evaluator Output
@@ -38,8 +38,8 @@ Evaluator Output の issue コメント投稿は Evaluator 自身が `output-com
 - Result の根拠
 - 評価対象の差分概要
 - 受け入れ条件ごとの判定
-- 指摘事項
-- 実行した検証コマンドと結果
+- 発見した問題
+- 検証
 - 未実行の検証と理由
 - `needs-fix` の場合は修正が必要な事項
 - `blocked` の場合は停止理由と人間判断が必要な事項

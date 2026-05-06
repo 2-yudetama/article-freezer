@@ -51,8 +51,8 @@ Evaluator Output の Result に基づき、Manager が修正継続、PR 作成�
 1. Evaluator Output の Result を確認する
 2. `pass` の場合は PR 作成条件の確認へ進む
 3. `needs-fix` の場合は修正ループ回数を確認する
-4. 修正ループが 2 回未満なら Generator に修正を依頼する
-5. 修正ループ 2 回到達または `blocked` の場合は人間確認へフォールバックする
+4. `docs/agent/workflow.md` の修正ループ上限未満なら Generator に修正を依頼する
+5. 修正ループ上限以上または `blocked` の場合は人間確認へフォールバックする
 6. 受け入れ条件やスコープ変更が必要な場合は Generator に直接修正依頼せず、再計画または人間確認へ進む
 7. フォールバック時は `AI: Manager Log` を残す
 

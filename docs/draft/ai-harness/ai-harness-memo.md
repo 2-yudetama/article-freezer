@@ -71,7 +71,7 @@ Manager
 - 2026-04-26: Generator は軽微調整許可型とし、受け入れ条件やスコープを変えない範囲で実装上の細部を判断する
 - 2026-04-26: Evaluator はレビュー専任だが、必要な非破壊的検証コマンドは実行してよい
 - 2026-04-26: Generator / Evaluator の出力は自分の作業結果・観測結果に限定し、他エージェントの行動に干渉する記載は含めない
-- 2026-04-26: 実装後の `Generator -> Evaluator` 修正ループは最大 3 回とし、解決しない場合や `blocked` の場合は人間確認へフォールバックする
+- 2026-04-26: 実装後の `Generator -> Evaluator` 修正ループは最大 2 回とし、解決しない場合や `blocked` の場合は人間確認へフォールバックする
 - 2026-04-26: Generator は意味のある変更単位で commit できるが、push / PR 作成は行わない
 - 2026-04-26: Evaluator は commit 群と差分が issue スコープ内か確認し、Manager は総合判定とスコープ判定が `pass` の場合のみ push / PR 作成へ進める
 - 2026-04-26: Manager は PR 作成条件を満たした場合に push / `gh pr create` / issue への PR コメントを行う

@@ -55,6 +55,10 @@ def has_option(args: list[str], *options: str) -> bool:
     return any(arg in options for arg in args)
 
 
+def has_long_option_value(args: list[str], *options: str) -> bool:
+    return any(arg.startswith(f"{option}=") for arg in args for option in options)
+
+
 def is_recursive_rm(argv: list[str]) -> bool:
     if not argv or argv[0] != "rm":
         return False
@@ -129,6 +133,9 @@ def is_destructive_git_push(argv: list[str]) -> bool:
     if has_option(args, "--force", "-f", "--force-with-lease", "--delete", "-d"):
         return True
 
+    if has_long_option_value(args, "--force", "--force-with-lease", "--delete"):
+        return True
+
     return any(arg.startswith("+") or arg.startswith(":") for arg in args)
 
 
@@ -177,11 +184,28 @@ def is_commit_verification_bypass(argv: list[str]) -> bool:
     )
 
 
+def git_root(cwd: str) -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return cwd
+    if result.returncode != 0:
+        return cwd
+    return result.stdout.strip() or cwd
+
+
 def current_branch(cwd: str) -> str:
+    root = git_root(cwd)
     try:
         result = subprocess.run(
             ["git", "branch", "--show-current"],
-            cwd=cwd,
+            cwd=root,
             check=False,
             capture_output=True,
             text=True,
@@ -192,10 +216,11 @@ def current_branch(cwd: str) -> str:
 
 
 def staged_files(cwd: str) -> list[str]:
+    root = git_root(cwd)
     try:
         result = subprocess.run(
             ["git", "diff", "--cached", "--name-only"],
-            cwd=cwd,
+            cwd=root,
             check=False,
             capture_output=True,
             text=True,

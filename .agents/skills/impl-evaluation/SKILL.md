@@ -54,9 +54,8 @@ Evaluator が Generator の commit と差分を非破壊的にレビューし、
 4. 必要な非破壊的検証を実行する
 5. 発見した問題を修正必須と任意改善に分類する
 6. `pass | needs-fix | blocked` のいずれかを判定する
-7. Evaluator Output に Result と根拠を記録する
+7. Evaluator Output に Result と根拠を記録する。修正ループ時は `references/evaluator-output.md` に従い、本文に `Loop: {番号}` を含める
 8. `output-comment` skill を使い、対象 issue に `AI: Evaluator Output` として投稿する
-9. 修正ループ時は Evaluator Output 本文に `Loop: {番号}` を含める
 
 ## この skill が判断しないこと
 

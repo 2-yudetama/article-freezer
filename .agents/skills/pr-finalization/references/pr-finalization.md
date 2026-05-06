@@ -73,6 +73,8 @@ gh pr create \
 - 検証
 - 未解決事項
 - AIサマリ
+- Generator Output
+- Evaluator Output
 
 サブ issue は対応 PR の closing keyword で close する。
 親 issue は、最後のサブ issue の PR body にだけ closing keyword として含める。
@@ -85,3 +87,10 @@ gh pr create \
 - 引き継いだ issue メタデータと、未引き継ぎのメタデータがあれば理由を記録する
 - 投稿には `output-comment` skill を使う
 - push または PR 作成の成否が曖昧な場合は `external-op-failure` skill を使う
+
+## AI: PR Created の記録項目
+
+- Metadata には Labels、Reviewers、Assignees、PR number、Milestone、Release / Deployment target、Testing status、Short summary を記録する
+- 引き継ぎ済みと未引き継ぎには Owner、Action item、Date、Status / ETA を記録する
+- 引き継ぎ済み例: Owner: Manager / Action item: labels を PR に引き継ぎ / Date: 2026-05-06 / Status: done
+- 未引き継ぎ例: Owner: human / Action item: project 追加 / Date: 2026-05-06 / Status: auth scope 確認待ち

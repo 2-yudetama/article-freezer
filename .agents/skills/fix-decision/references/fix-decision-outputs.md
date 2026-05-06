@@ -4,7 +4,7 @@
 
 - `pass`: `pr-finalization` skill に進む
 - `needs-fix` かつ修正ループ 2 回未満: Generator に修正依頼を出す
-- `needs-fix` かつ修正ループ 2 回到達: 人間確認へフォールバックする
+- `needs-fix` かつ修正ループ 2 回以上: 人間確認へフォールバックする
 - `blocked`: 人間確認へフォールバックする
 - Result が不明: Evaluator に差し戻すか、人間確認へフォールバックする
 

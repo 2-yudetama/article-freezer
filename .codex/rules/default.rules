@@ -241,3 +241,5 @@ prefix_rule(
         "git push origin --force-with-lease issue/123",
     ],
 )
+
+# force / delete push の位置非依存検知は .codex/hooks/pre_tool_use_policy.py::is_destructive_git_push が担う

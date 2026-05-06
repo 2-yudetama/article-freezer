@@ -33,7 +33,6 @@ flowchart LR
     Browser --> WebAPI
     WebAPI --> MdExtractor
     MdExtractor --> External
-    Browser --> WebAPI
     WebAPI --> Prisma
     Prisma --> DB
 ```
