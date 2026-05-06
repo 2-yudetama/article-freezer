@@ -56,6 +56,31 @@ rules の allow は `git push origin` prefix を対象にする。
 
 - `git commit`
 
+#### GitHub issue コメント投稿
+
+- `gh issue comment`
+
+Planner / Generator / Evaluator Output と Manager Log を issue コメントとして保存するために許可する。
+
+#### GitHub issue 作成
+
+- `gh issue create`
+
+採用済み split-proposal に基づくサブ issue 作成のために許可する。
+
+#### GitHub PR 作成・補完
+
+- `gh pr create`
+- `gh pr edit`
+
+PR 最終化で PR を作成し、作成時に引き継げなかったメタデータを 1 回だけ補完するために許可する。
+
+#### GitHub API
+
+- `gh api`
+
+GitHub Sub-issues API による親子 issue 紐づけと状態確認のために許可する。DELETE 系 API は rules と hooks で禁止する。
+
 #### 依存関係インストール
 
 - `pnpm install`

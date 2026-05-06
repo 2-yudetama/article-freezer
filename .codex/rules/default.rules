@@ -38,6 +38,56 @@ prefix_rule(
     ]
 )
 
+prefix_rule(
+    pattern = ["gh", "issue", "comment"],
+    decision = "allow",
+    justification = "Planner / Generator / Evaluator Output と Manager Log を issue コメントへ保存するために必要です",
+    match = [
+        "gh issue comment 58 --body \"# AI: Planner Output\"",
+        "gh issue comment 58 --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "create"],
+    decision = "allow",
+    justification = "採用済み split-proposal に基づくサブ issue 作成に必要です",
+    match = [
+        "gh issue create --title \"サブ issue\" --body \"body\"",
+        "gh issue create --title \"サブ issue\" --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "allow",
+    justification = "Evaluator pass 後の PR 作成に必要です",
+    match = [
+        "gh pr create --base main --head issue/58 --title \"AI ハーネスの原則を整理\" --body \"body\"",
+        "gh pr create --base main --head issue/58 --title \"AI ハーネスの原則を整理\" --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "edit"],
+    decision = "allow",
+    justification = "PR 作成時に引き継げなかったメタデータを 1 回だけ補完するために必要です",
+    match = [
+        "gh pr edit 58 --add-label survey",
+        "gh pr edit https://github.com/2-yudetama/article-freezer/pull/58 --add-assignee 2-yudetama",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "allow",
+    justification = "GitHub Sub-issues API による親子 issue 紐づけと状態確認に必要です",
+    match = [
+        "gh api repos/2-yudetama/article-freezer/issues/58/sub_issues",
+        "gh api -X POST repos/2-yudetama/article-freezer/issues/54/sub_issues -f sub_issue_id=I_kwDORG5bWM6AAAA",
+    ]
+)
+
 # 禁止系
 
 prefix_rule(
