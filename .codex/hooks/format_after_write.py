@@ -108,12 +108,20 @@ def changed_paths(root: pathlib.Path) -> list[pathlib.Path]:
 
 def format_targets(root: pathlib.Path, payload: dict) -> tuple[list[str], list[str]]:
     paths = payload_paths(root, payload) or changed_paths(root)
-    unique_paths = sorted({path for path in paths if (root / path).is_file()})
+    unique_paths = sorted(
+        {
+            path
+            for path in paths
+            if (root / path).is_file()
+            and path.parts[:1] != ("docs",)
+            and path.parts != ("pnpm-lock.yaml",)
+        }
+    )
 
     biome = [
         str(path)
         for path in unique_paths
-        if path.suffix in BIOME_EXTENSIONS and "pnpm-lock.yaml" not in path.parts
+        if path.suffix in BIOME_EXTENSIONS
     ]
     python = [
         str(path)

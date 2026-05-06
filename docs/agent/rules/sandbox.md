@@ -15,7 +15,8 @@
 - Manager / Planner / Generator / Evaluator は、Output コメント投稿や検証、生成物の書き込みを考慮して `workspace-write` とする
 - filesystem の許可範囲は `.codex/config.toml` の `[permissions.workspace.filesystem]` で管理する
 - 外部副作用を伴う GitHub 操作は `.codex/rules/default.rules` で明示許可し、sandbox bypass 対象として扱う
-- Codex の仕様上、実行中のエージェントは `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下を直接変更できない
+- Codex の仕様上、通常の実行中エージェントは `.codex/hooks`、`.codex/rules`、`.codex/agents` 配下を直接変更できない
+- `.codex` 配下の変更自体を明示スコープに含む issue で Manager が許可した場合のみ、guardrail を弱体化しない最小変更を行う
 
 ## 配置
 
@@ -60,6 +61,8 @@ rules の allow は `git push origin` prefix を対象にする。
 - `pnpm install`
 - `pnpm install --lockfile-only`
 - `pnpm install --frozen-lockfile`
+
+### forbidden 対象の代表例
 
 #### 広範囲 stage
 
