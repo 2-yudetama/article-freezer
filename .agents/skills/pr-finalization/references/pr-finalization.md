@@ -24,7 +24,9 @@ gh pr create --base {baseブランチ} --head issue/{issue番号} --title "{PR�
 - `git push origin issue/{issue番号}` は rules の sandbox bypass allow 対象であり、`git push` は対象外
 - `{baseブランチ}` はリポジトリの既定ブランチまたは対象 issue で指定されたブランチにする
 - `{metadata flags}` には対象 issue から引き継ぐ `--assignee`、`--label`、`--milestone`、`--project` を入れる
-- PR body が長い場合は shell の標準入力を使って `gh pr create --base {baseブランチ} --head issue/{issue番号} --title "{PRタイトル}" --body-file -` で作成する
+- PR body が長い場合でも、`--body-file -` や heredoc 経由の標準入力が sandbox / rules / hook 経路で認証失敗のように見えるエラーを返すことがある
+- `--body-file -` で `gh auth login` や `GH_TOKEN` を要求するエラーになった場合は、認証破損と即断せず、まず短い `--body "Closes #{issue番号}"` で PR 作成を優先し、作成後に `gh pr edit --body "..."` で本文を段階的に補完する
+- `gh pr edit --body "..."` でも長文で同様に失敗する場合は、本文量を減らして成功する単位まで分け、少なくとも概要、変更内容、検証、未解決事項を含める
 - 一時ファイルは原則として作らない
 - `gh pr create` が失敗し、既存 PR の可能性がある場合は削除や再作成をせず、既存 PR を確認して記録する
 
