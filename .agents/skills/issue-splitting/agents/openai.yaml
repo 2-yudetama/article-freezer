@@ -1,0 +1,4 @@
+interface:
+  display_name: "issue 分割実行"
+  short_description: "採用済み split-proposal からサブ issue を作成"
+  default_prompt: "$issue-splitting を使って、採用済み split-proposal に基づきサブ issue 作成と分割結果記録を行い、親 issue の直接実装を停止してください。"

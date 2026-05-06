@@ -14,13 +14,28 @@
 
 ## セットアップ
 
-### 1. 依存関係のインストール
+### 1. 開発ツールのインストール
+
+本リポジトリでは、Node.js / pnpm / Python / uv のバージョン管理に[mise](https://mise.jdx.dev/)を使用します。
+
+```bash
+mise trust
+mise install
+```
+
+### 2. 依存関係のインストール
 
 ```bash
 pnpm install
 ```
 
-### 2. 環境変数の設定
+Pythonパッケージの依存関係は、必要に応じて以下で同期してください。
+
+```bash
+uv sync --project packages/md-extractor
+```
+
+### 3. 環境変数の設定
 
 本リポジトリはMonorepo構成のため、各パッケージで環境変数を設定してください。
 
@@ -42,7 +57,7 @@ cd packages/web-app
 cp .env.example .env
 ```
 
-### 3. データベースの起動
+### 4. データベースの起動
 
 初回起動時はマイグレーションを行ってください。
 
@@ -63,7 +78,7 @@ pnpm db db:down
 
 http://localhost:8081 でPgwebが起動します。
 
-### 4. 開発サーバの起動
+### 5. 開発サーバの起動
 
 以下のコマンドで、開発サーバの起動を行ってください。
 

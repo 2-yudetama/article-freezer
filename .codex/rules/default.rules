@@ -1,0 +1,245 @@
+# sandbox bypass を明示許可するコマンドと、常に禁止したいコマンドを rules で制御する
+# ロール判定、issue スコープ判定、ブランチ状態の確認など文脈依存の制御は hooks やドキュメント運用に委ねる
+
+# 許可系
+
+prefix_rule(
+    pattern = ["git", "push", "origin"],
+    decision = "allow",
+    justification = "origin への branch push を許可",
+    match = [
+        "git push origin issue/123",
+        "git push origin HEAD",
+        "git push origin issue/123 --dry-run",
+    ],
+    not_match = [
+        "git push upstream issue/123",
+        "git push --force origin issue/123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["pnpm", "install"],
+    decision = "allow",
+    justification = "依存関係インストールと lockfile 検証に必要です",
+    match = [
+        "pnpm install",
+        "pnpm install --lockfile-only",
+        "pnpm install --frozen-lockfile",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "lefthook pre-commit を commit 前検証の正本として実行するために必要です",
+    match = [
+        "git commit -m \"🔧 Codex sandbox と rules の責務を整理 (#56)\"",
+    ]
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "comment"],
+    decision = "allow",
+    justification = "Planner / Generator / Evaluator Output と Manager Log を issue コメントへ保存するために必要です",
+    match = [
+        "gh issue comment 58 --body \"# AI: Planner Output\"",
+        "gh issue comment 58 --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "create"],
+    decision = "allow",
+    justification = "採用済み split-proposal に基づくサブ issue 作成に必要です",
+    match = [
+        "gh issue create --title \"サブ issue\" --body \"body\"",
+        "gh issue create --title \"サブ issue\" --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "allow",
+    justification = "Evaluator pass 後の PR 作成に必要です",
+    match = [
+        "gh pr create --base main --head issue/58 --title \"AI ハーネスの原則を整理\" --body \"body\"",
+        "gh pr create --base main --head issue/58 --title \"AI ハーネスの原則を整理\" --body-file -",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "edit"],
+    decision = "allow",
+    justification = "PR 作成時に引き継げなかったメタデータを 1 回だけ補完するために必要です",
+    match = [
+        "gh pr edit 58 --add-label survey",
+        "gh pr edit https://github.com/2-yudetama/article-freezer/pull/58 --add-assignee 2-yudetama",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "allow",
+    justification = "GitHub Sub-issues API による親子 issue 紐づけと状態確認に必要です",
+    match = [
+        "gh api repos/2-yudetama/article-freezer/issues/58/sub_issues",
+        "gh api -X POST repos/2-yudetama/article-freezer/issues/54/sub_issues -f sub_issue_id=I_kwDORG5bWM6AAAA",
+    ]
+)
+
+# 禁止系
+
+prefix_rule(
+    pattern = ["git", "add", [".", "-A", "--all", "-u", ":/"]],
+    decision = "forbidden",
+    justification = "対象ファイルを明示して stage してください",
+    match = [
+        "git add .",
+        "git add -A",
+        "git add --all",
+        "git add -u",
+        "git add :/",
+    ],
+    not_match = [
+        "git add docs/draft/ai-harness/workflow.md",
+        "git add packages/web-app/src/app/page.tsx",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "変更破棄を伴う git reset は禁止です",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "clean"],
+    decision = "forbidden",
+    justification = "未追跡ファイルの一括削除は禁止です",
+    match = [
+        "git clean -fd",
+        "git clean -xdf",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", ["merge", "rebase"]],
+    decision = "forbidden",
+    justification = "merge / rebase はハーネスの自動操作では禁止です",
+    match = [
+        "git merge main",
+        "git rebase main",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", ["--no-verify", "-n", "--amend"]],
+    decision = "forbidden",
+    justification = "commit 前検証の bypass や履歴修正は禁止です",
+    match = [
+        "git commit --no-verify -m \"skip hooks\"",
+        "git commit -n -m \"skip hooks\"",
+        "git commit --amend",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "forbidden",
+    justification = "変更破棄を伴う checkout は禁止です",
+    match = [
+        "git checkout -- docs/draft/ai-harness/workflow.md",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", ["repo", "issue"], "delete"],
+    decision = "forbidden",
+    justification = "DELETE 系 GitHub 操作は禁止です",
+    match = [
+        "gh repo delete 2-yudetama/article-freezer",
+        "gh issue delete 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "close"],
+    decision = "forbidden",
+    justification = "PR close はハーネスの自動操作対象外です",
+    match = [
+        "gh pr close 123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "api", "--method", "DELETE"],
+    decision = "forbidden",
+    justification = "DELETE 系 GitHub API 操作は禁止です",
+    match = [
+        "gh api --method DELETE repos/2-yudetama/article-freezer/issues/123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr", "-r", "-R", "--recursive"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -rf docs",
+        "rm -fr packages/web-app",
+        "rm -r tmp",
+        "rm -R tmp",
+        "rm --recursive tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-f"], ["-r", "-R", "--recursive"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -f -r tmp",
+        "rm -f -R tmp",
+        "rm -f --recursive tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-r", "-R", "--recursive"], ["-f"]],
+    decision = "forbidden",
+    justification = "再帰削除はハーネスの自動操作では禁止です",
+    match = [
+        "rm -r -f tmp",
+        "rm -R -f tmp",
+        "rm --recursive -f tmp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--force-with-lease"]],
+    decision = "forbidden",
+    justification = "force push はハーネスの自動操作では禁止です",
+    match = [
+        "git push --force origin issue/123",
+        "git push -f origin issue/123",
+        "git push --force-with-lease origin issue/123",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "origin", ["--force", "-f", "--force-with-lease"]],
+    decision = "forbidden",
+    justification = "force push はハーネスの自動操作では禁止です",
+    match = [
+        "git push origin --force issue/123",
+        "git push origin -f issue/123",
+        "git push origin --force-with-lease issue/123",
+    ],
+)
+
+# force / delete push の位置非依存検知は .codex/hooks/pre_tool_use_policy.py::is_destructive_git_push が担う

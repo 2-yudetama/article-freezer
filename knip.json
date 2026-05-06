@@ -9,8 +9,20 @@
       "project": ["**/*.{ts,tsx}"]
     },
     "packages/web-app": {
-      "ignore": ["src/components/ui/**"],
-      "ignoreDependencies": ["@prisma/client", "pg"]
+      "ignore": [
+        "public/sw.js",
+        "src/components/ui/**",
+        "src/domain/articles.ts",
+        "src/features/articles/registration/common/types.ts"
+      ],
+      "ignoreDependencies": [
+        "@prisma/client",
+        "@radix-ui/react-checkbox",
+        "clsx",
+        "pg",
+        "server-only",
+        "tailwind-merge"
+      ]
     },
     "packages/db": {
       "ignoreDependencies": ["@prisma/client", "pg"]

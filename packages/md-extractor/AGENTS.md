@@ -5,10 +5,15 @@
 - 記事 URL から記事項目を抽出する FastAPI service。
 - 機能仕様は `docs/features/md-extractor.md` を中心に、関連する `docs/features` 配下も参照する。
 
-## Working Rules
+## Architecture Rules
+
+- `services` の port を境界に、入力アダプタと出力アダプタの責務を分離する。
+
+## Code Style
 
 - Python 3.13 + `uv` 前提の package。依存追加や実行は `uv sync`, `uv run` を使う。
-- `services` の port を境界に、入力アダプタと出力アダプタの責務を分離する。
+- Python コードは Ruff の設定に合わせ、行長は 79 文字を基準にする。
+- import の並びは Ruff の import sort に従う。
 - `pip` / `requirements.txt` ベースの運用を持ち込まない。
 
 ## Common Commands
@@ -49,3 +54,25 @@ src
 ├─ main.py                               # サーバ起動 entrypoint
 └─ settings.py                           # 設定値管理
 ```
+
+## Internal Flow
+
+```mermaid
+flowchart LR
+    API[FastAPI]
+    Usecase[ExtractUsecase]
+    Gateway[ExtractGateway]
+    Source[Article URL]
+    MarkItDown[MarkItDown]
+    OpenAI[OpenAI]
+
+    API --> Usecase
+    Usecase --> Gateway
+    Gateway --> Source
+    Gateway --> MarkItDown
+    Gateway --> OpenAI
+```
+
+- `api` は HTTP 入出力と認証を扱う
+- `services` はユースケースとドメインモデルを扱う
+- `infrastructure` は外部サービスアクセスを扱う

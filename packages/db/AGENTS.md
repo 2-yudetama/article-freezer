@@ -40,9 +40,3 @@ packages/db
 ├─ compose.yaml          # ローカル PostgreSQL / pgweb の起動定義
 └─ prisma.config.ts      # Prisma 実行時設定
 ```
-
-## TBD
-
-- `users` 以外の記事・タグ関連 schema をどこまでこの package に追加する想定か
-- `role` を数値のまま運用するか、enum / 定数化するか
-- migration ファイル名とレビュー方針のチームルール

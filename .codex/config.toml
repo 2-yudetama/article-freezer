@@ -1,0 +1,27 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+default_permissions = "workspace"
+
+[permissions.workspace.filesystem]
+":minimal" = "read"
+"/tmp" = "write"
+glob_scan_max_depth = 5
+
+[permissions.workspace.filesystem.":project_roots"]
+"." = "write"
+".codex" = "write"
+".agents" = "write"
+".git" = "write"
+"**/*.env" = "none"
+
+[features]
+multi_agent = true
+codex_hooks = true
+goals = true
+
+[agents]
+max_threads = 1
+max_depth = 1

@@ -1,0 +1,4 @@
+interface:
+  display_name: "サイクル開始確認"
+  short_description: "issue サイクルの開始条件を確認"
+  default_prompt: "$start-workflow を使って、対象 issue、ブランチ、作業ツリー、リポジトリ指示を確認し、開始可否または人間確認を判断してください。"
