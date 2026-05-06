@@ -2,6 +2,7 @@
 
 import { type Prisma, prisma } from "db";
 import type { ArticleComment } from "@/domain/articles";
+import { auth } from "@/lib/auth";
 
 const COMMENT_MAX_LENGTH = 1000;
 
@@ -53,10 +54,19 @@ export async function saveArticleComment({
     };
   }
 
+  const session = await auth();
+  const sessionUserId = session?.user?.id;
+  if (!sessionUserId || sessionUserId !== userId) {
+    return {
+      success: false,
+      error: "記事が見つかりません",
+    };
+  }
+
   const article = await prisma.article.findFirst({
     where: {
       article_id: articleId,
-      user_id: userId,
+      user_id: sessionUserId,
     },
     select: {
       article_id: true,
