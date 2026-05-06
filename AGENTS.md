@@ -40,6 +40,8 @@
 
 - commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` 形式にする。
 - 例: `📝 mise セットアップ手順を追加 (#56)`
+- 変更は意図が分かる粒度で分割し、まとまった意図ごとに都度 commit する。
+- commit message は変更内容だけでなく、変更の意図が分かるタイトルにする。
 - push は `git push origin issue/{issue番号}` のように remote と branch を明示する。
 - 引数なし `git push` や upstream 設定に依存した push は使わない。
 
