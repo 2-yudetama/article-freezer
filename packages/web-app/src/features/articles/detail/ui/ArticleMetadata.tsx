@@ -1,8 +1,15 @@
 "use client";
 
-import { Calendar, ExternalLink, Star, Tag } from "lucide-react";
+import {
+  Calendar,
+  ExternalLink,
+  MessageSquareText,
+  Star,
+  Tag,
+} from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Article } from "@/domain/articles";
 import { formatDateInTokyo } from "@/lib/utils/data-format";
@@ -10,12 +17,14 @@ import { formatDateInTokyo } from "@/lib/utils/data-format";
 type ArticleMetadataProps = {
   userId: string;
   article: Article;
+  onScrollToComment: () => void;
 };
 
 /** 記事詳細ページのメタ情報を表示する関数 */
 export default function ArticleMetadata({
   userId,
   article,
+  onScrollToComment,
 }: ArticleMetadataProps) {
   return (
     <div className="space-y-4 py-4">
@@ -70,7 +79,7 @@ export default function ArticleMetadata({
 
       <Card className="rounded-none py-4 border-l-4">
         <CardContent className="px-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-0">
               <p className="text-sm text-muted-foreground">元記事</p>
               <a
@@ -83,6 +92,16 @@ export default function ArticleMetadata({
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-fit"
+              onClick={onScrollToComment}
+            >
+              <MessageSquareText className="w-4 h-4" />
+              コメントへ移動
+            </Button>
           </div>
         </CardContent>
       </Card>
