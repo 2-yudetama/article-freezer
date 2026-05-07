@@ -59,22 +59,19 @@ export async function saveArticleComment({
     throw new NotFoundError();
   }
 
-  const savedComment = article.comment
-    ? await prisma.articleComment.update({
-        where: {
-          comment_id: article.comment.comment_id,
-        },
-        data: {
-          comment: normalizedComment,
-        },
-      })
-    : await prisma.articleComment.create({
-        data: {
-          article_id: article.article_id,
-          user_id: article.user_id,
-          comment: normalizedComment,
-        },
-      });
+  const savedComment = await prisma.articleComment.upsert({
+    where: {
+      article_id: article.article_id,
+    },
+    update: {
+      comment: normalizedComment,
+    },
+    create: {
+      article_id: article.article_id,
+      user_id: article.user_id,
+      comment: normalizedComment,
+    },
+  });
 
   return toArticleComment(savedComment);
 }
