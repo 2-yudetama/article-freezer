@@ -79,32 +79,31 @@ export default function ArticleMetadata({
 
       <Card className="rounded-none py-4 border-l-4">
         <CardContent className="px-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-0">
-              <p className="text-sm text-muted-foreground">元記事</p>
-              <a
-                href={article.articleSource.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="break-all text-primary hover:underline font-medium flex items-center gap-2"
-              >
-                {article.articleSource.url}
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-fit"
-              onClick={onScrollToComment}
+          <div className="space-y-0">
+            <p className="text-sm text-muted-foreground">元記事</p>
+            <a
+              href={article.articleSource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all text-primary hover:underline font-medium flex items-center gap-2"
             >
-              <MessageSquareText className="w-4 h-4" />
-              コメントへ移動
-            </Button>
+              {article.articleSource.url}
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </CardContent>
       </Card>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={onScrollToComment}
+      >
+        <MessageSquareText className="w-4 h-4" />
+        コメントへ移動
+      </Button>
     </div>
   );
 }
