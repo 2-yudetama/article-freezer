@@ -1,15 +1,18 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Article } from "@/domain/articles";
-import { saveArticleComment } from "@/features/articles/detail/api/comment.actions";
+import * as v from "valibot";
+import { ARTICLE_COMMENT_MAX_LENGTH, type Article } from "@/domain/articles";
+import {
+  DEFAULT_ERROR_MESSAGE,
+  getApiErrorMessage,
+} from "@/lib/api/response.shared";
+import { ArticleCommentSaveResponseSchema } from "@/lib/api/schemas";
 
 type Params = {
   userId: string;
   article: Article;
 };
-
-const COMMENT_MAX_LENGTH = 1000;
 
 export function useArticleDetail({ userId, article }: Params) {
   const router = useRouter();
@@ -58,7 +61,7 @@ export function useArticleDetail({ userId, article }: Params) {
       return;
     }
 
-    if (normalizedComment.length > COMMENT_MAX_LENGTH) {
+    if (normalizedComment.length > ARTICLE_COMMENT_MAX_LENGTH) {
       setCommentError("コメントは1000文字以内で入力してください");
       return;
     }
@@ -67,29 +70,50 @@ export function useArticleDetail({ userId, article }: Params) {
     setIsCommentSaving(true);
 
     try {
-      const result = await saveArticleComment({
-        userId,
-        articleId: article.articleId,
-        comment: normalizedComment,
-      });
+      const response = await fetch(
+        `/api/users/${userId}/articles/${article.articleId}/comment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            comment: normalizedComment,
+          }),
+        },
+      );
 
-      if (!result.success) {
-        setCommentError(result.error);
+      if (!response.ok) {
+        const errorMessage = await getApiErrorMessage(response);
+        setCommentError(errorMessage);
         toast.error("コメントを保存できませんでした", {
-          description: result.error,
+          description: errorMessage,
         });
         return;
       }
 
-      setArticleComment(result.comment);
-      setCommentInput(result.comment.comment);
+      const result = v.safeParse(
+        ArticleCommentSaveResponseSchema,
+        await response.json().catch(() => null),
+      );
+      if (!result.success) {
+        setCommentError(DEFAULT_ERROR_MESSAGE);
+        toast.error("コメントを保存できませんでした", {
+          description: DEFAULT_ERROR_MESSAGE,
+        });
+        return;
+      }
+
+      setArticleComment(result.output);
+      setCommentInput(result.output.comment);
       setIsCommentEditing(false);
       toast.success("コメントを保存しました");
       router.refresh();
     } catch {
-      const errorMessage = "コメントを保存できませんでした";
-      setCommentError(errorMessage);
-      toast.error(errorMessage);
+      setCommentError(DEFAULT_ERROR_MESSAGE);
+      toast.error("コメントを保存できませんでした", {
+        description: DEFAULT_ERROR_MESSAGE,
+      });
     } finally {
       setIsCommentSaving(false);
     }

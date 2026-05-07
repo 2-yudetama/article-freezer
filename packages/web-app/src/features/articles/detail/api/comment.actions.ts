@@ -1,20 +1,11 @@
-"use server";
+import "server-only";
 
 import { type Prisma, prisma } from "db";
-import type { ArticleComment } from "@/domain/articles";
-import { auth } from "@/lib/auth";
-
-const COMMENT_MAX_LENGTH = 1000;
-
-type SaveArticleCommentResult =
-  | {
-      success: true;
-      comment: ArticleComment;
-    }
-  | {
-      success: false;
-      error: string;
-    };
+import {
+  ARTICLE_COMMENT_MAX_LENGTH,
+  type ArticleComment,
+} from "@/domain/articles";
+import { BadRequestError, NotFoundError } from "@/lib/errors";
 
 type ArticleCommentRecord = Prisma.ArticleCommentGetPayload<object>;
 
@@ -37,36 +28,21 @@ export async function saveArticleComment({
   userId: string;
   articleId: string;
   comment: string;
-}): Promise<SaveArticleCommentResult> {
+}): Promise<ArticleComment> {
   const normalizedComment = comment.trim();
 
   if (!normalizedComment) {
-    return {
-      success: false,
-      error: "コメントを入力してください",
-    };
+    throw new BadRequestError();
   }
 
-  if (normalizedComment.length > COMMENT_MAX_LENGTH) {
-    return {
-      success: false,
-      error: "コメントは1000文字以内で入力してください",
-    };
-  }
-
-  const session = await auth();
-  const sessionUserId = session?.user?.id;
-  if (!sessionUserId || sessionUserId !== userId) {
-    return {
-      success: false,
-      error: "記事が見つかりません",
-    };
+  if (normalizedComment.length > ARTICLE_COMMENT_MAX_LENGTH) {
+    throw new BadRequestError();
   }
 
   const article = await prisma.article.findFirst({
     where: {
       article_id: articleId,
-      user_id: sessionUserId,
+      user_id: userId,
     },
     select: {
       article_id: true,
@@ -80,10 +56,7 @@ export async function saveArticleComment({
   });
 
   if (!article) {
-    return {
-      success: false,
-      error: "記事が見つかりません",
-    };
+    throw new NotFoundError();
   }
 
   const savedComment = article.comment
@@ -103,8 +76,5 @@ export async function saveArticleComment({
         },
       });
 
-  return {
-    success: true,
-    comment: toArticleComment(savedComment),
-  };
+  return toArticleComment(savedComment);
 }
