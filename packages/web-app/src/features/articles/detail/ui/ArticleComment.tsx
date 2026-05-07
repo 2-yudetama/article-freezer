@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import type { Article } from "@/domain/articles";
+import { ARTICLE_COMMENT_MAX_LENGTH, type Article } from "@/domain/articles";
 import { formatDateTimeInTokyo } from "@/lib/utils/data-format";
 
 type ArticleCommentProps = {
@@ -21,8 +21,6 @@ type ArticleCommentProps = {
   onCancel: () => void;
   onSave: () => void;
 };
-
-const COMMENT_MAX_LENGTH = 1000;
 
 /** 記事コメントを表示する関数 */
 const ArticleComment = forwardRef<HTMLDivElement, ArticleCommentProps>(
@@ -44,7 +42,7 @@ const ArticleComment = forwardRef<HTMLDivElement, ArticleCommentProps>(
     const updatedAtLabel = comment
       ? formatDateTimeInTokyo(comment.updatedAt)
       : null;
-    const remainingLength = COMMENT_MAX_LENGTH - value.length;
+    const remainingLength = ARTICLE_COMMENT_MAX_LENGTH - value.length;
     const isOverLimit = remainingLength < 0;
     const previewContent = value.trim() || "プレビューする内容がありません";
 
