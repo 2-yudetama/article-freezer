@@ -61,7 +61,7 @@ export type ArticleRegistrationResponse = v.InferOutput<
 >;
 
 /**
- * POST /api/users/[userId]/articles/[articleId]/comment のリクエストスキーマ
+ * PATCH /api/users/[userId]/articles/[articleId]/comment のリクエストスキーマ
  */
 export const ArticleCommentSaveRequestSchema = v.pick(ArticleCommentSchema, [
   "comment",
@@ -71,7 +71,7 @@ export type ArticleCommentSaveRequest = v.InferOutput<
 >;
 
 /**
- * POST /api/users/[userId]/articles/[articleId]/comment のレスポンススキーマ
+ * PATCH /api/users/[userId]/articles/[articleId]/comment のレスポンススキーマ
  */
 export const ArticleCommentSaveResponseSchema = ArticleCommentSchema;
 export type ArticleCommentSaveResponse = v.InferOutput<
