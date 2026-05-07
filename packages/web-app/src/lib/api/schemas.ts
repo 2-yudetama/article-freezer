@@ -59,3 +59,21 @@ export const ArticleRegistrationResponseSchema = ArticleSchema;
 export type ArticleRegistrationResponse = v.InferOutput<
   typeof ArticleRegistrationResponseSchema
 >;
+
+/**
+ * PATCH /api/users/[userId]/articles/[articleId]/comment のリクエストスキーマ
+ */
+export const ArticleCommentSaveRequestSchema = v.pick(ArticleCommentSchema, [
+  "comment",
+]);
+export type ArticleCommentSaveRequest = v.InferOutput<
+  typeof ArticleCommentSaveRequestSchema
+>;
+
+/**
+ * PATCH /api/users/[userId]/articles/[articleId]/comment のレスポンススキーマ
+ */
+export const ArticleCommentSaveResponseSchema = ArticleCommentSchema;
+export type ArticleCommentSaveResponse = v.InferOutput<
+  typeof ArticleCommentSaveResponseSchema
+>;

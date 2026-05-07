@@ -38,9 +38,21 @@ export default function ArticleDetailPageClient({
           <ArticleMetadata
             userId={articleDetailPage.userId}
             article={articleDetailPage.article}
+            onScrollToComment={articleDetailPage.handleScrollToComment}
           />
           <ArticleContent content={articleDetailPage.article.content} />
-          <ArticleComment comment={articleDetailPage.article.comment} />
+          <ArticleComment
+            ref={articleDetailPage.commentSectionRef}
+            comment={articleDetailPage.article.comment}
+            isEditing={articleDetailPage.isCommentEditing}
+            value={articleDetailPage.commentInput}
+            error={articleDetailPage.commentError}
+            isSaving={articleDetailPage.isCommentSaving}
+            onChange={articleDetailPage.setCommentInput}
+            onEdit={articleDetailPage.handleStartCommentEditing}
+            onCancel={articleDetailPage.handleCancelCommentEditing}
+            onSave={articleDetailPage.handleSaveComment}
+          />
         </div>
       </div>
     </div>

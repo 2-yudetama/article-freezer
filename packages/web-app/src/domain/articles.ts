@@ -20,11 +20,17 @@ export type ArticleSource = v.InferOutput<typeof ArticleSourceSchema>;
  * 記事に対するコメントのドメインモデル
  * - 現時点では単一のコメントを想定してるが、複数にしたくなった場合を考慮してテーブルとしては分ける設計
  */
+export const ARTICLE_COMMENT_MAX_LENGTH = 1000;
+
 export const ArticleCommentSchema = v.object({
   commentId: v.pipe(v.string(), v.uuid()),
   articleId: v.pipe(v.string(), v.uuid()),
   userId: v.pipe(v.string(), v.uuid()),
-  comment: v.pipe(v.string(), v.minLength(1), v.maxLength(1000)),
+  comment: v.pipe(
+    v.string(),
+    v.minLength(1),
+    v.maxLength(ARTICLE_COMMENT_MAX_LENGTH),
+  ),
   createdAt: v.pipe(v.string(), v.isoTimestamp()),
   updatedAt: v.pipe(v.string(), v.isoTimestamp()),
 });
