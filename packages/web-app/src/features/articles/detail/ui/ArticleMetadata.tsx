@@ -77,6 +77,17 @@ export default function ArticleMetadata({
         ))}
       </div>
 
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={onScrollToComment}
+      >
+        <MessageSquareText className="w-4 h-4" />
+        コメントへ移動
+      </Button>
+
       <Card className="rounded-none py-4 border-l-4">
         <CardContent className="px-4">
           <div className="space-y-0">
@@ -93,17 +104,6 @@ export default function ArticleMetadata({
           </div>
         </CardContent>
       </Card>
-
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="w-fit"
-        onClick={onScrollToComment}
-      >
-        <MessageSquareText className="w-4 h-4" />
-        コメントへ移動
-      </Button>
     </div>
   );
 }
