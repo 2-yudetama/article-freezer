@@ -2,25 +2,36 @@
 
 approval_policy = "never"
 sandbox_mode = "workspace-write"
+allow_login_shell = false
 
 default_permissions = "workspace"
 
 [permissions.workspace.filesystem]
 ":minimal" = "read"
 "/tmp" = "write"
-glob_scan_max_depth = 5
+"~/.cache" = "write"
+"~/.local/share/mise" = "read"
+glob_scan_max_depth = 6
 
 [permissions.workspace.filesystem.":project_roots"]
+# allow
 "." = "write"
-".codex" = "write"
 ".agents" = "write"
+".codex" = "read"
 ".git" = "write"
+
+# deny
 "**/*.env" = "none"
 
+[shell_environment_policy]
+inherit = "core"
+# KEY/SECRET/TOKEN が含まれる環境変数を除外
+ignore_default_excludes = false
+
 [features]
+codex_git_commit = true
+hooks = true
 multi_agent = true
-codex_hooks = true
-goals = true
 
 [agents]
 max_threads = 1

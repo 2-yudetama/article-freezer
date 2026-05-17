@@ -14,18 +14,13 @@
 
 ## Shared Commands
 
-- `mise install`: Node.js / pnpm / Python / uv のバージョン同期
-- `pnpm install`: workspace 全体の依存関係インストール
-- `pnpm check`: Biome Lint
-- `pnpm check:write`: Biome Lint(自動修正)
-- `pnpm knip`: 未使用ファイル・依存関係検出
-- `pnpm --recursive run typecheck`: 型チェック(全package)
-- `pnpm web-app dev`: Web アプリ開発サーバ起動
-- `pnpm md dev`: FastAPI開発サーバ起動
-- `pnpm db db:up`: データベース起動
-- `pnpm db db:down`: データベース停止
-- `docker compose up`: workspace 全体のサービス起動
-- `docker compose down`: workspace 全体のサービス停止
+Codex sandbox で pnpm を実行する場合は corepack 経由で実行してください。
+
+```bash
+corepack pnpm <root-script> <package-script>
+```
+
+ルートから workspace script を呼び出せます。具体的なコマンドは、対象 package の `AGENTS.md` を確認してください。
 
 ## Shared Constraints
 

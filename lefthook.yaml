@@ -3,9 +3,9 @@ pre-commit:
   commands:
     check:
       glob: "*.{ts,tsx}"
-      run: pnpm exec biome check {staged_files}
+      run: corepack pnpm exec biome check {staged_files}
     check-py:
       glob: "*.{py}"
       run: uv run --project packages/md-extractor ruff check {staged_files}
     lock:
-      run: "pnpm install --lockfile-only && git diff --exit-code pnpm-lock.yaml"
+      run: "corepack pnpm install --lockfile-only && git diff --exit-code pnpm-lock.yaml"

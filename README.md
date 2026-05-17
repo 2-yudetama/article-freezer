@@ -21,6 +21,9 @@
 ```bash
 mise trust
 mise install
+
+# Codex sandbox内でcorepack経由でpnpmを使用できるようにする
+corepack prepare
 ```
 
 ### 2. 依存関係のインストール
