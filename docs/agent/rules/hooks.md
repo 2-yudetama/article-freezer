@@ -30,7 +30,7 @@ hooks の利用には Codex の `codex_hooks` feature flag を有効にする必
 
 ファイル書き込み後の formatter は変更ファイルのみを対象にする。
 
-- TypeScript / JavaScript / JSON / YAML / CSS は `pnpm exec biome check --write <path>` を使う
+- TypeScript / JavaScript / JSON / YAML / CSS は `corepack pnpm exec biome check --write <path>` を使う
 - `packages/md-extractor` 配下の Python は `uv run --project packages/md-extractor ruff check --fix <path>` を使う
 - `docs` 配下と `pnpm-lock.yaml` は formatter 自動実行の対象外にする
 
@@ -59,7 +59,7 @@ formatter が失敗した場合、hook は失敗内容を追加コンテキス�
 
 現在ブランチが `issue/` で始まらない場合は deny する。
 push コマンドは `git push origin issue/{issue番号}` のように remote と branch を明示する。
-引数なし `git push` と `origin` 以外への push は deny する。
+引数なし `git push`、`origin` 以外への push、`issue/` 以外への push は deny する。
 
 ### staged files がない状態での `git commit`
 
@@ -75,9 +75,9 @@ commit message は `{Gitmoji} {メッセージタイトル} (#{issue番号})` �
 
 `git push` 実行前に以下を実行し、いずれかが失敗した場合は deny する。
 
-- `pnpm check`
-- `pnpm --recursive run typecheck`
-- `pnpm knip`
+- `corepack pnpm check`
+- `corepack pnpm --recursive run typecheck`
+- `corepack pnpm knip`
 
 push 前 hook では commit 前検証との重複を許容し、リモートへ出る直前の確認を優先する。
 将来テストを追加する場合は、push 前検証へより広い範囲のテストを追加する。
