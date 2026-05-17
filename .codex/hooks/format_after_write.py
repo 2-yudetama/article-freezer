@@ -166,11 +166,20 @@ def main() -> int:
 
     if biome_targets:
         ok, output = run(
-            root, ["pnpm", "exec", "biome", "check", "--write", *biome_targets]
+            root,
+            [
+                "corepack",
+                "pnpm",
+                "exec",
+                "biome",
+                "check",
+                "--write",
+                *biome_targets,
+            ],
         )
         if not ok:
             failures.append(
-                f"$ pnpm exec biome check --write {' '.join(biome_targets)}\n{output}"
+                f"$ corepack pnpm exec biome check --write {' '.join(biome_targets)}\n{output}"
             )
 
     if python_targets:

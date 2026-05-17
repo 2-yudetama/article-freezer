@@ -55,6 +55,18 @@ def has_option(args: list[str], *options: str) -> bool:
     return any(arg in options for arg in args)
 
 
+def has_short_option(args: list[str], option: str) -> bool:
+    if not option.startswith("-") or option.startswith("--") or len(option) != 2:
+        return False
+    short_name = option[1]
+    return any(
+        arg.startswith("-")
+        and not arg.startswith("--")
+        and short_name in arg[1:]
+        for arg in args
+    )
+
+
 def has_long_option_value(args: list[str], *options: str) -> bool:
     return any(arg.startswith(f"{option}=") for arg in args for option in options)
 
@@ -148,6 +160,23 @@ def is_incomplete_git_push(argv: list[str]) -> bool:
     return len(positional) < 2 or positional[0] != "origin"
 
 
+def is_unscoped_git_push(argv: list[str]) -> bool:
+    args = git_subcommand_args(argv, "push")
+    if args is None:
+        return False
+
+    positional = [arg for arg in args if not arg.startswith("-")]
+    if len(positional) < 2 or positional[0] != "origin":
+        return False
+
+    refspec = positional[1]
+    if refspec.startswith("issue/"):
+        return False
+    if refspec.startswith("HEAD:issue/"):
+        return False
+    return True
+
+
 def is_destructive_gh_issue(argv: list[str]) -> bool:
     return gh_subcommand_args(argv, "issue", "delete") is not None
 
@@ -176,11 +205,13 @@ def is_delete_gh_api(argv: list[str]) -> bool:
 
 
 def is_commit_verification_bypass(argv: list[str]) -> bool:
-    return len(argv) >= 2 and argv[:2] == ["git", "commit"] and has_option(
-        argv,
-        "--no-verify",
-        "-n",
-        "--amend",
+    return (
+        len(argv) >= 2
+        and argv[:2] == ["git", "commit"]
+        and (
+            has_option(argv, "--no-verify", "--amend")
+            or has_short_option(argv, "-n")
+        )
     )
 
 
@@ -314,6 +345,10 @@ def main() -> int:
             deny("git push は remote と branch を明示してください")
             return 0
 
+        if is_unscoped_git_push(argv):
+            deny("git push は issue/{issue番号} ブランチを明示してください")
+            return 0
+
         branch = current_branch(cwd)
         if not branch.startswith("issue/"):
             deny("git push は issue/{issue番号} ブランチでのみ実行してください")
@@ -322,9 +357,9 @@ def main() -> int:
         ok, output = run_checks(
             cwd,
             [
-                ["pnpm", "check"],
-                ["pnpm", "--recursive", "run", "typecheck"],
-                ["pnpm", "knip"],
+                ["corepack", "pnpm", "check"],
+                ["corepack", "pnpm", "--recursive", "run", "typecheck"],
+                ["corepack", "pnpm", "knip"],
             ],
         )
         if not ok:
