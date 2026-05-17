@@ -145,6 +145,9 @@ def is_destructive_git_push(argv: list[str]) -> bool:
     if has_option(args, "--force", "-f", "--force-with-lease", "--delete", "-d"):
         return True
 
+    if has_short_option(args, "-f") or has_short_option(args, "-d"):
+        return True
+
     if has_long_option_value(args, "--force", "--force-with-lease", "--delete"):
         return True
 
@@ -169,12 +172,11 @@ def is_unscoped_git_push(argv: list[str]) -> bool:
     if len(positional) < 2 or positional[0] != "origin":
         return False
 
-    refspec = positional[1]
-    if refspec.startswith("issue/"):
-        return False
-    if refspec.startswith("HEAD:issue/"):
-        return False
-    return True
+    for refspec in positional[1:]:
+        target = refspec.rsplit(":", 1)[1] if ":" in refspec else refspec
+        if not target.startswith("issue/"):
+            return True
+    return False
 
 
 def is_destructive_gh_issue(argv: list[str]) -> bool:
