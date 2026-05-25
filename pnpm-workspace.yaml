@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 catalog:
   "@logtape/logtape": ^2.0.2
+  next: ^16.2.6
   valibot: ^1.2.0
 catalogs:
   ts:
@@ -10,10 +11,18 @@ catalogs:
     tsx: 4.21.0
     typescript: 5.9.3
   prisma:
-    "@prisma/adapter-pg": ^7.3.0
-    "@prisma/client": ^7.3.0
-    "pg": ^8.18.0
-    "prisma": ^7.3.0
+    "@prisma/adapter-pg": ^7.8.0
+    "@prisma/client": ^7.8.0
+    pg: ^8.21.0
+    prisma: ^7.8.0
+  react:
+    "@types/react": ^19
+    "@types/react-dom": ^19
+    react: ^19.2.6
+    react-dom: ^19.2.6
+  vitest:
+    "@vitest/coverage-v8": "^4.1.7"
+    "vitest": "^4.1.7"
 
 # https://pnpm.io/ja/workspaces#syncinjecteddepsafterscripts
 syncInjectedDepsAfterScripts:
