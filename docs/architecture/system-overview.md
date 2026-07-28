@@ -1,7 +1,7 @@
 # システム構成
 
 この文書は、Article Freezer の現行実装における論理コンポーネントと主要な接続を俯瞰するための入口。
-デプロイ先、ネットワーク区画、プロセスの配置を示す物理構成図ではない。
+本番利用時の公開入口、Northflank 上の配置、デプロイ経路は[本番インフラ構成](./infrastructure-overview.md)を参照する。
 
 ## 論理構成
 
@@ -57,7 +57,7 @@ flowchart LR
 
 ## 関連資料
 
-- [インフラ構成](./infrastructure-overview.md): Docker Compose のサービス配置、ポート、起動依存、永続 volume
+- [本番インフラ構成](./infrastructure-overview.md): Cloudflare と Northflank を経由する本番利用時の実行経路、および GitHub Actions からのデプロイ経路
 - [データフロー](./data-flow.md): 記事表示・保存の機能別フロー
 - [認証・認可](./auth.md): アプリユーザ認証と service 間認証の境界
 - [ER 図](./er.md): PostgreSQL に保存するデータ構造

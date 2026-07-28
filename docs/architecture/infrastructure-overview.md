@@ -1,108 +1,137 @@
-# インフラ構成
+# 本番インフラ構成
 
-この文書は、現行の Docker Compose 構成におけるサービスの配置、ポート、起動依存、永続 volume、実行時の外部接続を示す。
+この文書は、デプロイ調査と現行の GitHub Actions workflow から確認できる範囲で、Article Freezer の本番利用時の実行経路とデプロイ経路を示す。
+
 各 package の責務やデータの流れを示す論理構成は、[システム構成](./system-overview.md)を参照する。
 
-ルートの `compose.yaml` は `packages/db/compose.yaml` と `packages/md-extractor/compose.yaml` を include する。
-以下は 3 ファイルを合わせた現行のローカル実行構成であり、本番環境や特定のクラウド構成を示すものではない。
+実際の domain 名、Northflank のリソース ID、credential、token、secret は記載しない。
 
-## 構成図
+また、指定資料から確定できない Northflank 内部の network topology、リージョン、冗長化、backup、TLS 終端などは図の対象外とする。
+
+## 本番利用時の実行経路
 
 ```mermaid
 flowchart LR
-    Browser["利用者<br/>ブラウザ"]
-    HostClient["ホスト側クライアント<br/>開発・管理用途"]
+    User["利用者<br/>ブラウザ"]
+    Cloudflare["Cloudflare<br/>管理ドメイン"]
 
-    subgraph Compose["Docker Compose 管理境界"]
-        subgraph Network["article-freezer-network<br/>bridge network"]
-            WebApp["web-app<br/>Node.js 24.13-slim<br/>Next.js standalone runner<br/>container :3000"]
-            MdExtractor["md-extractor<br/>Python 3.13-slim-trixie runner<br/>container :8080"]
-            Postgres[("postgres<br/>postgres:18<br/>container :5432")]
-            Pgweb["pgweb<br/>ghcr.io/sosedoff/pgweb:0.17.0<br/>container :8081"]
-            DbMigrate["db-migrate<br/>root Dockerfile builder target<br/>migration / seed の one-shot container"]
-        end
+    subgraph Northflank["Northflank 実行境界"]
+        Routing["Northflank routing"]
+        WebApp["web-app service<br/>UI / Web API"]
+        MdExtractor["md-extractor service<br/>記事抽出 API"]
+        PostgreSQL[("PostgreSQL addon<br/>アプリケーションデータ")]
 
-        Pgdata[("pgdata<br/>named volume")]
+        Routing -->|"公開 route"| WebApp
+        WebApp -->|"service 呼び出し"| MdExtractor
+        WebApp -->|"Prisma<br/>参照 / 保存"| PostgreSQL
     end
 
-    subgraph RuntimeExternal["実行時の外部依存"]
+    subgraph External["外部依存"]
         GitHub["GitHub OAuth"]
         ArticleUrl["記事 URL"]
         OpenAI["OpenAI API"]
     end
 
-    Browser -->|"host :3000 → container :3000"| WebApp
-    Browser -->|"host :8081 → container :8081"| Pgweb
-    HostClient -->|"host :8080 → container :8080"| MdExtractor
-    HostClient -->|"host :5432 → container :5432"| Postgres
-
-    WebApp -->|"HTTP<br/>md-extractor:8080"| MdExtractor
-    WebApp -->|"Prisma<br/>postgres:5432"| Postgres
-    DbMigrate -->|"Prisma<br/>postgres:5432"| Postgres
-    Pgweb -->|"PostgreSQL protocol<br/>postgres:5432"| Postgres
-    Pgdata -->|"mount<br/>/var/lib/postgresql"| Postgres
-
-    Postgres -.->|"healthcheck: healthy"| DbMigrate
-    DbMigrate -.->|"completed successfully"| WebApp
-    Postgres -.->|"healthcheck: healthy"| Pgweb
-
+    User -->|"HTTPS"| Cloudflare
+    Cloudflare -->|"domain routing"| Routing
     WebApp -->|"OAuth 認証"| GitHub
-    GitHub -->|"OAuth callback"| WebApp
-    MdExtractor -->|"HTTPS GET"| ArticleUrl
-    MdExtractor -->|"OpenAI API"| OpenAI
+    GitHub -->|"OAuth callback<br/>公開経路へ戻る"| Cloudflare
+    MdExtractor -->|"HTTPS GET<br/>記事コンテンツ取得"| ArticleUrl
+    MdExtractor -->|"API request<br/>記事項目抽出"| OpenAI
 ```
 
-## 図の読み方
+### 図の読み方
 
-- Docker Compose 管理境界内の 5 サービスは、同じ `article-freezer-network` bridge network に接続する
-- 実線は利用者またはアプリケーションによる通信と volume mount、破線は Compose の起動条件を示す
-- `host :port → container :port` はホストへ publish されたポート、`service:port` は Compose network 内のサービス名による接続先を示す
-- `packages/db` は `web-app` と `db-migrate` から利用する package であり、独立したサービスとしては配置されない
-- 実行時の外部依存だけを示し、image registry や package registry などの build 時の接続先は含めない
+- 利用者は Cloudflare で管理する domain を入口とし、Northflank routing を経由して `web-app` service を利用する
+- GitHub OAuth の callback も同じ公開経路を通って `web-app` service に戻る
+- `web-app` service は `md-extractor` service を呼び出し、Prisma Client 経由で PostgreSQL addon を参照・更新する
+- `md-extractor` service は記事 URL からコンテンツを取得し、OpenAI を利用して記事項目を抽出する
+- 記事の永続化は `web-app` service が担当する。`md-extractor` service は PostgreSQL addon に記事を保存しない
+- `web-app` service から `md-extractor` service への矢印は実行時の呼び出し関係を示すものであり、接続方式や公開設定などの network topology を示すものではない
 
-## サービスと実行 image
+## デプロイ経路
 
-| サービス | 実行 image / stage | 役割 |
-| --- | --- | --- |
-| `web-app` | ルート `Dockerfile` の `runner` stage。`node:24.13-slim` 系 | Next.js standalone server を非 root の `node` ユーザで実行する常駐サービス |
-| `md-extractor` | `packages/md-extractor/Dockerfile` の `runner` stage。`python:3.13-slim-trixie` 系 | FastAPI の記事抽出 API を非 root ユーザで実行する常駐サービス |
-| `postgres` | `postgres:18` | アプリケーションデータを永続化する PostgreSQL |
-| `pgweb` | `ghcr.io/sosedoff/pgweb:0.17.0` | PostgreSQL を確認する管理 UI |
-| `db-migrate` | ルート `Dockerfile` の `builder` target | Prisma migration と seed を順に実行して終了する one-shot container |
+```mermaid
+flowchart LR
+    Tag["version tag<br/>v*.*.*"]
 
-`web-app` の runner はコンテナ内の `0.0.0.0:3000`、`md-extractor` の runner は既定で `0.0.0.0:8080` を listen する。
+    subgraph GitHub["GitHub"]
+        subgraph ReleaseWorkflow["Release workflow"]
+            ReleaseValidate["SemVer 検証"]
+            WebBuild["web-app image<br/>build / push"]
+            ExtractorBuild["md-extractor image<br/>build / push"]
 
-## ポートと内部通信
+            ReleaseValidate --> WebBuild
+            ReleaseValidate --> ExtractorBuild
+        end
 
-| ホスト側 | コンテナ側 | 接続先 | 主な用途 |
-| --- | --- | --- | --- |
-| `3000` | `web-app:3000` | `web-app` | ブラウザから Web アプリを利用する |
-| `8080` | `md-extractor:8080` | `md-extractor` | ホストから記事抽出 API へ接続する |
-| `8081` | `pgweb:8081` | `pgweb` | ブラウザから pgweb を利用する |
-| `5432` | `postgres:5432` | `postgres` | ホストから PostgreSQL へ接続する |
+        subgraph MigrationWorkflow["DB Migration workflow"]
+            MigrationValidate["SemVer 検証"]
+            Detect{"前回 tag から<br/>migration file に差分あり"}
+            Skip["migration job を起動しない"]
 
-Compose network 内では、`web-app` が `http://md-extractor:8080` を使用する。
-`web-app`、`db-migrate`、`pgweb` は、ホスト公開ポートを経由せずサービス名 `postgres` とコンテナ側 port `5432` で PostgreSQL に接続する。
+            MigrationValidate --> Detect
+            Detect -->|"なし"| Skip
+        end
 
-これらの publish 設定は現行のローカル実行定義を記録したものであり、本番環境で同じポートを公開することを推奨または保証するものではない。
+        GHCR["GHCR"]
+    end
 
-## 起動依存と永続化
+    subgraph Northflank["Northflank"]
+        DeploymentAPI["Northflank API<br/>service deployment 更新"]
+        MigrationAPI["Northflank API<br/>migration job build / run"]
+        WebService["web-app service"]
+        ExtractorService["md-extractor service"]
+        MigrationJob["DB migration job"]
+        PostgreSQL[("PostgreSQL addon")]
 
-1. `postgres` の healthcheck は、コンテナ内で `psql` により接続可能かを確認する
-2. `postgres` が healthy になると、`db-migrate` が Prisma migration と seed を実行する
-3. `db-migrate` が正常終了すると、`web-app` が起動する
-4. `pgweb` は `postgres` が healthy になった後に起動する
+        DeploymentAPI -->|"web-app image を指定"| WebService
+        DeploymentAPI -->|"md-extractor image を指定"| ExtractorService
+        MigrationAPI -->|"build / run"| MigrationJob
+        MigrationJob -->|"Prisma migration 適用"| PostgreSQL
+    end
 
-`md-extractor` には Compose 上の起動依存や readiness 条件が定義されていない。
-`depends_on` は外部依存の可用性や、起動後の継続的な正常性を保証しない。
+    Tag -->|"独立して起動"| ReleaseValidate
+    Tag -->|"独立して起動"| MigrationValidate
+    WebBuild -->|"image 保存"| GHCR
+    ExtractorBuild -->|"image 保存"| GHCR
+    GHCR -->|"image path"| DeploymentAPI
+    Detect -->|"あり"| MigrationAPI
+```
 
-named volume の `pgdata` は、`postgres` の `/var/lib/postgresql` に mount される。
-volume のホスト上の実体配置、バックアップ、冗長化は Compose 定義の範囲外である。
+### 図の読み方
 
-## 構成の正本
+- `v*.*.*` の version tag を push すると、Release workflow と DB Migration workflow がそれぞれ独立して起動する
+- Release workflow は SemVer を検証し、`web-app` と `md-extractor` の image を GitHub Actions で build / push して GHCR に保存する
+- Release workflow は Northflank API で各 service の deployment を更新し、それぞれに対応する GHCR image を指定する
+- DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する
+- migration file に差分がある場合だけ、Northflank API で DB migration job を build / run し、job が PostgreSQL addon に migration を適用する。差分がなければ job は起動しない
 
-- [ルート Compose](../../compose.yaml): include、`db-migrate`、`web-app`、共有 network の定義
-- [DB Compose](../../packages/db/compose.yaml): `postgres`、`pgweb`、`pgdata`、healthcheck の定義
-- [md-extractor Compose](../../packages/md-extractor/compose.yaml): `md-extractor` の定義
-- [ルート Dockerfile](../../Dockerfile): `web-app` runner と `db-migrate` が利用する builder stage の定義
-- [md-extractor Dockerfile](../../packages/md-extractor/Dockerfile): Python runner の定義
+> [!IMPORTANT]
+> 2 つの workflow は同じ version tag を契機に GitHub 上で独立して起動する。
+>
+> service deployment と DB migration の間に、実行順序や成功依存の保証はない。
+
+## 責務境界
+
+| 対象 | この文書で示す責務 |
+| --- | --- |
+| Cloudflare 管理ドメイン | 利用者と GitHub OAuth callback が到達する公開入口 |
+| Northflank routing | 公開入口から `web-app` service への routing 境界 |
+| `web-app` service | UI / Web API、GitHub OAuth、`md-extractor` の呼び出し、PostgreSQL addon への参照・保存 |
+| `md-extractor` service | 記事 URL の取得と OpenAI を利用した記事項目抽出 |
+| PostgreSQL addon | アプリケーションデータの永続化と migration の適用先 |
+| GHCR | Release workflow が build した 2 つの container image の保存先 |
+| Northflank API | service deployment の更新と、条件付き DB migration job の build / run |
+
+## 構成の根拠
+
+- [Release workflow](../../.github/workflows/release.yaml): version tag、SemVer 検証、2 image の build / push、GHCR、Northflank service deployment 更新
+- [DB Migration workflow](../../.github/workflows/db-migration.yaml): version tag、migration 差分検出、条件付き DB migration job の build / run
+- [Issue #45: デプロイ方法調査](https://github.com/2-yudetama/article-freezer/issues/45): Northflank の service / addon 構成と GitHub Actions からのデプロイ方針
+- [PR #46: リリース用の GitHub Actions を整備](https://github.com/2-yudetama/article-freezer/pull/46): Release workflow の実装
+- [Issue #47: マイグレーション用 Actions の作成](https://github.com/2-yudetama/article-freezer/issues/47): migration 差分がある場合だけ実行する方針
+- [PR #48: マイグレーション用の workflow を追加](https://github.com/2-yudetama/article-freezer/pull/48): DB Migration workflow の実装
+- [Issue #49: 独自ドメイン取得](https://github.com/2-yudetama/article-freezer/issues/49): Cloudflare 管理ドメインと Northflank routing の設定方針
+
+ローカル開発環境の構成は本番インフラとは分け、ルートおよび各 package の Compose 定義を正本とする。
