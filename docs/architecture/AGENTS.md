@@ -21,6 +21,7 @@
 
 ## ファイル
 
+- `system-overview.md`: システム全体の論理構成と主要な接続
 - `data-flow.md`: package 間の主要なデータフロー
 - `auth.md`: 認証・認可の package 間境界
 - `er.md`: DB / ドメインデータ構造の ER 図
