@@ -57,6 +57,7 @@ flowchart LR
 
 ## 関連資料
 
+- [インフラ構成](./infrastructure-overview.md): Docker Compose のサービス配置、ポート、起動依存、永続 volume
 - [データフロー](./data-flow.md): 記事表示・保存の機能別フロー
 - [認証・認可](./auth.md): アプリユーザ認証と service 間認証の境界
 - [ER 図](./er.md): PostgreSQL に保存するデータ構造
