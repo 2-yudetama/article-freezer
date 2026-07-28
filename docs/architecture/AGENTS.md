@@ -21,6 +21,8 @@
 
 ## ファイル
 
+- `system-overview.md`: システム全体の論理構成と主要な接続
+- `infrastructure-overview.md`: Cloudflare と Northflank を経由する本番利用時の実行経路、および GitHub Actions からのデプロイ経路
 - `data-flow.md`: package 間の主要なデータフロー
 - `auth.md`: 認証・認可の package 間境界
 - `er.md`: DB / ドメインデータ構造の ER 図

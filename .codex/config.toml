@@ -1,27 +1,35 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
 approval_policy = "never"
-sandbox_mode = "workspace-write"
 allow_login_shell = false
 
 default_permissions = "workspace"
 
+[permissions.workspace]
+extends = ":workspace"
+
 [permissions.workspace.filesystem]
-":minimal" = "read"
-"/tmp" = "write"
 "~/.cache" = "write"
 "~/.local/share/mise" = "read"
 glob_scan_max_depth = 6
 
-[permissions.workspace.filesystem.":project_roots"]
+[permissions.workspace.filesystem.":workspace_roots"]
 # allow
 "." = "write"
-".agents" = "write"
+".agents" = "read"
+".agents/skills" = "write"
 ".codex" = "read"
 ".git" = "write"
 
 # deny
-"**/*.env" = "none"
+"**/*.env" = "deny"
+
+[permissions.workspace.network]
+enabled = true
+mode = "full"
+
+[permissions.workspace.network.domains]
+"*" = "allow"
 
 [shell_environment_policy]
 inherit = "core"
@@ -32,6 +40,7 @@ ignore_default_excludes = false
 codex_git_commit = true
 hooks = true
 multi_agent = true
+network_proxy = true
 
 [agents]
 max_threads = 1
