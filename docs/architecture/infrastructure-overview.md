@@ -32,10 +32,10 @@ flowchart LR
         OpenAI["OpenAI API"]
     end
 
-    User -->|"HTTPS"| Cloudflare
+    User -->|"HTTPS / OAuth callback"| Cloudflare
     Cloudflare -->|"domain routing"| Routing
     WebApp -->|"OAuth 認証"| GitHub
-    GitHub -->|"OAuth callback<br/>公開経路へ戻る"| Cloudflare
+    GitHub -->|"認可後 redirect"| User
     MdExtractor -->|"HTTPS GET<br/>記事コンテンツ取得"| ArticleUrl
     MdExtractor -->|"API request<br/>記事項目抽出"| OpenAI
 ```
@@ -60,14 +60,17 @@ flowchart LR
             ReleaseValidate["SemVer 検証"]
             WebBuild["web-app image<br/>build / push"]
             ExtractorBuild["md-extractor image<br/>build / push"]
+            DeployJob["deploy job<br/>image path を組み立て"]
 
             ReleaseValidate --> WebBuild
             ReleaseValidate --> ExtractorBuild
+            WebBuild --> DeployJob
+            ExtractorBuild --> DeployJob
         end
 
         subgraph MigrationWorkflow["DB Migration workflow"]
             MigrationValidate["SemVer 検証"]
-            Detect{"前回 tag から<br/>migration file に差分あり"}
+            Detect{"migration file を検出<br/>前回 tag との差分<br/>初回 tag は全件"}
             Skip["migration job を起動しない"]
 
             MigrationValidate --> Detect
@@ -95,7 +98,7 @@ flowchart LR
     Tag -->|"独立して起動"| MigrationValidate
     WebBuild -->|"image 保存"| GHCR
     ExtractorBuild -->|"image 保存"| GHCR
-    GHCR -->|"image path"| DeploymentAPI
+    DeployJob -->|"image path を送信"| DeploymentAPI
     Detect -->|"あり"| MigrationAPI
 ```
 
@@ -104,8 +107,9 @@ flowchart LR
 - `v*.*.*` の version tag を push すると、Release workflow と DB Migration workflow がそれぞれ独立して起動する
 - Release workflow は SemVer を検証し、`web-app` と `md-extractor` の image を GitHub Actions で build / push して GHCR に保存する
 - Release workflow は Northflank API で各 service の deployment を更新し、それぞれに対応する GHCR image を指定する
-- DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する
+- DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する。前回の tag がない初回 release では、現在の commit 配下にある migration file 全件を検出対象にする
 - migration file に差分がある場合だけ、Northflank API で DB migration job を build / run し、job が PostgreSQL addon に migration を適用する。差分がなければ job は起動しない
+- workflow は DB migration job の build 完了を待ってから run を開始するが、run の完了・成功は待機しない。GitHub Actions の成功は DB migration の完了成功を保証しない
 
 > [!IMPORTANT]
 > 2 つの workflow は同じ version tag を契機に GitHub 上で独立して起動する。

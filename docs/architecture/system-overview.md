@@ -16,7 +16,7 @@ flowchart LR
     end
 
     subgraph DataStore["データストア"]
-        PostgreSQL[("PostgreSQL<br/>ユーザ / 記事 / コメント / タグ")]
+        PostgreSQL[("PostgreSQL<br/>ユーザ / 記事 / 記事ソース / コメント / タグ")]
     end
 
     subgraph External["外部依存"]
