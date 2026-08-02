@@ -22,6 +22,10 @@
 
 抽出結果ステップでは、同じ URL の再抽出もできる。再抽出を実行すると、現在の抽出結果を上書きして記事本文を再取得する。
 
+抽出結果ステップでは、任意で記事本文を日本語へ翻訳できる。原文が日本語の場合は本文を変更せず、翻訳対象外であることを表示する。翻訳または言語判定後は、翻訳ボタンを処理結果が分かる無効状態にし、記事情報に原文の言語を日本語の表示名で表示する。判定前の原文言語は「未判定」と表示する。
+
+翻訳済みの記事は再抽出できない。別の記事 URL を抽出した場合は翻訳状態をリセットする。
+
 ## API
 
 ### `POST /api/users/[userId]/articles/extract`
@@ -58,6 +62,31 @@
 `publishedDate` は、抽出できない場合は `null` になる。
 
 内部では `md-extractor` の `POST /api/extract` を呼び出す。
+
+### `POST /api/users/[userId]/articles/translate`
+
+抽出済みの記事 Markdown を日本語へ翻訳する API。
+
+リクエスト時にユーザの認可を行い、認可されたユーザだけが利用できる。
+
+リクエスト body:
+
+```json
+{
+  "markdown": "# Article title\n\nArticle content."
+}
+```
+
+翻訳した場合のレスポンス body:
+
+```json
+{
+  "sourceLanguage": "en",
+  "translatedMarkdown": "# 記事タイトル\n\n記事本文。"
+}
+```
+
+原文が日本語の場合、`translatedMarkdown` は `null` になる。内部では `md-extractor` の `POST /api/translate` を呼び出す。
 
 ### `POST /api/users/[userId]/articles/registration`
 

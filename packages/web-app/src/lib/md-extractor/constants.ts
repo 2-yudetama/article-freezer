@@ -30,6 +30,7 @@ export function getMdExtractorSecretKey(): string {
  */
 export const MD_EXTRACTOR_ENDPOINTS = {
   EXTRACT: "api/extract",
+  TRANSLATE: "api/translate",
 } as const;
 export type MD_EXTRACTOR_ENDPOINTS =
   (typeof MD_EXTRACTOR_ENDPOINTS)[keyof typeof MD_EXTRACTOR_ENDPOINTS];

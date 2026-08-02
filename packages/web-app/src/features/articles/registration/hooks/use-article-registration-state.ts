@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import type { ArticleExtractResponse } from "@/lib/api/schemas";
-import { REGISTRATION_STEP_ORDER, type RegistrationStep } from "../common";
+import {
+  REGISTRATION_STEP_ORDER,
+  type RegistrationStep,
+  type TranslationStatus,
+} from "../common";
 
 /**
  * 記事保存フローで利用する画面状態をまとめて管理する。
@@ -16,6 +20,12 @@ export function useArticleRegistrationState() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [comment, setComment] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [detectedSourceLanguage, setDetectedSourceLanguage] = useState<
+    string | null
+  >(null);
+  const [translationStatus, setTranslationStatus] =
+    useState<TranslationStatus | null>(null);
 
   // 進捗表示は step の順序を正として算出する。
   const currentStepIndex = REGISTRATION_STEP_ORDER[step];
@@ -34,6 +44,12 @@ export function useArticleRegistrationState() {
     setComment,
     isLoading,
     setIsLoading,
+    isTranslating,
+    setIsTranslating,
+    detectedSourceLanguage,
+    setDetectedSourceLanguage,
+    translationStatus,
+    setTranslationStatus,
     currentStepIndex,
     totalSteps,
   };
