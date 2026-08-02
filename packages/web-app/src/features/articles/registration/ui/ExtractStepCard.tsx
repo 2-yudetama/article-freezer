@@ -160,11 +160,6 @@ export default function ExtractResultStepCard({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-                {isTranslated && (
-                  <p className="text-sm text-muted-foreground">
-                    翻訳後は記事を再抽出できません
-                  </p>
-                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -192,6 +187,9 @@ export default function ExtractResultStepCard({
                     </>
                   )}
                 </Button>
+                <p className="text-sm text-muted-foreground">
+                  翻訳すると記事を再抽出できなくなります
+                </p>
               </div>
             </div>
           </div>
