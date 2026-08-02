@@ -1,6 +1,12 @@
 "use client";
 
-import { BookOpen, ExternalLink, Loader2, RefreshCcw } from "lucide-react";
+import {
+  BookOpen,
+  ExternalLink,
+  Languages,
+  Loader2,
+  RefreshCcw,
+} from "lucide-react";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import {
   AlertDialog,
@@ -24,14 +30,20 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import type { ArticleExtractResponse } from "@/lib/api/schemas";
+import { formatLanguageName } from "@/lib/utils/data-format";
+import type { TranslationStatus } from "../common";
 import StepNavigation from "./StepNavigation";
 
 type ExtractResultStepCardProps = {
   url: string;
   extractedArticle: ArticleExtractResponse;
   isLoading: boolean;
+  isTranslating: boolean;
+  detectedSourceLanguage: string | null;
+  translationStatus: TranslationStatus | null;
   onBack: () => void;
   onReExtract: () => Promise<void>;
+  onTranslate: () => Promise<void>;
   onNext: () => void;
 };
 
@@ -43,11 +55,16 @@ export default function ExtractResultStepCard({
   url,
   extractedArticle,
   isLoading,
+  isTranslating,
+  detectedSourceLanguage,
+  translationStatus,
   onBack,
   onReExtract,
+  onTranslate,
   onNext,
 }: ExtractResultStepCardProps) {
   const publishedDateLabel = extractedArticle.publishedDate ?? "投稿日不明";
+  const isTranslated = translationStatus === "translated";
 
   return (
     <div className="space-y-6">
@@ -78,6 +95,14 @@ export default function ExtractResultStepCard({
               </a>
             </div>
             <div className="space-y-2">
+              <Label className="text-muted-foreground">原文の言語</Label>
+              <p className="font-medium">
+                {detectedSourceLanguage
+                  ? formatLanguageName(detectedSourceLanguage)
+                  : "未判定"}
+              </p>
+            </div>
+            <div className="space-y-2">
               <Label className="text-muted-foreground">本文プレビュー</Label>
               <div className="flex flex-col items-start gap-4 py-4">
                 <Dialog>
@@ -100,8 +125,12 @@ export default function ExtractResultStepCard({
                 </Dialog>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" disabled={isLoading}>
-                      {isLoading ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoading || isTranslated}
+                    >
+                      {isLoading && !isTranslating ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
                           再抽出中
@@ -131,6 +160,36 @@ export default function ExtractResultStepCard({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">オプション</Label>
+              <div className="flex flex-col items-start gap-4 py-4">
+                <Button
+                  variant="default"
+                  size="lg"
+                  disabled={isLoading || translationStatus !== null}
+                  onClick={onTranslate}
+                >
+                  {isTranslating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      翻訳中
+                    </>
+                  ) : (
+                    <>
+                      <Languages className="h-4 w-4" />
+                      {translationStatus === "translated"
+                        ? "翻訳済み"
+                        : translationStatus === "skipped"
+                          ? "翻訳対象外"
+                          : "日本語に翻訳"}
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  翻訳すると記事を再抽出できなくなります
+                </p>
               </div>
             </div>
           </div>

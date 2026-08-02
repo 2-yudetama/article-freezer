@@ -30,6 +30,27 @@ export type ArticleExtractResponse = v.InferOutput<
 >;
 
 /**
+ * POST /api/users/[userId]/articles/translate のリクエストスキーマ
+ */
+export const ArticleTranslateRequestSchema = v.object({
+  markdown: v.pipe(v.string(), v.minLength(1)),
+});
+export type ArticleTranslateRequest = v.InferOutput<
+  typeof ArticleTranslateRequestSchema
+>;
+
+/**
+ * POST /api/users/[userId]/articles/translate のレスポンススキーマ
+ */
+export const ArticleTranslateResponseSchema = v.object({
+  sourceLanguage: v.pipe(v.string(), v.minLength(1)),
+  translatedMarkdown: v.nullable(v.pipe(v.string(), v.minLength(1))),
+});
+export type ArticleTranslateResponse = v.InferOutput<
+  typeof ArticleTranslateResponseSchema
+>;
+
+/**
  * POST /api/users/[userId]/articles/registration のリクエストスキーマ
  */
 export const ArticleRegistrationRequestSchema = v.object({

@@ -12,6 +12,7 @@ from src.services.error import (
     ArticleContentFetchError,
     ArticleContentRequestError,
     ArticleExtractionError,
+    ArticleTranslationError,
     ErrorResponse,
     UnauthorizedError,
     UnsafeArticleUrlError,
@@ -82,6 +83,15 @@ def _map_exception_to_response(
         )
 
     if isinstance(exc, ArticleExtractionError):
+        return (
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, ArticleTranslationError):
         return (
             status.HTTP_503_SERVICE_UNAVAILABLE,
             ErrorResponse(

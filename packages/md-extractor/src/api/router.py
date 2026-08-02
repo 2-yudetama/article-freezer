@@ -1,9 +1,16 @@
 from fastapi import APIRouter, Depends, status
 
 from src.api.auth import verify_api_token
-from src.api.model import ExtractReq, ExtractRes, Health
-from src.dependencies import get_extract_usecase
+from src.api.model import (
+    ExtractReq,
+    ExtractRes,
+    Health,
+    TranslateReq,
+    TranslateRes,
+)
+from src.dependencies import get_extract_usecase, get_translate_usecase
 from src.services.extract import ExtractUsecase
+from src.services.translate import TranslateUsecase
 
 router = APIRouter()
 
@@ -37,4 +44,25 @@ async def post_extract(
         title=article.title,
         publishedDate=article.published_date,
         content=article.content,
+    )
+
+
+@router.post(
+    "/translate",
+    status_code=status.HTTP_200_OK,
+    tags=["translate"],
+    # 認証
+    dependencies=[Depends(verify_api_token)],
+    summary="Translate Markdown",
+)
+async def post_translate(
+    req: TranslateReq,
+    usecase: TranslateUsecase = Depends(get_translate_usecase),
+) -> TranslateRes:
+    translated_markdown = await usecase.translate_to_japanese(
+        markdown=req.markdown
+    )
+    return TranslateRes(
+        sourceLanguage=translated_markdown.source_language,
+        translatedMarkdown=translated_markdown.translated_markdown,
     )

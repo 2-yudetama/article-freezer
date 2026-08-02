@@ -53,3 +53,11 @@ class ArticleExtractionError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
+
+
+class ArticleTranslationError(Exception):
+    """記事翻訳に失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message

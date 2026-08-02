@@ -18,6 +18,9 @@ export default function ArticleRegistrationPage() {
     selectedTags,
     comment,
     isLoading,
+    isTranslating,
+    detectedSourceLanguage,
+    translationStatus,
     currentStepIndex,
     totalSteps,
     setUrl,
@@ -25,6 +28,7 @@ export default function ArticleRegistrationPage() {
     moveToPreviousStep,
     handleUrlSubmit,
     handleReExtract,
+    handleTranslate,
     handleExtractedArticleSubmit,
     handleCommentSubmit,
     handleTagsSubmit,
@@ -54,8 +58,12 @@ export default function ArticleRegistrationPage() {
           url={url}
           extractedArticle={extractedArticle}
           isLoading={isLoading}
+          isTranslating={isTranslating}
+          detectedSourceLanguage={detectedSourceLanguage}
+          translationStatus={translationStatus}
           onBack={moveToPreviousStep}
           onReExtract={handleReExtract}
+          onTranslate={handleTranslate}
           onNext={handleExtractedArticleSubmit}
         />
       )}

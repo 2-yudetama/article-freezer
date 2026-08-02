@@ -22,3 +22,22 @@ export const ExtractResponseSchema = v.pick(ArticleSchema, [
   "content",
 ]);
 export type ExtractResponse = v.InferOutput<typeof ExtractResponseSchema>;
+
+/**
+ * POST /api/translate のリクエストスキーマ
+ */
+export const TranslateRequestSchema = v.object({
+  markdown: v.pipe(v.string(), v.minLength(1)),
+});
+export type TranslateRequest = v.InferOutput<typeof TranslateRequestSchema>;
+
+/**
+ * POST /api/translate のレスポンススキーマ
+ */
+export const TranslateResponseSchema = v.object({
+  sourceLanguage: v.pipe(v.string(), v.minLength(1)),
+  translatedMarkdown: v.nullable(v.pipe(v.string(), v.minLength(1))),
+});
+export type TranslateResponse = v.InferOutput<
+  typeof TranslateResponseSchema
+>;

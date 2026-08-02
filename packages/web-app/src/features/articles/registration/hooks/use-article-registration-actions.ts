@@ -7,9 +7,10 @@ import {
   DEFAULT_ERROR_MESSAGE,
   getApiErrorMessage,
 } from "@/lib/api/response.shared";
-import type {
-  ArticleExtractResponse,
-  ArticleRegistrationRequest,
+import {
+  type ArticleExtractResponse,
+  type ArticleRegistrationRequest,
+  ArticleTranslateResponseSchema,
 } from "@/lib/api/schemas";
 import { mockTags } from "@/lib/mock-data";
 import {
@@ -19,6 +20,7 @@ import {
   RegistrationCommentSchema,
   RegistrationExtractedArticleSchema,
   type RegistrationStep,
+  type TranslationStatus,
 } from "../common";
 
 type Params = {
@@ -33,6 +35,9 @@ type Params = {
   setExtractedArticle: (value: ArticleExtractResponse | null) => void;
   setSelectedTags: (value: string[] | ((prev: string[]) => string[])) => void;
   setIsLoading: (value: boolean) => void;
+  setIsTranslating: (value: boolean) => void;
+  setDetectedSourceLanguage: (value: string | null) => void;
+  setTranslationStatus: (value: TranslationStatus | null) => void;
 };
 
 /**
@@ -51,6 +56,9 @@ export function useArticleRegistrationActions({
   setExtractedArticle,
   setSelectedTags,
   setIsLoading,
+  setIsTranslating,
+  setDetectedSourceLanguage,
+  setTranslationStatus,
 }: Params) {
   const router = useRouter();
   const orderedSteps = Object.entries(REGISTRATION_STEP_ORDER)
@@ -110,11 +118,72 @@ export function useArticleRegistrationActions({
       }
 
       setExtractedArticle(await response.json());
+      setDetectedSourceLanguage(null);
+      setTranslationStatus(null);
       onSuccess?.();
     } catch {
       showError(DEFAULT_ERROR_MESSAGE);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /** 抽出済みの記事本文を日本語へ翻訳する */
+  const handleTranslate = async () => {
+    if (!extractedArticle) {
+      showError("抽出結果がありません");
+      return;
+    }
+
+    setIsLoading(true);
+    setIsTranslating(true);
+    try {
+      const response = await fetch(`/api/users/${userId}/articles/translate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ markdown: extractedArticle.content }),
+      });
+
+      if (!response.ok) {
+        showError(await getApiErrorMessage(response));
+        return;
+      }
+
+      const translationResult = v.safeParse(
+        ArticleTranslateResponseSchema,
+        await response.json().catch(() => null),
+      );
+      if (!translationResult.success) {
+        showError(DEFAULT_ERROR_MESSAGE);
+        return;
+      }
+
+      const translation = translationResult.output;
+      setDetectedSourceLanguage(translation.sourceLanguage);
+
+      if (translation.translatedMarkdown === null) {
+        setTranslationStatus("skipped");
+        toast.info("翻訳対象外", {
+          description: "記事本文はすでに日本語です",
+        });
+        return;
+      }
+
+      setExtractedArticle({
+        ...extractedArticle,
+        content: translation.translatedMarkdown,
+      });
+      setTranslationStatus("translated");
+      toast.success("翻訳完了", {
+        description: "記事本文を日本語に翻訳しました",
+      });
+    } catch {
+      showError(DEFAULT_ERROR_MESSAGE);
+    } finally {
+      setIsLoading(false);
+      setIsTranslating(false);
     }
   };
 
@@ -317,6 +386,7 @@ export function useArticleRegistrationActions({
     moveToPreviousStep,
     handleUrlSubmit,
     handleReExtract,
+    handleTranslate,
     handleExtractedArticleSubmit,
     handleCommentSubmit,
     handleTagsSubmit,

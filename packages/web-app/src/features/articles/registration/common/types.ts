@@ -40,3 +40,6 @@ export const RegistrationCommentSchema = v.pick(ArticleCommentSchema, [
 export type RegistrationComment = v.InferOutput<
   typeof RegistrationCommentSchema
 >;
+
+/** 記事本文の翻訳処理結果 */
+export type TranslationStatus = "translated" | "skipped";

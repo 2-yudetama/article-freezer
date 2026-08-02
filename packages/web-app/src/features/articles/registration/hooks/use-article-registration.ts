@@ -24,6 +24,9 @@ export function useArticleRegistration() {
     setExtractedArticle: state.setExtractedArticle,
     setSelectedTags: state.setSelectedTags,
     setIsLoading: state.setIsLoading,
+    setIsTranslating: state.setIsTranslating,
+    setDetectedSourceLanguage: state.setDetectedSourceLanguage,
+    setTranslationStatus: state.setTranslationStatus,
   });
 
   return {

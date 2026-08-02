@@ -79,6 +79,13 @@ export function mapMdExtractorErrorResponse(
     };
   }
 
+  if (name === "ArticleTranslationError") {
+    return {
+      status: 503,
+      message: "記事の翻訳に失敗しました",
+    };
+  }
+
   if (status === 400) {
     return {
       status: 400,
