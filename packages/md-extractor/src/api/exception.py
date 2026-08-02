@@ -16,6 +16,9 @@ from src.services.error import (
     ArticleTranslationError,
     ErrorResponse,
     InvalidArticleUrlError,
+    LLMRequestError,
+    LLMResponseError,
+    LLMServiceUnavailableError,
     UnauthorizedError,
     UnsafeArticleUrlError,
     UnsupportedArticleContentError,
@@ -112,18 +115,19 @@ def _map_exception_to_response(
             ),
         )
 
-    if isinstance(exc, ArticleExtractionError):
-        return (
-            status.HTTP_503_SERVICE_UNAVAILABLE,
-            ErrorResponse(
-                name=exc.__class__.__name__,
-                message=exc.message,
-            ),
-        )
+    if isinstance(exc, (ArticleExtractionError, ArticleTranslationError)):
+        # LLM系のエラーの場合は内容で分岐させる
+        if isinstance(exc.llm_error, LLMRequestError):
+            status_code = status.HTTP_400_BAD_REQUEST
+        elif isinstance(exc.llm_error, LLMResponseError):
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        elif isinstance(exc.llm_error, LLMServiceUnavailableError):
+            status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        else:
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    if isinstance(exc, ArticleTranslationError):
         return (
-            status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code,
             ErrorResponse(
                 name=exc.__class__.__name__,
                 message=exc.message,

@@ -98,17 +98,51 @@ export function mapMdExtractorErrorResponse(
   }
 
   if (name === "ArticleExtractionError") {
-    return {
-      status: 503,
-      message: "取得した記事の内容を抽出できませんでした",
-    };
+    if (status === 400) {
+      return {
+        status,
+        message: "指定された記事の内容を抽出できませんでした",
+      };
+    }
+
+    if (status === 500) {
+      return {
+        status,
+        message: "記事の抽出結果を正しく取得できませんでした",
+      };
+    }
+
+    if (status === 503) {
+      return {
+        status,
+        message:
+          "記事の抽出サービスが一時的に利用できません。時間をおいて再度お試しください",
+      };
+    }
   }
 
   if (name === "ArticleTranslationError") {
-    return {
-      status: 503,
-      message: "記事の翻訳に失敗しました",
-    };
+    if (status === 400) {
+      return {
+        status,
+        message: "入力された記事を翻訳できませんでした",
+      };
+    }
+
+    if (status === 500) {
+      return {
+        status,
+        message: "記事の翻訳結果を正しく取得できませんでした",
+      };
+    }
+
+    if (status === 503) {
+      return {
+        status,
+        message:
+          "記事の翻訳サービスが一時的に利用できません。時間をおいて再度お試しください",
+      };
+    }
   }
 
   if (status === 400) {

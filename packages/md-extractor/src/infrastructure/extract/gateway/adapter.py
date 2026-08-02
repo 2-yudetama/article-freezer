@@ -12,9 +12,10 @@ from markitdown import (
     StreamInfo,
     UnsupportedFormatException,
 )
-from openai import AsyncOpenAI
-from pydantic import HttpUrl
+from openai import AsyncOpenAI, OpenAIError
+from pydantic import HttpUrl, ValidationError
 
+from src.infrastructure.shared.llm.error import map_llm_exception
 from src.services.error import (
     ArticleContentConversionError,
     ArticleContentFetchError,
@@ -22,6 +23,7 @@ from src.services.error import (
     ArticleContentTimeoutError,
     ArticleExtractionError,
     InvalidArticleUrlError,
+    LLMResponseError,
     UnsafeArticleUrlError,
     UnsupportedArticleContentError,
 )
@@ -228,15 +230,27 @@ class ExtractGatewayAdapter(ExtractGateway):
                 input=markdown,
                 text_format=ExtractedArticle,
             )
-        except Exception as exc:
+        except (OpenAIError, ValidationError) as exc:
+            llm_error = map_llm_exception(exc)
+            if llm_error is None:
+                raise
+
             raise ArticleExtractionError(
-                "Could not extract the article content."
+                "Could not extract the article content.",
+                llm_error,
             ) from exc
 
         extracted_article = response.output_parsed
-        if extracted_article is None:
+        if (
+            response.status != "completed"
+            or response.error is not None
+            or extracted_article is None
+        ):
             raise ArticleExtractionError(
-                "Could not parse the extracted article content."
+                "Could not extract the article content.",
+                LLMResponseError(
+                    "The LLM response could not be processed."
+                ),
             )
 
         usage_seconds = (
