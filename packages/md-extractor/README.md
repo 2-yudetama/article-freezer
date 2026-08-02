@@ -1,6 +1,6 @@
 # md-extractor
 
-記事 URL から本文を取得し、MarkItDown と OpenAI を利用して記事項目を抽出する FastAPI サービス
+記事 URL から本文を取得し、MarkItDown と OpenAI を利用して記事項目を抽出・翻訳する FastAPI サービス
 
 **注意：このパッケージはPythonプロジェクトです。**
 
@@ -35,7 +35,7 @@ cp .env.example .env
 | HOT_RELOAD     | ×    | False       | ホットリロード有効化                               |
 | LOG_LEVEL      | ×    | INFO        | ログ出力レベル                                     |
 | LOG_FORMAT     | ×    | text        | ログ出力形式 (text or json)                        |
-| OPENAI_MODEL   | ×    | gpt-4o-mini | 記事の項目抽出に使う OpenAI モデル                 |
+| OPENAI_MODEL   | ×    | gpt-4o-mini | 記事の項目抽出と翻訳に使う OpenAI モデル           |
 
 ### 3. 開発サーバの起動
 
