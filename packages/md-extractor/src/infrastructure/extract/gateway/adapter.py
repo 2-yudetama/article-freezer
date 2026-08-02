@@ -6,7 +6,12 @@ from io import BytesIO
 import httpx
 from injector import inject
 from loguru import logger
-from markitdown import MarkItDown, StreamInfo
+from markitdown import (
+    FileConversionException,
+    MarkItDown,
+    StreamInfo,
+    UnsupportedFormatException,
+)
 from openai import AsyncOpenAI
 from pydantic import HttpUrl
 
@@ -18,6 +23,7 @@ from src.services.error import (
     ArticleExtractionError,
     InvalidArticleUrlError,
     UnsafeArticleUrlError,
+    UnsupportedArticleContentError,
 )
 from src.services.extract.model import ExtractedArticle, FetchedContent
 from src.services.extract.port import ExtractGateway
@@ -191,7 +197,11 @@ class ExtractGatewayAdapter(ExtractGateway):
             result = self.__markdown_converter.convert_stream(
                 BytesIO(fetched_content.body), stream_info=stream_info
             )
-        except Exception as exc:
+        except UnsupportedFormatException as exc:
+            raise UnsupportedArticleContentError(
+                "The article content format is not supported."
+            ) from exc
+        except FileConversionException as exc:
             raise ArticleContentConversionError(
                 "Could not convert the article content to Markdown."
             ) from exc

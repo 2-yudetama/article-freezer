@@ -83,10 +83,21 @@ export function mapMdExtractorErrorResponse(
     };
   }
 
-  if (
-    name === "ArticleContentConversionError" ||
-    name === "ArticleExtractionError"
-  ) {
+  if (name === "UnsupportedArticleContentError") {
+    return {
+      status: 422,
+      message: "指定されたURLの記事形式には対応していません",
+    };
+  }
+
+  if (name === "ArticleContentConversionError") {
+    return {
+      status: 500,
+      message: "取得した記事をMarkdownに変換できませんでした",
+    };
+  }
+
+  if (name === "ArticleExtractionError") {
     return {
       status: 503,
       message: "取得した記事の内容を抽出できませんでした",

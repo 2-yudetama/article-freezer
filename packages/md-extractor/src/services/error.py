@@ -55,6 +55,14 @@ class ArticleContentTimeoutError(Exception):
         self.message = message
 
 
+class UnsupportedArticleContentError(Exception):
+    """記事コンテンツがMarkdown変換の対応形式ではない場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
 class ArticleContentConversionError(Exception):
     """記事コンテンツのMarkdown変換に失敗した場合の例外"""
 

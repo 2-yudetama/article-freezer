@@ -107,6 +107,8 @@
 3. MarkItDown で取得コンテンツを Markdown に変換する
 4. OpenAI で Markdown から `title`、`publishedDate`、`content` を抽出する
 
+MarkItDown が取得コンテンツを対応形式として認識できない場合は、`422` を返す。対応形式の変換処理に失敗した場合は、`500` を返す。
+
 ## 翻訳処理フロー
 
 1. 記事 Markdown の主要言語を判定する

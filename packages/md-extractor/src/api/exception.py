@@ -18,6 +18,7 @@ from src.services.error import (
     InvalidArticleUrlError,
     UnauthorizedError,
     UnsafeArticleUrlError,
+    UnsupportedArticleContentError,
 )
 
 
@@ -93,9 +94,18 @@ def _map_exception_to_response(
             ),
         )
 
+    if isinstance(exc, UnsupportedArticleContentError):
+        return (
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
     if isinstance(exc, ArticleContentConversionError):
         return (
-            status.HTTP_503_SERVICE_UNAVAILABLE,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
             ErrorResponse(
                 name=exc.__class__.__name__,
                 message=exc.message,
