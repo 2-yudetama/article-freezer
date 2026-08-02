@@ -1,8 +1,13 @@
 from injector import inject
 from loguru import logger
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAIError
+from pydantic import ValidationError
 
-from src.services.error import ArticleTranslationError
+from src.infrastructure.shared.llm.error import map_llm_exception
+from src.services.error import (
+    ArticleTranslationError,
+    LLMResponseError,
+)
 from src.services.translate.model import TranslatedMarkdown
 from src.services.translate.port import TranslateGateway
 from src.settings import settings
@@ -33,15 +38,27 @@ class TranslateGatewayAdapter(TranslateGateway):
                 input=markdown,
                 text_format=TranslatedMarkdown,
             )
-        except Exception as exc:
+        except (OpenAIError, ValidationError) as exc:
+            llm_error = map_llm_exception(exc)
+            if llm_error is None:
+                raise
+
             raise ArticleTranslationError(
-                "Could not translate the article content."
+                "Could not translate the article content.",
+                llm_error,
             ) from exc
 
         translated_markdown = response.output_parsed
-        if translated_markdown is None:
+        if (
+            response.status != "completed"
+            or response.error is not None
+            or translated_markdown is None
+        ):
             raise ArticleTranslationError(
-                "Could not parse the translated article content."
+                "Could not translate the article content.",
+                LLMResponseError(
+                    "The LLM response could not be processed."
+                ),
             )
 
         usage_seconds = (

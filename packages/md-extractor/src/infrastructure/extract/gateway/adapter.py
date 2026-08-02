@@ -6,16 +6,26 @@ from io import BytesIO
 import httpx
 from injector import inject
 from loguru import logger
-from markitdown import MarkItDown, StreamInfo
-from openai import AsyncOpenAI
-from pydantic import HttpUrl
+from markitdown import (
+    FileConversionException,
+    MarkItDown,
+    StreamInfo,
+    UnsupportedFormatException,
+)
+from openai import AsyncOpenAI, OpenAIError
+from pydantic import HttpUrl, ValidationError
 
+from src.infrastructure.shared.llm.error import map_llm_exception
 from src.services.error import (
     ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
+    ArticleContentTimeoutError,
     ArticleExtractionError,
+    InvalidArticleUrlError,
+    LLMResponseError,
     UnsafeArticleUrlError,
+    UnsupportedArticleContentError,
 )
 from src.services.extract.model import ExtractedArticle, FetchedContent
 from src.services.extract.port import ExtractGateway
@@ -132,18 +142,31 @@ class ExtractGatewayAdapter(ExtractGateway):
     async def fetch_content(self, url: HttpUrl) -> FetchedContent:
         """URLからコンテンツを取得する"""
 
-        async with httpx.AsyncClient() as client:
-            try:
+        client = httpx.AsyncClient()
+        try:
+            async with client:
                 response = await client.get(url=url.encoded_string())
                 response.raise_for_status()
-            except httpx.RequestError as exc:
-                raise ArticleContentRequestError(
-                    "Could not fetch the article content."
-                ) from exc
-            except httpx.HTTPStatusError as exc:
-                raise ArticleContentFetchError(
-                    "The article URL returned an unsuccessful response."
-                ) from exc
+        except httpx.InvalidURL as exc:
+            raise InvalidArticleUrlError(
+                "The article URL is invalid."
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise ArticleContentTimeoutError(
+                "The article request timed out."
+            ) from exc
+        except httpx.NetworkError as exc:
+            raise ArticleContentRequestError(
+                "Could not request the article content."
+            ) from exc
+        except httpx.ProtocolError as exc:
+            raise ArticleContentFetchError(
+                "The article URL returned an invalid response."
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise ArticleContentFetchError(
+                "The article URL did not return a successful response."
+            ) from exc
 
         mimetype, charset = self._parse_content_type(
             response.headers.get("content-type")
@@ -176,7 +199,11 @@ class ExtractGatewayAdapter(ExtractGateway):
             result = self.__markdown_converter.convert_stream(
                 BytesIO(fetched_content.body), stream_info=stream_info
             )
-        except Exception as exc:
+        except UnsupportedFormatException as exc:
+            raise UnsupportedArticleContentError(
+                "The article content format is not supported."
+            ) from exc
+        except FileConversionException as exc:
             raise ArticleContentConversionError(
                 "Could not convert the article content to Markdown."
             ) from exc
@@ -203,15 +230,27 @@ class ExtractGatewayAdapter(ExtractGateway):
                 input=markdown,
                 text_format=ExtractedArticle,
             )
-        except Exception as exc:
+        except (OpenAIError, ValidationError) as exc:
+            llm_error = map_llm_exception(exc)
+            if llm_error is None:
+                raise
+
             raise ArticleExtractionError(
-                "Could not extract the article content."
+                "Could not extract the article content.",
+                llm_error,
             ) from exc
 
         extracted_article = response.output_parsed
-        if extracted_article is None:
+        if (
+            response.status != "completed"
+            or response.error is not None
+            or extracted_article is None
+        ):
             raise ArticleExtractionError(
-                "Could not parse the extracted article content."
+                "Could not extract the article content.",
+                LLMResponseError(
+                    "The LLM response could not be processed."
+                ),
             )
 
         usage_seconds = (

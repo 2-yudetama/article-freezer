@@ -48,6 +48,13 @@ export function mapMdExtractorErrorResponse(
     };
   }
 
+  if (name === "InvalidArticleUrlError") {
+    return {
+      status: 400,
+      message: "URLを正しい形式で入力してください",
+    };
+  }
+
   if (name === "RequestValidationError") {
     return {
       status: 400,
@@ -64,32 +71,84 @@ export function mapMdExtractorErrorResponse(
 
   if (name === "ArticleContentRequestError") {
     return {
-      status: 503,
+      status: 502,
       message: "指定されたURLに接続できませんでした",
     };
   }
 
-  if (
-    name === "ArticleContentConversionError" ||
-    name === "ArticleExtractionError"
-  ) {
+  if (name === "ArticleContentTimeoutError") {
     return {
-      status: 503,
-      message: "取得した記事の内容を抽出できませんでした",
+      status: 504,
+      message: "記事の取得がタイムアウトしました",
     };
   }
 
-  if (name === "ArticleTranslationError") {
+  if (name === "UnsupportedArticleContentError") {
     return {
-      status: 503,
-      message: "記事の翻訳に失敗しました",
+      status: 422,
+      message: "指定されたURLの記事形式には対応していません",
     };
+  }
+
+  if (name === "ArticleContentConversionError") {
+    return {
+      status: 500,
+      message: "取得した記事をMarkdownに変換できませんでした",
+    };
+  }
+
+  if (name === "ArticleExtractionError") {
+    if (status === 400) {
+      return {
+        status,
+        message: "指定された記事の内容を抽出できませんでした",
+      };
+    }
+
+    if (status === 500) {
+      return {
+        status,
+        message: "記事の抽出結果を正しく取得できませんでした",
+      };
+    }
+
+    if (status === 503) {
+      return {
+        status,
+        message:
+          "記事の抽出サービスが一時的に利用できません。時間をおいて再度お試しください",
+      };
+    }
+  }
+
+  if (name === "ArticleTranslationError") {
+    if (status === 400) {
+      return {
+        status,
+        message: "入力された記事を翻訳できませんでした",
+      };
+    }
+
+    if (status === 500) {
+      return {
+        status,
+        message: "記事の翻訳結果を正しく取得できませんでした",
+      };
+    }
+
+    if (status === 503) {
+      return {
+        status,
+        message:
+          "記事の翻訳サービスが一時的に利用できません。時間をおいて再度お試しください",
+      };
+    }
   }
 
   if (status === 400) {
     return {
       status: 400,
-      message: "指定されたURLでは記事を抽出できません",
+      message: "リクエスト内容に不備があります",
     };
   }
 
