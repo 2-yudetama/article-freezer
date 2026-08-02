@@ -14,7 +14,9 @@ from src.services.error import (
     ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
+    ArticleContentTimeoutError,
     ArticleExtractionError,
+    InvalidArticleUrlError,
     UnsafeArticleUrlError,
 )
 from src.services.extract.model import ExtractedArticle, FetchedContent
@@ -132,18 +134,31 @@ class ExtractGatewayAdapter(ExtractGateway):
     async def fetch_content(self, url: HttpUrl) -> FetchedContent:
         """URLからコンテンツを取得する"""
 
-        async with httpx.AsyncClient() as client:
-            try:
+        client = httpx.AsyncClient()
+        try:
+            async with client:
                 response = await client.get(url=url.encoded_string())
                 response.raise_for_status()
-            except httpx.RequestError as exc:
-                raise ArticleContentRequestError(
-                    "Could not fetch the article content."
-                ) from exc
-            except httpx.HTTPStatusError as exc:
-                raise ArticleContentFetchError(
-                    "The article URL returned an unsuccessful response."
-                ) from exc
+        except httpx.InvalidURL as exc:
+            raise InvalidArticleUrlError(
+                "The article URL is invalid."
+            ) from exc
+        except httpx.TimeoutException as exc:
+            raise ArticleContentTimeoutError(
+                "The article request timed out."
+            ) from exc
+        except httpx.NetworkError as exc:
+            raise ArticleContentRequestError(
+                "Could not request the article content."
+            ) from exc
+        except httpx.ProtocolError as exc:
+            raise ArticleContentFetchError(
+                "The article URL returned an invalid response."
+            ) from exc
+        except httpx.HTTPStatusError as exc:
+            raise ArticleContentFetchError(
+                "The article URL did not return a successful response."
+            ) from exc
 
         mimetype, charset = self._parse_content_type(
             response.headers.get("content-type")

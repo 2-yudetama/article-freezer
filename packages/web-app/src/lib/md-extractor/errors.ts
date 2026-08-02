@@ -48,6 +48,13 @@ export function mapMdExtractorErrorResponse(
     };
   }
 
+  if (name === "InvalidArticleUrlError") {
+    return {
+      status: 400,
+      message: "URLを正しい形式で入力してください",
+    };
+  }
+
   if (name === "RequestValidationError") {
     return {
       status: 400,
@@ -64,8 +71,15 @@ export function mapMdExtractorErrorResponse(
 
   if (name === "ArticleContentRequestError") {
     return {
-      status: 503,
+      status: 502,
       message: "指定されたURLに接続できませんでした",
+    };
+  }
+
+  if (name === "ArticleContentTimeoutError") {
+    return {
+      status: 504,
+      message: "記事の取得がタイムアウトしました",
     };
   }
 
@@ -89,7 +103,7 @@ export function mapMdExtractorErrorResponse(
   if (status === 400) {
     return {
       status: 400,
-      message: "指定されたURLでは記事を抽出できません",
+      message: "リクエスト内容に不備があります",
     };
   }
 

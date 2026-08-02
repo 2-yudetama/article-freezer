@@ -23,6 +23,14 @@ class UnsafeArticleUrlError(Exception):
         self.message = message
 
 
+class InvalidArticleUrlError(Exception):
+    """記事URLをHTTPリクエスト用URLとして解釈できない場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
 class ArticleContentFetchError(Exception):
     """記事コンテンツの取得に失敗した場合の例外"""
 
@@ -33,6 +41,14 @@ class ArticleContentFetchError(Exception):
 
 class ArticleContentRequestError(Exception):
     """記事コンテンツのリクエストに失敗した場合の例外"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class ArticleContentTimeoutError(Exception):
+    """記事コンテンツのリクエストでタイムアウトになった場合の例外"""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)

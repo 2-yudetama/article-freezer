@@ -11,9 +11,11 @@ from src.services.error import (
     ArticleContentConversionError,
     ArticleContentFetchError,
     ArticleContentRequestError,
+    ArticleContentTimeoutError,
     ArticleExtractionError,
     ArticleTranslationError,
     ErrorResponse,
+    InvalidArticleUrlError,
     UnauthorizedError,
     UnsafeArticleUrlError,
 )
@@ -55,6 +57,15 @@ def _map_exception_to_response(
             ),
         )
 
+    if isinstance(exc, InvalidArticleUrlError):
+        return (
+            status.HTTP_400_BAD_REQUEST,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
     if isinstance(exc, ArticleContentFetchError):
         return (
             status.HTTP_502_BAD_GATEWAY,
@@ -66,7 +77,16 @@ def _map_exception_to_response(
 
     if isinstance(exc, ArticleContentRequestError):
         return (
-            status.HTTP_503_SERVICE_UNAVAILABLE,
+            status.HTTP_502_BAD_GATEWAY,
+            ErrorResponse(
+                name=exc.__class__.__name__,
+                message=exc.message,
+            ),
+        )
+
+    if isinstance(exc, ArticleContentTimeoutError):
+        return (
+            status.HTTP_504_GATEWAY_TIMEOUT,
             ErrorResponse(
                 name=exc.__class__.__name__,
                 message=exc.message,
