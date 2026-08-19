@@ -1,4 +1,5 @@
 import * as v from "valibot";
+import { DEFAULT_ERROR_MESSAGE } from "@/lib/api/response.shared";
 import { MdExtractorRequestError } from "@/lib/errors";
 
 /**
@@ -41,6 +42,13 @@ export function mapMdExtractorErrorResponse(
   status: number;
   message: string;
 } {
+  if (status === 401 && name === "UnauthorizedError") {
+    return {
+      status: 500,
+      message: DEFAULT_ERROR_MESSAGE,
+    };
+  }
+
   if (name === "UnsafeArticleUrlError") {
     return {
       status: 400,
