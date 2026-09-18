@@ -40,24 +40,21 @@ uv sync --project packages/md-extractor
 
 ### 3. 環境変数の設定
 
-本リポジトリはMonorepo構成のため、各パッケージで環境変数を設定してください。
+本リポジトリはMonorepo構成のため、各packageのREADME.mdを参考にそれぞれ環境変数を設定してください。
 
-#### dbパッケージ
-
-[packages/db/README.md](packages/db/README.md#2-環境変数の設定)を参考に環境変数を設定してください。
-
-```bash
-cd packages/db
-cp .env.example .env
-```
-
-#### web-appパッケージ
-
-[packages/web-app/README.md](packages/web-app/README.md#2-環境変数の設定)を参考に環境変数を設定してください。
+- db: [packages/db/README.md](packages/db/README.md#2-環境変数の設定)
+- md-extractor: [packages/md-extractor/README.md](packages/md-extractor/README.md#2-環境変数の設定)
+- web-app: [packages/web-app/README.md](packages/web-app/README.md#2-環境変数の設定)
 
 ```bash
-cd packages/web-app
-cp .env.example .env
+# db
+cp packages/db/.env.example packages/db/.env
+
+# md-extractor
+cp packages/md-extractor/.env.example packages/md-extractor/.env
+
+# web-app
+cp packages/web-app/.env.example packages/web-app/.env
 ```
 
 ### 4. データベースの起動
