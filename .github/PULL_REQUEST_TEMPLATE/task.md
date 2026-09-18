@@ -11,15 +11,3 @@ Closes #
 ## 検証
 
 ## 未解決事項
-
-## AIサマリ
-
-<details>
-<summary>Generator Output</summary>
-
-</details>
-
-<details>
-<summary>Evaluator Output</summary>
-
-</details>

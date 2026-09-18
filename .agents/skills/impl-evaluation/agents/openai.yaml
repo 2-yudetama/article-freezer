@@ -1,4 +1,0 @@
-interface:
-  display_name: "実装評価"
-  short_description: "Generator の commit と差分を評価"
-  default_prompt: "$impl-evaluation を使って、Generator の commit と差分を非破壊的に評価し、pass | needs-fix | blocked の Result を含む Evaluator Output を作成してください。"

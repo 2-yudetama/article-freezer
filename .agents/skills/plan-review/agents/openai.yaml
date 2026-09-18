@@ -1,4 +1,0 @@
-interface:
-  display_name: "計画判断"
-  short_description: "Planner Output の採用可否を判断"
-  default_prompt: "$plan-review を使って、Planner Output の Type と必須要素を確認し、implementation-plan 採用、split-proposal 採用、差し戻し、人間確認のいずれかを判断してください。"

@@ -10,7 +10,7 @@ extends = ":workspace"
 
 [permissions.workspace.filesystem]
 "~/.cache" = "write"
-"~/.local/share/mise" = "read"
+"~/.local/share/pnpm" = "write"
 glob_scan_max_depth = 6
 
 [permissions.workspace.filesystem.":workspace_roots"]
@@ -27,9 +27,7 @@ glob_scan_max_depth = 6
 [permissions.workspace.network]
 enabled = true
 mode = "full"
-
-[permissions.workspace.network.domains]
-"*" = "allow"
+allow_local_binding = true
 
 [shell_environment_policy]
 inherit = "core"
@@ -40,8 +38,7 @@ ignore_default_excludes = false
 codex_git_commit = true
 hooks = true
 multi_agent = true
-network_proxy = true
 
 [agents]
-max_threads = 1
-max_depth = 1
+enabled = true
+max_concurrent_threads_per_session = 3

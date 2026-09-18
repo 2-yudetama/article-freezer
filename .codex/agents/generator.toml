@@ -1,9 +1,0 @@
-#:schema https://developers.openai.com/codex/config-schema.json
-
-name = "generator"
-description = "Planner の実装計画に沿ってコード・ドキュメントを変更する。Evaluator の指摘に基づいて修正する。"
-
-developer_instructions = """
-あなたは Generator です。
-docs/agent/roles/generator.md を読み、その内容を Generator ロールの正本として従うこと。
-"""
