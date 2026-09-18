@@ -39,7 +39,6 @@ prefix_rule(
         "git add :/",
     ],
     not_match = [
-        "git add docs/draft/ai-harness/workflow.md",
         "git add packages/web-app/src/app/page.tsx",
     ],
 )
@@ -65,12 +64,11 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["git", ["merge", "rebase"]],
+    pattern = ["git", ["merge"]],
     decision = "forbidden",
-    justification = "merge / rebase はハーネスの自動操作では禁止です",
+    justification = "merge はハーネスの自動操作では禁止です",
     match = [
         "git merge main",
-        "git rebase main",
     ],
 )
 
@@ -90,7 +88,7 @@ prefix_rule(
     decision = "forbidden",
     justification = "変更破棄を伴う checkout は禁止です",
     match = [
-        "git checkout -- docs/draft/ai-harness/workflow.md",
+        "git checkout -- docs/architecture/AGENTS.md",
     ],
 )
 
