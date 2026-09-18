@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#eef4ff" />
+    <title>登録サイト | Article Freezer モック</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="メインナビゲーション">
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" role="img">
+              <path d="M8.5 7.5h15a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-13a3 3 0 0 1 3-3Z" fill="none" stroke="currentColor" stroke-width="2.2"/>
+              <path d="M10 5.5v7l6-3.5 6 3.5v-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+            </svg>
+          </span>
+          <span>
+            <strong>Article Freezer</strong>
+            <small>読む、残す、また出会う</small>
+          </span>
+        </div>
+
+        <nav class="primary-nav" aria-label="ページ">
+          <button class="nav-item" type="button" data-nav="記事一覧">
+            <span class="nav-icon" aria-hidden="true">⌂</span>
+            <span>記事一覧</span>
+          </button>
+          <button class="nav-item" type="button" data-nav="記事を保存">
+            <span class="nav-icon" aria-hidden="true">＋</span>
+            <span>記事を保存</span>
+          </button>
+          <button class="nav-item is-active" type="button" data-nav="登録サイト" aria-current="page">
+            <span class="nav-icon nav-icon-sites" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 8.4h16M6.8 4h10.4A1.8 1.8 0 0 1 19 5.8v12.4a1.8 1.8 0 0 1-1.8 1.8H6.8A1.8 1.8 0 0 1 5 18.2V5.8A1.8 1.8 0 0 1 6.8 4Zm3.7 4.4v11.5m4-11.5v11.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+            </span>
+            <span>登録サイト</span>
+            <span class="nav-count">4</span>
+          </button>
+          <button class="nav-item" type="button" data-nav="タグ管理">
+            <span class="nav-icon" aria-hidden="true">#</span>
+            <span>タグ管理</span>
+          </button>
+          <button class="nav-item" type="button" data-nav="設定">
+            <span class="nav-icon" aria-hidden="true">⚙</span>
+            <span>設定</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+        <div class="sync-card" aria-label="同期ステータス">
+          <div class="sync-card-heading">
+            <span class="status-dot is-online"></span>
+            <span>開いたときに更新</span>
+          </div>
+          <p>前回のアクセス以降に加わった記事に、新着の目印を表示します</p>
+        </div>
+        <button class="profile-button" type="button" data-action="profile">
+          <span class="avatar">M</span>
+          <span class="profile-copy"><strong>みなみ</strong><small>マイライブラリ</small></span>
+          <span class="profile-more" aria-hidden="true">•••</span>
+        </button>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>マイライブラリ</span><span class="breadcrumb-separator">/</span><strong>登録サイト</strong></div>
+          <div class="topbar-actions">
+            <span class="topbar-date">UI モック · サンプルデータ</span>
+          </div>
+        </header>
+
+        <div class="page-wrap">
+          <section class="page-heading">
+            <div>
+              <p class="eyebrow">SOURCES</p>
+              <h1>登録サイト</h1>
+              <p class="page-description">お気に入りのサイトを登録して、新着記事をまとめて受け取りましょう</p>
+            </div>
+            <div class="heading-actions">
+              <button class="button button-secondary" type="button" id="refresh-button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8.7A7.5 7.5 0 1 0 20 13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><path d="M19 4.5v4.8h-4.8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                今すぐ更新
+              </button>
+              <button class="button button-primary" type="button" id="open-add-site">
+                <span aria-hidden="true">＋</span>サイトを追加
+              </button>
+            </div>
+          </section>
+
+          <div class="notice" id="notice" role="status" aria-live="polite" hidden>
+            <span class="notice-icon" aria-hidden="true">✓</span>
+            <span id="notice-text">一覧を更新しました</span>
+            <button type="button" class="notice-close" aria-label="通知を閉じる" id="close-notice">×</button>
+          </div>
+
+          <div class="workspace-grid">
+            <section class="panel sites-panel" aria-labelledby="sites-title">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-kicker">MY SOURCES</p>
+                  <h2 id="sites-title">登録サイト <span class="heading-count" id="site-count">4</span></h2>
+                </div>
+                <button class="small-icon-button" type="button" aria-label="サイトを検索" data-action="search-sites">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.1 15.1 4.2 4.2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/></svg>
+                </button>
+              </div>
+              <div class="site-list" id="site-list"></div>
+              <button class="add-inline" type="button" id="open-add-site-inline"><span aria-hidden="true">＋</span>新しいサイトを追加</button>
+              <div class="site-panel-note">
+                <span class="info-icon" aria-hidden="true">i</span>
+                <p>タブを開いたときに記事一覧を更新します。保存する記事は自分で選べます</p>
+              </div>
+            </section>
+
+            <section class="feed-area" aria-labelledby="feed-title">
+              <div class="feed-toolbar">
+                <div class="selected-site-heading">
+                  <div class="selected-site-avatar" id="selected-site-avatar">T</div>
+                  <div>
+                    <p class="section-kicker">SELECTED SOURCE</p>
+                    <h2 id="feed-title">テック観測所</h2>
+                  </div>
+                </div>
+                <div class="feed-toolbar-actions">
+                  <span class="last-updated" id="last-updated"><span class="status-dot is-online"></span>最終取得 10分前</span>
+                  <button class="small-icon-button" type="button" aria-label="サイトの設定" data-action="site-settings">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.3a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m19 13.1 1.1.9-1.7 2.9-1.4-.5a7 7 0 0 1-1.3.8l-.2 1.5h-3.4l-.2-1.5a7 7 0 0 1-1.3-.8l-1.4.5-1.7-2.9 1.1-.9a7 7 0 0 1 0-1.5l-1.1-.9 1.7-2.9 1.4.5a7 7 0 0 1 1.3-.8l.2-1.5h3.4l.2 1.5a7 7 0 0 1 1.3.8l1.4-.5 1.7 2.9-1.1.9a7 7 0 0 1 0 1.5Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.35"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="demo-status-bar" aria-label="状態表示のデモ">
+                <span class="demo-status-label">状態を試す</span>
+                <button type="button" class="demo-status-button" data-state="updating">更新中</button>
+                <button type="button" class="demo-status-button" data-state="failure">失敗</button>
+                <button type="button" class="demo-status-button" data-state="updated">一覧更新</button>
+                <span class="demo-status-hint" id="demo-status-hint">操作するとフィードの状態表示を確認できます</span>
+              </div>
+
+              <div class="feed-summary-row">
+                <div>
+                  <h3>配信記事 <span class="new-count" id="new-count">新着 5</span></h3>
+                  <p id="feed-summary">42件のフィードから、1〜20件を表示中</p>
+                </div>
+                <div class="feed-controls"><span class="last-updated">一覧に加わった順</span></div>
+              </div>
+
+              <div class="failure-banner" id="failure-banner" role="alert" hidden>
+                <span class="failure-icon" aria-hidden="true">!</span>
+                <div><strong>記事を取得できませんでした</strong><p>前回取得した一覧を表示しています。時間をおいて再試行してください</p></div>
+                <button class="button button-secondary button-compact" type="button" id="retry-button">再試行</button>
+              </div>
+
+              <div class="article-grid" id="article-grid" aria-live="polite"></div>
+
+              <div class="pagination" aria-label="記事一覧のページング">
+                <span class="pagination-summary" id="pagination-summary">1〜20 / 42件</span>
+                <div class="pagination-buttons">
+                  <button class="pagination-button" type="button" id="prev-page" aria-label="前のページ" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    前へ
+                  </button>
+                  <span class="page-indicator" id="page-indicator">1 / 3</span>
+                  <button class="pagination-button" type="button" id="next-page" aria-label="次のページ">
+                    次へ
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <nav class="mobile-nav" aria-label="モバイルナビゲーション">
+        <button class="mobile-nav-item" type="button" data-nav="記事一覧"><span class="mobile-nav-icon">⌂</span><span>記事一覧</span></button>
+        <button class="mobile-nav-item" type="button" data-nav="記事を保存"><span class="mobile-nav-icon">＋</span><span>保存</span></button>
+        <button class="mobile-nav-item is-active" type="button" data-nav="登録サイト" aria-current="page"><span class="mobile-nav-icon"><svg viewBox="0 0 24 24"><path d="M4 8.4h16M6.8 4h10.4A1.8 1.8 0 0 1 19 5.8v12.4a1.8 1.8 0 0 1-1.8 1.8H6.8A1.8 1.8 0 0 1 5 18.2V5.8A1.8 1.8 0 0 1 6.8 4Zm3.7 4.4v11.5m4-11.5v11.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"/></svg></span><span>サイト</span></button>
+        <button class="mobile-nav-item" type="button" data-nav="タグ管理"><span class="mobile-nav-icon">#</span><span>タグ</span></button>
+        <button class="mobile-nav-item" type="button" data-nav="設定"><span class="mobile-nav-icon">⚙</span><span>設定</span></button>
+      </nav>
+    </div>
+
+    <div class="modal-backdrop" id="add-site-modal" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="add-site-title">
+        <div class="modal-header">
+          <div>
+            <p class="section-kicker">NEW SOURCE</p>
+            <h2 id="add-site-title">サイトを追加</h2>
+          </div>
+          <button class="modal-close" type="button" id="close-add-site" aria-label="サイト追加を閉じる">×</button>
+        </div>
+
+        <ol class="modal-stepper" aria-label="サイト追加の手順">
+          <li class="is-active" data-step-indicator="1"><span>1</span><b>URL入力</b></li>
+          <li data-step-indicator="2"><span>2</span><b>フィード確認</b></li>
+          <li data-step-indicator="3"><span>3</span><b>登録完了</b></li>
+        </ol>
+
+        <div class="modal-step is-active" data-step="1">
+          <label class="field-label" for="site-url">サイトの URL</label>
+          <div class="input-with-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.9 12h16.2M12 3.6c2.1 2.3 3.2 5.1 3.2 8.4S14.1 18.1 12 20.4C9.9 18.1 8.8 15.3 8.8 12S9.9 5.9 12 3.6Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            <input id="site-url" type="url" value="https://tech-observatory.example.jp" autocomplete="off" />
+          </div>
+          <p class="field-help">トップページまたは RSS / Atom フィードの URL を入力してください</p>
+          <button class="button button-primary button-wide" type="button" id="find-feed">フィード候補を探す <span aria-hidden="true">→</span></button>
+          <div class="link-only-option">
+            <span>フィードがないサイトは</span>
+            <button type="button" class="inline-link" id="register-link-only">リンクとして登録</button>
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="2" hidden>
+          <div class="candidate-intro">
+            <span class="success-badge" aria-hidden="true">✓</span>
+            <div><strong>2件のフィード候補が見つかりました</strong><p>取得したいフィードを1つ選択してください</p></div>
+          </div>
+          <div class="feed-candidates">
+            <label class="candidate-card is-selected">
+              <input type="radio" name="feed-candidate" value="rss" checked />
+              <span class="candidate-radio" aria-hidden="true"></span>
+              <span class="candidate-copy"><strong>テック観測所｜新着記事</strong><small>RSS 2.0　・　https://tech-observatory.example.jp/feed.xml</small></span>
+              <span class="candidate-type">RSS</span>
+            </label>
+            <label class="candidate-card">
+              <input type="radio" name="feed-candidate" value="atom" />
+              <span class="candidate-radio" aria-hidden="true"></span>
+              <span class="candidate-copy"><strong>テック観測所｜開発ノート</strong><small>Atom　・　https://tech-observatory.example.jp/atom.xml</small></span>
+              <span class="candidate-type">Atom</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="button button-secondary" type="button" id="back-to-url">戻る</button>
+            <button class="button button-primary" type="button" id="register-feed">このフィードを登録</button>
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="3" hidden>
+          <div class="registration-complete">
+            <div class="complete-icon" aria-hidden="true">✓</div>
+            <p class="section-kicker">SOURCE ADDED</p>
+            <h3 id="registration-result-title">サイトを登録しました</h3>
+            <p id="registration-result-copy">新着記事の取得を開始します。最初の更新には少し時間がかかる場合があります。</p>
+          </div>
+          <div class="modal-actions modal-actions-centered">
+            <button class="button button-secondary" type="button" id="close-after-registration">閉じる</button>
+            <button class="button button-primary" type="button" id="show-new-site">登録サイトを見る</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+      <span class="toast-icon" aria-hidden="true">✓</span>
+      <span id="toast-text"></span>
+    </div>
+
+    <script>
+const $ = (id) => document.getElementById(id);
+const sites = [
+  { name: 'テック観測所', host: 'tech.example.com', color: 'tech', count: 42, fresh: 5 },
+  { name: 'デザインの手帖', host: 'design.example.com', color: 'design', count: 8, fresh: 2 },
+  { name: '暮らしと道具', host: 'life.example.com', color: 'life', count: 0, fresh: 0 },
+  { name: '週末の読みもの', host: 'weekend.example.com', color: 'work', count: 0, fresh: 0, linkOnly: true },
+];
+const titles = ['小さなアプリを、長く育てるための設計', '使い心地を変える、余白と文字の整え方', '個人開発で考えたいデータの持ち方', '日々の学びを残す、ノートのつくり方', 'Web の画像を軽くするためにできること', '読みやすい画面をつくる配色の基本', '迷わないナビゲーションを設計する', '週末に試したい、小さな開発アイデア'];
+let selected = 0;
+let page = 0;
+let timer;
+let returnFocus;
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+function toast(message) { $('toast-text').textContent = message; $('toast').hidden = false; clearTimeout(timer); timer = setTimeout(() => $('toast').hidden = true, 5000); }
+function render() {
+  const site = sites[selected];
+  $('site-count').textContent = sites.length;
+  document.querySelector('.nav-count').textContent = sites.length;
+  $('site-list').innerHTML = sites.map((s, i) => `<button class="site-item ${i === selected ? 'is-selected' : ''}" data-site="${i}" aria-pressed="${i === selected}"><span class="site-logo ${s.color}">${escapeHtml(s.name[0])}</span><span class="site-copy"><strong>${escapeHtml(s.name)}</strong><small>${s.linkOnly ? 'リンクのみ' : escapeHtml(s.host)}</small></span><span class="site-unread">${s.fresh || ''}</span></button>`).join('');
+  $('feed-title').textContent = site.name;
+  $('selected-site-avatar').textContent = site.name[0];
+  $('new-count').textContent = `新着 ${site.fresh}`;
+  const start = page * 20;
+  const end = Math.min(start + 20, site.count);
+  $('feed-summary').textContent = site.count ? `${site.count} 件の配信記事から ${start + 1}〜${end} 件を表示` : site.linkOnly ? 'このサイトは新着取得に未対応です' : '現在配信されている記事はありません';
+  $('pagination-summary').textContent = `${site.count ? start + 1 : 0}〜${end} / ${site.count} 件`;
+  $('page-indicator').textContent = `${page + 1} / ${Math.max(1, Math.ceil(site.count / 20))}`;
+  $('prev-page').disabled = page === 0;
+  $('next-page').disabled = end >= site.count;
+  $('refresh-button').disabled = !!site.linkOnly;
+  $('article-grid').innerHTML = site.count ? Array.from({ length: end - start }, (_, n) => {
+    const i = start + n;
+    const hue = [218, 160, 28, 268][i % 4];
+    const title = titles[i % titles.length] + (i >= titles.length ? ` vol.${Math.floor(i / titles.length) + 1}` : '');
+    return `<article class="article-card"><div class="article-cover">${i % 5 === 4 ? '<span>画像なし</span>' : `<svg viewBox="0 0 180 180" aria-hidden="true"><rect width="180" height="180" fill="hsl(${hue} 65% 92%)"/><circle cx="140" cy="35" r="65" fill="hsl(${hue} 60% 82%)"/><rect x="30" y="53" width="120" height="90" rx="12" fill="white"/><path d="M48 77h60m-60 16h84m-84 16h65" stroke="hsl(${hue} 55% 60%)" stroke-width="7" stroke-linecap="round"/><circle cx="133" cy="138" r="23" fill="hsl(${hue} 60% 60%)"/></svg>`}${i < site.fresh ? '<span class="new-badge">新着</span>' : ''}</div><div class="article-body"><div class="article-meta"><span class="article-site">${escapeHtml(site.name)}</span>${i % 4 === 3 ? '' : `<time class="article-date">2026.09.${String(19 - i % 18).padStart(2, '0')}</time>`}</div><h3>${escapeHtml(title)}</h3><div class="article-url">https://${escapeHtml(site.host)}/articles/${i + 1}</div><div class="article-actions"><button class="article-action" data-open="${i}">元サイトで開く ↗</button><button class="article-action save" data-save="${i}">＋ 保存する</button></div></div></article>`;
+  }).join('') : `<div class="empty-state"><h3>${site.linkOnly ? 'サイトへのリンクを登録しています' : 'まだ記事がありません'}</h3><p>${site.linkOnly ? '記事一覧は取得できませんが、サイトを訪問できます' : '配信が始まると、ここに記事が表示されます'}</p>${site.linkOnly ? '<button class="button button-secondary" data-open="site">サイトを開く ↗</button>' : ''}</div>`;
+}
+function step(number) {
+  document.querySelectorAll('[data-step]').forEach(el => { el.hidden = +el.dataset.step !== number; el.classList.toggle('is-active', +el.dataset.step === number); });
+  document.querySelectorAll('[data-step-indicator]').forEach(el => el.classList.toggle('is-active', +el.dataset.stepIndicator === number));
+}
+function openModal() { returnFocus = document.activeElement; $('add-site-modal').hidden = false; step(1); $('site-url').focus(); }
+function closeModal() { $('add-site-modal').hidden = true; returnFocus?.focus(); }
+function register(linkOnly) {
+  let url;
+  try { url = new URL($('site-url').value); if (url.protocol !== 'https:') throw Error(); } catch { toast('https:// から始まる URL を入力してください'); return; }
+  sites.push({ name: url.hostname, host: url.hostname, color: 'tech', count: linkOnly ? 0 : 6, fresh: linkOnly ? 0 : 6, linkOnly });
+  selected = sites.length - 1; page = 0; render(); step(3);
+  $('registration-result-copy').textContent = linkOnly ? '新着取得には未対応です。サイトへのリンクとして登録しました。' : 'サイトを登録しました。初回取得の記事はすべて新着として表示します。';
+}
+function update() {
+  $('failure-banner').hidden = true; $('refresh-button').disabled = true;
+  $('last-updated').textContent = '更新中…';
+  setTimeout(() => { $('last-updated').textContent = '最終取得 たった今'; $('refresh-button').disabled = !!sites[selected].linkOnly; toast('記事一覧を確認しました'); }, 700);
+}
+$('site-list').onclick = event => { const button = event.target.closest('[data-site]'); if (!button) return; selected = +button.dataset.site; page = 0; $('failure-banner').hidden = true; render(); };
+$('article-grid').onclick = event => {
+  if (event.target.closest('[data-save]')) toast('記事登録画面へ進みます（モック）。URL を渡し、本文抽出・確認後に保存します');
+  if (event.target.closest('[data-open]')) toast('元サイトを別タブで開く操作です。サンプル URL のため、このモックでは移動しません');
+};
+['open-add-site', 'open-add-site-inline'].forEach(id => $(id).onclick = openModal);
+['close-add-site', 'close-after-registration', 'show-new-site'].forEach(id => $(id).onclick = closeModal);
+$('find-feed').onclick = () => {
+  try { const url = new URL($('site-url').value); if (url.protocol !== 'https:') throw Error(); document.querySelectorAll('.candidate-copy').forEach((el, i) => { el.querySelector('strong').textContent = `${url.hostname}｜${i ? '開発ノート' : '新着記事'}`; el.querySelector('small').textContent = `${url.origin}/${i ? 'atom.xml' : 'feed.xml'}`; }); step(2); } catch { toast('https:// から始まる URL を入力してください'); }
+};
+$('register-feed').onclick = () => register(false);
+$('register-link-only').onclick = () => register(true);
+$('back-to-url').onclick = () => step(1);
+document.querySelectorAll('[name="feed-candidate"]').forEach(radio => radio.onchange = () => document.querySelectorAll('.candidate-card').forEach(el => el.classList.toggle('is-selected', el.querySelector('input').checked)));
+$('prev-page').onclick = () => { page--; render(); $('feed-title').scrollIntoView({ block: 'start' }); };
+$('next-page').onclick = () => { page++; render(); $('feed-title').scrollIntoView({ block: 'start' }); };
+$('refresh-button').onclick = update;
+$('retry-button').onclick = update;
+$('close-notice').onclick = () => $('notice').hidden = true;
+document.querySelector('[data-action="site-settings"]').onclick = () => {
+  if (!confirm(`${sites[selected].name} の登録を解除しますか？保存済み記事は残ります。`)) return;
+  if (sites.length === 1) { toast('モックでは最後のサイトを残しています'); return; }
+  sites.splice(selected, 1); selected = 0; page = 0; render();
+};
+document.querySelectorAll('[data-state]').forEach(button => button.onclick = () => {
+  if (button.dataset.state === 'updating') update();
+  if (button.dataset.state === 'failure') $('failure-banner').hidden = false;
+  if (button.dataset.state === 'updated') { $('notice').hidden = false; $('notice-text').textContent = '一覧が更新されました。先頭から読み直す'; $('notice-text').onclick = () => { page = 0; render(); $('notice').hidden = true; }; }
+});
+document.querySelectorAll('[data-nav], [data-action="profile"], [data-action="search-sites"]').forEach(button => button.onclick = () => toast('登録サイト機能のモックです。他の画面は省略しています'));
+document.addEventListener('keydown', event => {
+  if ($('add-site-modal').hidden) return;
+  if (event.key === 'Escape') closeModal();
+  if (event.key === 'Tab') {
+    const nodes = [...$('add-site-modal').querySelectorAll('button, input')].filter(el => el.getClientRects().length && !el.disabled);
+    const first = nodes[0], last = nodes.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+});
+render();
+    </script>
+  </body>
+</html>
