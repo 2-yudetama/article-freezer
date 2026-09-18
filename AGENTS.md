@@ -42,7 +42,6 @@ corepack pnpm <root-script> <package-script>
 
 ## Documentation Rules
 
-- エージェント開発ワークフローの運用仕様は `docs/agent` を参照し、通常の単発作業ルールとしては扱わない。
 - package 間の責務境界、横断データフロー、認証・認可、ER などの横断設計は `docs/architecture` を参照する。
 - 機能仕様は `docs/features` を参照し、機能の挙動や責務を変更した場合は該当ドキュメントも同期して更新する。
 - package 固有の制約はルートに書かず、対象 package の `AGENTS.md` に記載する。

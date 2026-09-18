@@ -1,4 +1,0 @@
-interface:
-  display_name: "修正判断"
-  short_description: "評価結果から次フェーズを判断"
-  default_prompt: "$fix-decision を使って、最新の Evaluator Output の Result から PR 最終化、Generator 修正ループ、人間確認のいずれへ進むか判断してください。"

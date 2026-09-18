@@ -1,4 +1,0 @@
-interface:
-  display_name: "issue 計画作成"
-  short_description: "implementation-plan または split-proposal を作成"
-  default_prompt: "$issue-planning を使って、対象 issue を分析し、implementation-plan または split-proposal のどちらか一方を含む Planner Output を作成してください。"
