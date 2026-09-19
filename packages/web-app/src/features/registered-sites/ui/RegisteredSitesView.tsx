@@ -132,14 +132,16 @@ export default function RegisteredSitesView({
         selectSite(site.registeredSiteId);
         if (closeMobile) setMobileSitesOpen(false);
       }}
-      className={`w-full rounded-lg px-3 py-3 text-left transition-colors ${
+      className={`w-full rounded-lg px-2 py-1 text-left transition-colors ${
         site.registeredSiteId === data.selectedSiteId
           ? "bg-primary text-primary-foreground"
           : "hover:bg-muted"
       }`}
     >
-      <span className="block truncate font-medium">{site.displayName}</span>
-      <span className="mt-1 block truncate text-xs opacity-70">
+      <span className="block truncate text-sm font-medium leading-5">
+        {site.displayName}
+      </span>
+      <span className="mt-0.5 block truncate text-xs leading-4 opacity-70">
         {site.status === "link"
           ? "リンク登録"
           : site.status === "error"
@@ -184,19 +186,19 @@ export default function RegisteredSitesView({
       ) : (
         <div className="min-h-0 flex-1 md:grid md:grid-cols-[16rem_1fr] md:gap-6">
           <aside className="hidden min-h-0 md:flex">
-            <Card className="h-full min-h-0 w-full">
-              <CardContent className="flex min-h-0 w-full flex-col p-3">
-                <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
+            <Card className="h-full min-h-0 w-full py-2">
+              <CardContent className="flex min-h-0 w-full flex-col p-2">
+                <p className="px-1 pb-1 text-xs leading-4 font-medium text-muted-foreground">
                   登録先 ({data.sites.length})
                 </p>
-                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable">
+                <div className="min-h-0 flex-1 space-y-1 overflow-y-auto scrollbar-readable">
                   {visibleSites.map((site) => renderSiteButton(site))}
                 </div>
                 {siteListPageCount > 1 && (
-                  <div className="flex shrink-0 items-center justify-between gap-2 pt-2">
+                  <div className="flex shrink-0 items-center justify-between gap-2 pt-1">
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon-sm"
                       onClick={() => setSiteListPage((page) => page - 1)}
                       disabled={siteListPage === 0}
                       aria-label="登録先の前のページ"
@@ -208,7 +210,7 @@ export default function RegisteredSitesView({
                     </span>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon-sm"
                       onClick={() => setSiteListPage((page) => page + 1)}
                       disabled={siteListPage === siteListPageCount - 1}
                       aria-label="登録先の次のページ"
