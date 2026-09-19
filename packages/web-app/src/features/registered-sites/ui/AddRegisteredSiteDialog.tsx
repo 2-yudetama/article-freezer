@@ -22,7 +22,7 @@ import type { FeedCandidate } from "../common/types";
 
 type Props = {
   userId: string;
-  onRegistered: () => void;
+  onRegistered: (registeredSiteId?: string) => void;
 };
 
 type Discovery = {
@@ -85,7 +85,7 @@ export default function AddRegisteredSiteDialog({
     }
   };
 
-  const register = async (feedUrl?: string) => {
+  const register = async (feedUrl: string | null) => {
     if (!discovery) return;
     setIsLoading(true);
     try {
@@ -94,17 +94,20 @@ export default function AddRegisteredSiteDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           siteUrl: discovery.siteUrl,
-          ...(feedUrl ? { feedUrl } : {}),
+          feedUrl,
         }),
       });
       if (!response.ok) {
         await showError(response);
         return;
       }
+      const result = (await response.json()) as {
+        site?: { registeredSiteId?: string };
+      };
       toast.success("登録サイトを追加しました");
       setOpen(false);
       reset();
-      onRegistered();
+      onRegistered(result.site?.registeredSiteId);
     } catch {
       toast.error("サイトを登録できません", {
         description: "通信に失敗しました。再試行してください",
@@ -147,6 +150,13 @@ export default function AddRegisteredSiteDialog({
             disabled={isLoading || Boolean(discovery)}
           />
         </div>
+
+        {discovery && (
+          <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+            <p className="text-xs text-muted-foreground">登録する URL</p>
+            <p className="mt-1 break-all font-medium">{discovery.siteUrl}</p>
+          </div>
+        )}
 
         {discovery && discovery.candidates.length > 0 && (
           <fieldset className="space-y-3">
@@ -193,18 +203,27 @@ export default function AddRegisteredSiteDialog({
               {isLoading ? "確認中" : "フィードを確認"}
             </Button>
           ) : discovery.candidates.length === 0 ? (
-            <Button onClick={() => register()} disabled={isLoading}>
+            <Button onClick={() => register(null)} disabled={isLoading}>
               {isLoading && <Loader2 className="animate-spin" />}
               リンクとして登録
             </Button>
           ) : (
-            <Button
-              onClick={() => register(selectedFeedUrl)}
-              disabled={isLoading || !selectedFeedUrl}
-            >
-              {isLoading && <Loader2 className="animate-spin" />}
-              このフィードを登録
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => register(null)}
+                disabled={isLoading}
+              >
+                リンクとして登録
+              </Button>
+              <Button
+                onClick={() => register(selectedFeedUrl)}
+                disabled={isLoading || !selectedFeedUrl}
+              >
+                {isLoading && <Loader2 className="animate-spin" />}
+                このフィードを登録
+              </Button>
+            </>
           )}
           <DialogClose asChild>
             <Button variant="outline" disabled={isLoading}>

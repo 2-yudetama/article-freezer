@@ -388,6 +388,58 @@ describe("useRegisteredSites のページ位置と URL", () => {
 });
 
 describe("useRegisteredSites の閲覧基準と取得結果", () => {
+  it("登録直後の再読込でフィードを選択状態のまま表示する", async () => {
+    await mountHook(
+      makeData({
+        sites: [],
+        selectedSiteId: null,
+        entries: [],
+        nextCursor: null,
+        cacheVersion: null,
+        displaySucceeded: false,
+        accessRecorded: true,
+      }),
+    );
+
+    const loadingSite = makeSite(SITE_ID, {
+      status: "loading",
+      lastSuccessAt: null,
+    });
+    const registeredEntry = makeEntry("registered-entry");
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(
+          makeData({
+            sites: [loadingSite],
+            selectedSiteId: SITE_ID,
+            entries: [],
+            nextCursor: null,
+            cacheVersion: null,
+            displaySucceeded: false,
+            accessRecorded: true,
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse(
+          makeData({
+            entries: [registeredEntry],
+            cacheVersion: "cache-registered",
+            accessRecorded: true,
+          }),
+        ),
+      );
+
+    latest?.reload(SITE_ID);
+    await settle();
+    await settle();
+
+    expect(requestMethods()).toEqual(["GET", "POST"]);
+    expect(latest?.data.selectedSiteId).toBe(SITE_ID);
+    expect(latest?.data.entries[0]?.entryKey).toBe("registered-entry");
+    expect(requestUrls()[0]).toContain(`siteId=${SITE_ID}`);
+  });
+
   it("描画後にだけ空状態のアクセスを記録し、セッション基準を固定する", async () => {
     fetchMock.mockResolvedValue(jsonResponse({ recorded: true }));
     await mountHook(
@@ -552,6 +604,21 @@ describe("useRegisteredSites の閲覧基準と取得結果", () => {
 });
 
 describe("RegisteredSitesView の取得制限表示", () => {
+  it("新着カードはサムネイルの上下余白と識別しやすい枠線を持つ", async () => {
+    await renderView(
+      makeData({
+        entries: [{ ...makeEntry("new-entry"), isNew: true }],
+      }),
+      0,
+    );
+
+    const card = Array.from(
+      container.querySelectorAll('[data-slot="card"]'),
+    ).find((element) => element.className.includes("border-primary/70"));
+    expect(card).not.toBeUndefined();
+    expect(container.querySelector(".py-5")).not.toBeNull();
+  });
+
   it("日時をAsia/Tokyo基準で表示する", async () => {
     await renderView(
       makeData({

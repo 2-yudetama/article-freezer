@@ -53,9 +53,19 @@ export async function discoverFeeds(
     options.deadlineAt ??
     Date.now() + REGISTERED_SITE_CONFIG.operationTimeoutMs;
   const sourceUrl = await assertPublicUrl(input, { deadlineAt });
-  const response = await fetchBoundedFeed(sourceUrl, { deadlineAt });
+  let response: Awaited<ReturnType<typeof fetchBoundedFeed>>;
+  try {
+    response = await fetchBoundedFeed(sourceUrl, { deadlineAt });
+  } catch (error) {
+    // URL の公開性を検査できた後の取得失敗は、フィード非対応として
+    // リンク登録へフォールバックできるようにする。SSRF 検査自体は
+    // assertPublicUrl と fetchBoundedFeed の両方で維持する
+    if (error instanceof FeedFetchError) {
+      return { sourceUrl, siteUrl: sourceUrl, candidates: [] };
+    }
+    throw error;
+  }
 
-  let sourceParseError: FeedParseError | null = null;
   try {
     const parsed = parseFeed(response.body, { deadlineAt });
     return {
@@ -71,7 +81,6 @@ export async function discoverFeeds(
     };
   } catch (error) {
     if (!(error instanceof FeedParseError)) throw error;
-    sourceParseError = error;
     if (Date.now() >= deadlineAt) {
       throw new FeedFetchError("フィード検出がタイムアウトしました", "timeout");
     }
@@ -79,14 +88,10 @@ export async function discoverFeeds(
 
   const contentType = response.contentType?.toLowerCase() ?? "";
   if (!contentType.includes("html") && !/<html\b/i.test(response.body)) {
-    throw (
-      sourceParseError ??
-      new FeedParseError("フィードの形式を判定できませんでした")
-    );
+    return { sourceUrl: response.url, siteUrl: sourceUrl, candidates: [] };
   }
 
   const candidates: FeedCandidate[] = [];
-  let candidateError: FeedFetchError | FeedParseError | null = null;
   const candidateUrls = htmlFeedLinks(response.body, response.url).slice(
     0,
     REGISTERED_SITE_CONFIG.maxDiscoveryCandidates,
@@ -100,24 +105,17 @@ export async function discoverFeeds(
         title: feed.title,
         format: feed.format,
       });
-    } catch (error) {
-      if (error instanceof FeedFetchError || error instanceof FeedParseError) {
-        candidateError ??= error;
-      }
+    } catch {
       if (Date.now() >= deadlineAt) {
-        throw new FeedFetchError(
-          "フィード検出がタイムアウトしました",
-          "timeout",
-        );
+        return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
       }
       // 1つの候補が壊れていても、他の候補の検出は継続する
     }
   }
 
   if (Date.now() >= deadlineAt) {
-    throw new FeedFetchError("フィード検出がタイムアウトしました", "timeout");
+    return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
   }
-  if (candidates.length === 0 && candidateError) throw candidateError;
 
   return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
 }

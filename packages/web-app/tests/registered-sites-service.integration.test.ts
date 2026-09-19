@@ -105,6 +105,7 @@ async function createEntries(
     key: string;
     url: string;
     firstSeenAt: Date;
+    publishedAt?: Date | null;
   }>,
 ) {
   await prisma.feedEntry.createMany({
@@ -115,7 +116,7 @@ async function createEntries(
       article_url: entry.url,
       title: entry.key,
       thumbnail_url: null,
-      published_at: null,
+      published_at: entry.publishedAt ?? null,
       first_seen_at: entry.firstSeenAt,
     })),
   });
@@ -427,6 +428,61 @@ suite("registered site service with PostgreSQL", () => {
         operation: "page",
       }),
     ).rejects.toBeInstanceOf(FeedCursorStaleError);
+  });
+
+  it("公開日時の降順と不明日時の末尾を安定したカーソルで維持する", async () => {
+    const user = await createUser("published-order");
+    const site = await createSite(user.user_id, {
+      lastSuccessAt: new Date(),
+      cacheVersion: BigInt(1),
+    });
+    const firstSeenAt = new Date("2026-01-01T00:00:00.000Z");
+    await createEntries(site.registered_site_id, [
+      {
+        key: "older",
+        url: "https://article.example.test/older",
+        publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+        firstSeenAt,
+      },
+      {
+        key: "newer",
+        url: "https://article.example.test/newer",
+        publishedAt: new Date("2026-01-03T00:00:00.000Z"),
+        firstSeenAt,
+      },
+      ...Array.from({ length: 18 }, (_, index) => ({
+        key: `middle-${String(index).padStart(2, "0")}`,
+        url: `https://article.example.test/middle-${index}`,
+        publishedAt: new Date(
+          `2025-12-${String(31 - index).padStart(2, "0")}T00:00:00.000Z`,
+        ),
+        firstSeenAt,
+      })),
+      {
+        key: "unknown",
+        url: "https://article.example.test/unknown",
+        publishedAt: null,
+        firstSeenAt,
+      },
+    ]);
+
+    const first = await service.getRegisteredSitePageData({
+      userId: user.user_id,
+      registeredSiteId: site.registered_site_id,
+      operation: "page",
+    });
+    expect(first.entries).toHaveLength(20);
+    expect(first.entries.slice(0, 2).map((entry) => entry.publishedAt)).toEqual(
+      ["2026-01-03T00:00:00.000Z", "2026-01-01T00:00:00.000Z"],
+    );
+    expect(first.nextCursor).toBeTruthy();
+    const second = await service.getRegisteredSitePageData({
+      userId: user.user_id,
+      registeredSiteId: site.registered_site_id,
+      cursor: first.nextCursor ?? undefined,
+      operation: "page",
+    });
+    expect(second.entries.map((entry) => entry.publishedAt)).toEqual([null]);
   });
 
   it("取得中の解除後に古い結果を保存しない", async () => {

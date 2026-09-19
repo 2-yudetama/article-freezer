@@ -324,21 +324,30 @@ async function getEntriesPage({
         registered_site_id: registeredSiteId,
       };
       if (decodedCursor) {
-        const firstSeenAt = new Date(decodedCursor.firstSeenAt);
-        if (Number.isNaN(firstSeenAt.getTime()))
-          throw new FeedCursorStaleError();
-        where.OR = [
-          { first_seen_at: { lt: firstSeenAt } },
-          {
-            first_seen_at: firstSeenAt,
-            entry_key: { lt: decodedCursor.entryKey },
-          },
-        ];
+        if (decodedCursor.publishedAt === null) {
+          // 公開日時不明の記事は既知日時の記事の後ろにまとめる
+          where.published_at = null;
+          where.entry_key = { lt: decodedCursor.entryKey };
+        } else {
+          const publishedAt = new Date(decodedCursor.publishedAt);
+          if (Number.isNaN(publishedAt.getTime()))
+            throw new FeedCursorStaleError();
+          where.OR = [
+            { published_at: { lt: publishedAt } },
+            {
+              published_at: publishedAt,
+              entry_key: { lt: decodedCursor.entryKey },
+            },
+          ];
+        }
       }
 
       const entries = await tx.feedEntry.findMany({
         where,
-        orderBy: [{ first_seen_at: "desc" }, { entry_key: "desc" }],
+        orderBy: [
+          { published_at: { sort: "desc", nulls: "last" } },
+          { entry_key: "desc" },
+        ],
         take: REGISTERED_SITE_CONFIG.pageSize + 1,
       });
       const hasNext = entries.length > REGISTERED_SITE_CONFIG.pageSize;
@@ -355,7 +364,7 @@ async function getEntriesPage({
                 version: REGISTERED_SITE_CURSOR_VERSION,
                 registeredSiteId,
                 cacheVersion: site.cache_version.toString(),
-                firstSeenAt: lastEntry.first_seen_at.toISOString(),
+                publishedAt: lastEntry.published_at?.toISOString() ?? null,
                 entryKey: lastEntry.entry_key,
               })
             : null,
@@ -381,7 +390,7 @@ export async function registerSite({
 }: {
   userId: string;
   siteUrl: string;
-  feedUrl?: string;
+  feedUrl?: string | null;
 }) {
   const deadlineAt = Date.now() + REGISTERED_SITE_CONFIG.operationTimeoutMs;
   const siteUrl = await assertPublicUrl(rawSiteUrl, { deadlineAt });
@@ -389,13 +398,13 @@ export async function registerSite({
   let displayName = new URL(siteUrl).hostname;
   let feed: ParsedFeed | null = null;
 
-  if (rawFeedUrl) {
+  if (rawFeedUrl !== undefined && rawFeedUrl !== null) {
     feedUrl = await assertPublicUrl(rawFeedUrl, { deadlineAt });
     const response = await fetchBoundedFeed(feedUrl, { deadlineAt });
     feed = parseFeed(response.body, { deadlineAt });
     feedUrl = response.url;
     displayName = feed.title;
-  } else {
+  } else if (rawFeedUrl === undefined) {
     const discovered = await discoverFeeds(siteUrl, { deadlineAt });
     if (discovered.candidates.length > 1) {
       throw new FeedCandidatesError(discovered.candidates);
@@ -408,15 +417,36 @@ export async function registerSite({
     }
   }
 
-  const created = await prisma.registeredSite.create({
-    data: {
-      user_id: userId,
-      site_url: siteUrl,
-      site_url_key: hashKey(siteUrl),
-      display_name: displayName,
-      feed_url: feedUrl,
-      feed_url_key: feedUrl ? hashKey(feedUrl) : null,
-    },
+  const created = await prisma.$transaction(async (tx) => {
+    const reflectedAt = feed ? await databaseNow(tx) : null;
+    const site = await tx.registeredSite.create({
+      data: {
+        user_id: userId,
+        site_url: siteUrl,
+        site_url_key: hashKey(siteUrl),
+        display_name: displayName,
+        feed_url: feedUrl,
+        feed_url_key: feedUrl ? hashKey(feedUrl) : null,
+        ...(reflectedAt
+          ? { last_success_at: reflectedAt, cache_version: BigInt(1) }
+          : {}),
+      },
+    });
+    if (feed && feed.entries.length > 0 && reflectedAt) {
+      await tx.feedEntry.createMany({
+        data: feed.entries.map((entry) => ({
+          registered_site_id: site.registered_site_id,
+          entry_key: entry.entryKey,
+          source_entry_id: entry.sourceEntryId,
+          article_url: entry.articleUrl,
+          title: entry.title,
+          thumbnail_url: entry.thumbnailUrl,
+          published_at: entry.publishedAt,
+          first_seen_at: reflectedAt,
+        })),
+      });
+    }
+    return site;
   });
 
   return {

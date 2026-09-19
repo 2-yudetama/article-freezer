@@ -23,7 +23,7 @@ vi.mock("@/features/registered-sites/server/url-security", () => ({
 import { discoverFeeds } from "@/features/registered-sites/server/discover-feeds";
 
 describe("discoverFeeds", () => {
-  it("候補の通信失敗をフィード非対応として扱わない", async () => {
+  it("候補の取得失敗はリンク登録へフォールバックする", async () => {
     assertPublicUrlMock.mockResolvedValue("https://example.test/");
     normalizeHttpUrlMock.mockImplementation((value: string) => value);
     fetchFeedMock
@@ -37,9 +37,21 @@ describe("discoverFeeds", () => {
       throw new FeedParseError("not a feed");
     });
 
-    await expect(discoverFeeds("https://example.test/")).rejects.toMatchObject({
-      name: "FeedFetchError",
-      code: "network",
+    await expect(discoverFeeds("https://example.test/")).resolves.toMatchObject(
+      { candidates: [], siteUrl: "https://example.test/" },
+    );
+  });
+
+  it("サイト本文を取得できない場合も、公開性検査後はリンク登録を返す", async () => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    fetchFeedMock.mockRejectedValueOnce(
+      new FeedFetchError("forbidden", "http"),
+    );
+
+    await expect(discoverFeeds("https://example.test/")).resolves.toEqual({
+      sourceUrl: "https://example.test/",
+      siteUrl: "https://example.test/",
+      candidates: [],
     });
   });
 

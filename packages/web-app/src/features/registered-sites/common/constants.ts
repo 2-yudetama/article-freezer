@@ -17,4 +17,4 @@ export const REGISTERED_SITE_CONFIG = {
   pageSize: 20,
 } as const;
 
-export const REGISTERED_SITE_CURSOR_VERSION = 1;
+export const REGISTERED_SITE_CURSOR_VERSION = 2;

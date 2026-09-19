@@ -508,9 +508,9 @@ export function useRegisteredSites(
     removeSite,
     goNext,
     goPrevious,
-    reload: () =>
+    reload: (registeredSiteId?: string) =>
       void load({
-        siteId: null,
+        siteId: registeredSiteId ?? null,
         cursor: null,
         mode: "initial",
         replaceUrl: true,

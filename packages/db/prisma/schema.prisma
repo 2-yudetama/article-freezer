@@ -155,7 +155,7 @@ model FeedEntry {
   registered_site RegisteredSite @relation(fields: [registered_site_id], references: [registered_site_id], onDelete: Cascade)
 
   @@unique([registered_site_id, entry_key])
-  @@index([registered_site_id, first_seen_at(sort: Desc), entry_key(sort: Desc)])
+  @@index([registered_site_id, published_at(sort: Desc), entry_key(sort: Desc)])
   @@map("feed_entries")
 }
 

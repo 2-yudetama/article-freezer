@@ -11,10 +11,10 @@ export const RegisteredSiteUrlSchema = v.pipe(
 export const RegisteredSiteIdSchema = v.pipe(v.string(), v.uuid());
 
 export const RegisteredSiteCursorSchema = v.object({
-  version: v.literal(1),
+  version: v.literal(2),
   registeredSiteId: RegisteredSiteIdSchema,
   cacheVersion: v.string(),
-  firstSeenAt: v.string(),
+  publishedAt: v.nullable(v.string()),
   entryKey: v.pipe(v.string(), v.minLength(1)),
 });
 
@@ -24,7 +24,8 @@ export type RegisteredSiteCursor = v.InferOutput<
 
 export const RegisterSiteRequestSchema = v.object({
   siteUrl: RegisteredSiteUrlSchema,
-  feedUrl: v.optional(RegisteredSiteUrlSchema),
+  // undefined は自動検出、null はフィードを使わないリンク登録を表す
+  feedUrl: v.optional(v.nullable(RegisteredSiteUrlSchema)),
 });
 
 export const DiscoverFeedsRequestSchema = v.object({

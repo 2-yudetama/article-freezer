@@ -1,5 +1,5 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useUserId } from "@/components/providers/user-id-provider";
 import type {
   ArticleListItem,
@@ -34,6 +34,14 @@ export function useArticleList({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [viewMode, setViewMode] = useState<ArticleListViewMode>("grid");
+  const previousPageRef = useRef(currentPage);
+
+  useEffect(() => {
+    if (previousPageRef.current !== currentPage) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      previousPageRef.current = currentPage;
+    }
+  }, [currentPage]);
 
   const updateSearchParams = (updater: (params: URLSearchParams) => void) => {
     const nextParams = new URLSearchParams(searchParams);

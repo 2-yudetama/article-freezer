@@ -54,11 +54,33 @@ export function toRegisteredSiteExceptionResponse(error: unknown) {
     );
   }
 
-  if (error instanceof FeedFetchError || error instanceof FeedParseError) {
+  if (error instanceof FeedFetchError && error.code === "ssrf") {
     return NextResponse.json(
       {
         name: error.name,
-        message: "フィードを取得または解析できませんでした。再試行してください",
+        message: "内部ネットワークや取得できない URL は登録できません",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (error instanceof FeedParseError) {
+    return NextResponse.json(
+      {
+        name: error.name,
+        message:
+          "フィードを解析できませんでした。URL を確認するか、リンクとして登録してください",
+      },
+      { status: 422 },
+    );
+  }
+
+  if (error instanceof FeedFetchError) {
+    return NextResponse.json(
+      {
+        name: error.name,
+        message:
+          "フィードを取得できませんでした。URL を確認するか、リンクとして登録してください",
       },
       { status: 502 },
     );

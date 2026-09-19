@@ -73,3 +73,5 @@ web-app/src
 - `pnpm web-app test`：テスト実行
 - `pnpm web-app test:watch`：テスト実行(ウォッチモード)
 - `pnpm web-app test:coverage`：テスト実行(カバレッジ)
+
+Vitest はテスト時に `.env` を読み込まない。DB 統合テストを実行する場合は、必要な環境変数をコマンド実行時に明示する。
