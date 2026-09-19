@@ -41,3 +41,24 @@ flowchart LR
 - `web-app` は `md-extractor` のレスポンスを Web API のレスポンスへ変換する
 - 保存時は `web-app` が Prisma Client 経由で PostgreSQL に記事、入力元、コメント、タグ関連を保存する
 - `md-extractor` は記事データを永続化しない
+
+## 登録サイト
+
+```mermaid
+flowchart LR
+    Browser[Browser]
+    WebApp[web-app UI / API]
+    Feed[RSS / Atom]
+    Prisma[Prisma Client]
+    DB[(PostgreSQL)]
+
+    Browser --> WebApp
+    WebApp -->|"候補検出・取得<br/>サイズ / 時間 / SSRF 制限"| Feed
+    WebApp --> Prisma
+    Prisma --> DB
+```
+
+- 登録サイトのフィード検出・取得・解析は `web-app` の API で処理する
+- 解析結果はユーザごとの `registered_sites` と `feed_entries` に保存し、画面のページングは DB キャッシュだけを読む
+- `fetch_token` と登録先行ロックで同じユーザの重複取得と古い結果の上書きを防ぐ
+- 保存済み記事は既存の記事登録 API で別管理し、フィードキャッシュの削除による影響を受けない

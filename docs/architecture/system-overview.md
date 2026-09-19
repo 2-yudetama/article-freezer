@@ -16,13 +16,14 @@ flowchart LR
     end
 
     subgraph DataStore["データストア"]
-        PostgreSQL[("PostgreSQL<br/>ユーザ / 記事 / 記事ソース / コメント / タグ")]
+        PostgreSQL[("PostgreSQL<br/>ユーザ / 記事 / 登録サイト / フィードキャッシュ / コメント / タグ")]
     end
 
     subgraph External["外部依存"]
         GitHub["GitHub OAuth"]
         ArticleUrl["記事 URL"]
         OpenAI["OpenAI API"]
+        Feed["RSS / Atom フィード"]
     end
 
     User -->|"HTTPS<br/>UI / Web API"| WebApp
@@ -33,6 +34,7 @@ flowchart LR
     MdExtractor -->|"OpenAI API<br/>記事項目抽出"| OpenAI
     WebApp -.->|"package import<br/>Prisma Client を利用"| DbPackage
     DbPackage -->|"Prisma Client<br/>query / transaction"| PostgreSQL
+    WebApp -->|"HTTPS GET<br/>RSS / Atom"| Feed
 ```
 
 ## 図の読み方
@@ -50,10 +52,11 @@ flowchart LR
 | `packages/web-app` | Next.js の UI と Web API、GitHub OAuth を利用したアプリユーザの認証・認可、記事などの保存処理を担当する |
 | `packages/md-extractor` | Bearer token で service 間の呼び出しを認証し、URL の安全性検証、記事取得、Markdown 変換、OpenAI による記事項目抽出を担当する。記事は永続化しない |
 | `packages/db` | Prisma schema、生成した Prisma Client、PostgreSQL の接続管理を提供する |
-| PostgreSQL | ユーザ、記事、記事ソース、コメント、タグを永続化する |
+| PostgreSQL | ユーザ、記事、登録サイト、フィードキャッシュ、記事ソース、コメント、タグを永続化する |
 | GitHub OAuth | `web-app` にアプリユーザのサインイン手段を提供する |
 | 記事 URL | `md-extractor` が検証・取得する記事コンテンツを提供する |
 | OpenAI API | Markdown からタイトル、公開日、本文を抽出する |
+| RSS / Atom フィード | 登録サイトが配信する記事タイトル、URL、画像、公開日時を提供する |
 
 ## 関連資料
 
@@ -62,4 +65,5 @@ flowchart LR
 - [認証・認可](./auth.md): アプリユーザ認証と service 間認証の境界
 - [ER 図](./er.md): PostgreSQL に保存するデータ構造
 - [記事保存](../features/article-registration.md): 記事抽出から保存までの機能仕様
+- [登録サイト](../features/registered-sites.md): RSS / Atom の登録、取得キャッシュ、新着、ページング
 - [md-extractor](../features/md-extractor.md): 記事抽出 API の詳細
