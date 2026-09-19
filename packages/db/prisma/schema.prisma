@@ -27,6 +27,8 @@ model User {
   articles         Article[]
   article_comments ArticleComment[]
   article_tags     ArticleTag[]
+  registered_sites RegisteredSite[]
+  site_tab_state   SiteTabState?
 
   @@unique([provider, provider_account_id])
   @@index([role])
@@ -110,4 +112,56 @@ model ArticleTagOnArticle {
   @@id([article_id, tag_id])
   @@index([tag_id])
   @@map("article_tags_articles")
+}
+
+model RegisteredSite {
+  registered_site_id String    @id @default(uuid()) @db.Uuid
+  user_id            String    @db.Uuid
+  site_url           String    @db.Text
+  site_url_key       String?   @db.VarChar(64)
+  display_name       String    @db.Text
+  feed_url           String?   @db.Text
+  feed_url_key       String?   @db.VarChar(64)
+  last_success_at    DateTime? @db.Timestamptz(3)
+  cache_version      BigInt    @default(0) @db.BigInt
+  fetch_token        String?   @db.Uuid
+  fetch_not_before   DateTime? @db.Timestamptz(3)
+  created_at         DateTime  @default(now()) @db.Timestamptz(3)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(3)
+
+  user         User         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  feed_entries FeedEntry[]
+
+  @@unique([user_id, feed_url_key])
+  @@index([user_id])
+  @@index([user_id, site_url_key])
+  @@map("registered_sites")
+}
+
+model FeedEntry {
+  feed_entry_id      String    @id @default(uuid()) @db.Uuid
+  registered_site_id  String    @db.Uuid
+  entry_key          String    @db.VarChar(64)
+  source_entry_id    String?   @db.Text
+  article_url        String    @db.Text
+  title              String    @db.Text
+  thumbnail_url      String?   @db.Text
+  published_at       DateTime? @db.Timestamptz(3)
+  first_seen_at      DateTime  @db.Timestamptz(3)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(3)
+
+  registered_site RegisteredSite @relation(fields: [registered_site_id], references: [registered_site_id], onDelete: Cascade)
+
+  @@unique([registered_site_id, entry_key])
+  @@index([registered_site_id, first_seen_at(sort: Desc), entry_key(sort: Desc)])
+  @@map("feed_entries")
+}
+
+model SiteTabState {
+  user_id          String   @id @db.Uuid
+  last_accessed_at DateTime @db.Timestamptz(3)
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("site_tab_states")
 }
