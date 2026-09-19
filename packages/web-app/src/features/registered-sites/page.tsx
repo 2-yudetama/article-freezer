@@ -13,8 +13,6 @@ export default async function RegisteredSitesPage({
   searchParams: Promise<{
     siteId?: string;
     cursor?: string;
-    since?: string;
-    accessStartedAt?: string;
     mode?: "initial" | "page";
   }>;
 }) {
@@ -24,8 +22,6 @@ export default async function RegisteredSitesPage({
       userId,
       registeredSiteId: params.siteId,
       cursor: params.cursor,
-      since: params.since,
-      accessStartedAt: params.accessStartedAt,
       operation: params.mode === "page" || params.cursor ? "page" : "initial",
     });
     return <RegisteredSitesPageClient userId={userId} {...data} />;
@@ -35,6 +31,7 @@ export default async function RegisteredSitesPage({
       errorName: error instanceof Error ? error.name : "Error",
       errorMessage: error instanceof Error ? error.message : String(error),
     });
+    const fallbackAt = new Date().toISOString();
     if (error instanceof FeedCursorStaleError) {
       return (
         <RegisteredSitesPageClient
@@ -44,8 +41,8 @@ export default async function RegisteredSitesPage({
           entries={[]}
           nextCursor={null}
           cacheVersion={null}
-          accessBaseline={params.since ?? new Date().toISOString()}
-          accessStartedAt={params.accessStartedAt ?? new Date().toISOString()}
+          accessBaseline={fallbackAt}
+          accessStartedAt={fallbackAt}
           displaySucceeded={false}
           accessRecorded={false}
           cursorStale
@@ -60,8 +57,8 @@ export default async function RegisteredSitesPage({
         entries={[]}
         nextCursor={null}
         cacheVersion={null}
-        accessBaseline={new Date().toISOString()}
-        accessStartedAt={new Date().toISOString()}
+        accessBaseline={fallbackAt}
+        accessStartedAt={fallbackAt}
         displaySucceeded={false}
         accessRecorded={false}
         errorMessage="登録サイトの取得に失敗しました。再読み込みしてください"

@@ -16,8 +16,8 @@ type LoadOptions = {
   cursor: string | null;
   mode: LoadMode;
   replaceUrl?: boolean;
-  since?: string;
-  accessStartedAt?: string;
+  deepLink?: boolean;
+  resetHistory?: boolean;
 };
 
 function buildQuery({
@@ -44,27 +44,21 @@ function updateHistoryUrl({
   pathname,
   siteId,
   cursor,
-  since,
-  accessStartedAt,
   mode,
   replace,
 }: {
   pathname: string;
   siteId: string | null;
   cursor: string | null;
-  since: string;
-  accessStartedAt: string;
   mode: "initial" | "page";
   replace: boolean;
 }) {
-  const query = buildQuery({
-    siteId,
-    cursor,
-    since,
-    accessStartedAt,
-    mode,
-  });
-  const url = query ? `${pathname}?${query}` : pathname;
+  const query = new URLSearchParams();
+  if (siteId) query.set("siteId", siteId);
+  if (cursor) query.set("cursor", cursor);
+  if (mode === "page") query.set("mode", "page");
+  const queryString = query.toString();
+  const url = queryString ? `${pathname}?${queryString}` : pathname;
   window.history[replace ? "replaceState" : "pushState"]({}, "", url);
   return new URL(url, window.location.origin).search;
 }
@@ -83,21 +77,37 @@ export function useRegisteredSites(
   const initialCursor = searchParams.get("cursor");
   const initialSiteId = searchParams.get("siteId");
   const [data, setData] = useState(initialData);
-  const [cursorHistory, setCursorHistory] = useState<Array<string | null>>(
-    initialCursor ? [null, initialCursor] : [null],
-  );
+  const [cursorState, setCursorState] = useState<{
+    history: Array<string | null>;
+    position: number;
+  }>({
+    history: initialCursor ? [initialCursor] : [null],
+    position: 0,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const accessSessionRef = useRef({
+    accessBaseline: initialData.accessBaseline,
+    accessStartedAt: initialData.accessStartedAt,
+  });
+  const accessRecordedRef = useRef(initialData.accessRecorded);
   const latestRequestId = useRef(0);
   const handledUrlRef = useRef(searchKey);
   const accessRecordAttemptRef = useRef<string | null>(null);
   const cursorStaleHandledRef = useRef(false);
   const refreshAttemptRef = useRef<string | null>(null);
+  const deepLinkRef = useRef(Boolean(initialCursor));
+  const normalizedUrlRef = useRef(false);
+  const skipInitialUrlEffectRef = useRef(true);
+  const cacheVersionRef = useRef(initialData.cacheVersion);
+  const selectedSiteIdRef = useRef(initialData.selectedSiteId);
 
   const selectedSite = data.sites.find(
     (site) => site.registeredSiteId === data.selectedSiteId,
   );
-  const currentCursor = cursorHistory.at(-1) ?? null;
+  const cursorHistory = cursorState.history;
+  const cursorPosition = cursorState.position;
+  const currentCursor = cursorHistory[cursorPosition] ?? null;
   const retryAt = selectedSite?.fetchNotBefore
     ? new Date(selectedSite.fetchNotBefore).getTime()
     : null;
@@ -140,6 +150,7 @@ export function useRegisteredSites(
         if (!response.ok) throw new Error("access record failed");
         const result = (await response.json()) as { recorded?: boolean };
         if (result.recorded) {
+          accessRecordedRef.current = true;
           setData((current) =>
             current.accessStartedAt === pageData.accessStartedAt
               ? { ...current, accessRecorded: true }
@@ -159,16 +170,17 @@ export function useRegisteredSites(
       cursor,
       mode,
       replaceUrl = false,
-      since = data.accessBaseline,
-      accessStartedAt = data.accessStartedAt,
+      deepLink = false,
+      resetHistory = false,
     }: LoadOptions) => {
       const requestId = ++latestRequestId.current;
       setIsLoading(true);
       const queryMode = mode === "page" ? "page" : "initial";
+      const { accessBaseline, accessStartedAt } = accessSessionRef.current;
       const query = buildQuery({
         siteId,
         cursor,
-        since,
+        since: accessBaseline,
         accessStartedAt,
         mode: queryMode,
       });
@@ -190,8 +202,6 @@ export function useRegisteredSites(
               cursor: null,
               mode: "initial",
               replaceUrl: true,
-              since,
-              accessStartedAt,
             });
             return;
           }
@@ -202,8 +212,7 @@ export function useRegisteredSites(
               cursor: null,
               mode: "page",
               replaceUrl: true,
-              since,
-              accessStartedAt,
+              resetHistory: true,
             });
             return;
           }
@@ -235,33 +244,76 @@ export function useRegisteredSites(
           return;
         }
 
-        const nextData = (await response.json()) as RegisteredSitePageData;
+        const responseData = (await response.json()) as RegisteredSitePageData;
         if (requestId !== latestRequestId.current) return;
+        const nextData: RegisteredSitePageData = {
+          ...responseData,
+          accessBaseline: accessSessionRef.current.accessBaseline,
+          accessStartedAt: accessSessionRef.current.accessStartedAt,
+          accessRecorded:
+            accessRecordedRef.current || responseData.accessRecorded,
+        };
+        const siteChanged =
+          selectedSiteIdRef.current !== responseData.selectedSiteId;
+        const generationChanged =
+          mode === "refresh" &&
+          Boolean(cacheVersionRef.current) &&
+          Boolean(responseData.cacheVersion) &&
+          cacheVersionRef.current !== responseData.cacheVersion;
+        if (generationChanged && cursor) {
+          await load({
+            siteId,
+            cursor: null,
+            mode: "page",
+            replaceUrl: true,
+            resetHistory: true,
+          });
+          return;
+        }
+        cacheVersionRef.current = responseData.cacheVersion;
+        selectedSiteIdRef.current = responseData.selectedSiteId;
         setData(nextData);
         if (mode === "page" || mode === "refresh") {
-          setCursorHistory((history) => {
-            if (!cursor) return [null];
-            const cursorIndex = history.indexOf(cursor);
-            return cursorIndex >= 0
-              ? history.slice(0, cursorIndex + 1)
-              : [null, cursor];
+          setCursorState((state) => {
+            if (resetHistory || siteChanged || generationChanged) {
+              deepLinkRef.current = false;
+              if (cursor) {
+                deepLinkRef.current = deepLink;
+                return { history: [cursor], position: 0 };
+              }
+              return { history: [null], position: 0 };
+            }
+            if (!cursor) {
+              deepLinkRef.current = false;
+              const firstPage = state.history.indexOf(null);
+              return firstPage >= 0
+                ? { ...state, position: firstPage }
+                : { history: [null], position: 0 };
+            }
+            const cursorIndex = state.history.indexOf(cursor);
+            if (cursorIndex >= 0) {
+              return { ...state, position: cursorIndex };
+            }
+            deepLinkRef.current = deepLink || deepLinkRef.current;
+            const history = [
+              ...state.history.slice(0, state.position + 1),
+              cursor,
+            ];
+            return { history, position: history.length - 1 };
           });
         } else {
-          setCursorHistory([null]);
+          deepLinkRef.current = false;
+          setCursorState({ history: [null], position: 0 });
         }
         const nextCursor = mode === "initial" ? null : cursor;
-        const nextUrlMode = nextCursor ? "page" : "initial";
         const nextSearch = updateHistoryUrl({
           pathname,
           siteId: nextData.selectedSiteId,
           cursor: nextCursor,
-          since: nextData.accessBaseline,
-          accessStartedAt: nextData.accessStartedAt,
-          mode: nextUrlMode,
+          mode: "page",
           replace: replaceUrl,
         });
         handledUrlRef.current = nextSearch.slice(1);
-        void recordAccess(nextData);
       } catch {
         if (requestId !== latestRequestId.current) return;
         setData((current) => ({
@@ -284,8 +336,21 @@ export function useRegisteredSites(
         if (requestId === latestRequestId.current) setIsLoading(false);
       }
     },
-    [data.accessBaseline, data.accessStartedAt, pathname, recordAccess, userId],
+    [pathname, userId],
   );
+
+  useEffect(() => {
+    if (normalizedUrlRef.current) return;
+    normalizedUrlRef.current = true;
+    const nextSearch = updateHistoryUrl({
+      pathname,
+      siteId: initialSiteId,
+      cursor: initialCursor,
+      mode: "page",
+      replace: true,
+    });
+    handledUrlRef.current = nextSearch.slice(1);
+  }, [initialCursor, initialSiteId, pathname]);
 
   useEffect(() => {
     if (props.cursorStale && !cursorStaleHandledRef.current) {
@@ -334,11 +399,15 @@ export function useRegisteredSites(
   ]);
 
   useEffect(() => {
+    if (skipInitialUrlEffectRef.current) {
+      skipInitialUrlEffectRef.current = false;
+      return;
+    }
     const loadFromUrl = (nextSearch: string) => {
       const params = new URLSearchParams(nextSearch);
       const siteId = params.get("siteId");
       const cursor = params.get("cursor");
-      const mode = params.get("mode") === "page" || cursor ? "page" : "initial";
+      const mode = params.get("mode") === "initial" ? "initial" : "page";
       if (handledUrlRef.current === nextSearch) return;
       handledUrlRef.current = nextSearch;
       void load({
@@ -346,15 +415,14 @@ export function useRegisteredSites(
         cursor,
         mode,
         replaceUrl: true,
-        since: params.get("since") ?? undefined,
-        accessStartedAt: params.get("accessStartedAt") ?? undefined,
+        deepLink: Boolean(cursor && !cursorHistory.includes(cursor)),
       });
     };
     const onPopState = () => loadFromUrl(window.location.search.slice(1));
     window.addEventListener("popstate", onPopState);
     if (handledUrlRef.current !== searchKey) loadFromUrl(searchKey);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [load, searchKey]);
+  }, [cursorHistory, load, searchKey]);
 
   const selectSite = (siteId: string) => {
     void load({ siteId, cursor: null, mode: "initial" });
@@ -418,9 +486,8 @@ export function useRegisteredSites(
   };
 
   const goPrevious = () => {
-    if (!data.selectedSiteId || cursorHistory.length <= 1) return;
-    const previousHistory = cursorHistory.slice(0, -1);
-    const previousCursor = previousHistory.at(-1) ?? null;
+    if (!data.selectedSiteId || cursorPosition <= 0) return;
+    const previousCursor = cursorHistory[cursorPosition - 1] ?? null;
     void load({
       siteId: data.selectedSiteId,
       cursor: previousCursor,
@@ -432,6 +499,8 @@ export function useRegisteredSites(
     data,
     selectedSite,
     cursorHistory,
+    cursorPosition,
+    isDeepLink: deepLinkRef.current,
     isLoading,
     remainingSeconds,
     selectSite,

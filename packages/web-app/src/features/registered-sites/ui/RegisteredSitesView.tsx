@@ -22,7 +22,8 @@ export type RegisteredSitesViewProps = {
   userId: string;
   data: RegisteredSitePageData;
   selectedSite: RegisteredSiteView | undefined;
-  cursorHistory: Array<string | null>;
+  cursorPosition: number;
+  isDeepLink: boolean;
   isLoading: boolean;
   remainingSeconds: number;
   selectSite: (siteId: string) => void;
@@ -37,7 +38,8 @@ export default function RegisteredSitesView({
   userId,
   data,
   selectedSite,
-  cursorHistory,
+  cursorPosition,
+  isDeepLink,
   isLoading,
   remainingSeconds,
   selectSite,
@@ -240,18 +242,20 @@ export default function RegisteredSitesView({
               </div>
             )}
 
-            {(data.nextCursor || cursorHistory.length > 1) && (
+            {(data.nextCursor || cursorPosition > 0) && (
               <div className="flex items-center justify-center gap-3">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={goPrevious}
-                  disabled={isLoading || cursorHistory.length <= 1}
+                  disabled={isLoading || cursorPosition <= 0}
                 >
                   <ChevronLeft />
                   前へ
                 </Button>
-                <Badge variant="outline">{cursorHistory.length} ページ目</Badge>
+                <Badge variant="outline">
+                  {isDeepLink ? "ページ位置" : `${cursorPosition + 1} ページ目`}
+                </Badge>
                 <Button
                   variant="outline"
                   size="sm"

@@ -8,8 +8,6 @@ export default async function Page({
   searchParams: Promise<{
     siteId?: string;
     cursor?: string;
-    since?: string;
-    accessStartedAt?: string;
     mode?: "initial" | "page";
   }>;
 }) {
