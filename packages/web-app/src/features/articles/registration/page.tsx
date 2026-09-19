@@ -9,7 +9,11 @@ import TagsStepCard from "@/features/articles/registration/ui/TagsStepCard";
 import UrlStepCard from "@/features/articles/registration/ui/UrlStepCard";
 
 /** 記事保存ページを表示する関数 */
-export default function ArticleRegistrationPage() {
+export default function ArticleRegistrationPage({
+  initialUrl = "",
+}: {
+  initialUrl?: string;
+}) {
   const {
     userId,
     step,
@@ -35,7 +39,7 @@ export default function ArticleRegistrationPage() {
     handleSave,
     toggleTag,
     availableTags,
-  } = useArticleRegistration();
+  } = useArticleRegistration(initialUrl);
 
   return (
     <RegistrationLayout
