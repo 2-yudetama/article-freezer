@@ -12,7 +12,7 @@ CREATE TABLE "registered_sites" (
     "fetch_token" UUID,
     "fetch_not_before" TIMESTAMPTZ(3),
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "registered_sites_pkey" PRIMARY KEY ("registered_site_id")
 );
@@ -28,7 +28,7 @@ CREATE TABLE "feed_entries" (
     "thumbnail_url" TEXT,
     "published_at" TIMESTAMPTZ(3),
     "first_seen_at" TIMESTAMPTZ(3) NOT NULL,
-    "updated_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
     CONSTRAINT "feed_entries_pkey" PRIMARY KEY ("feed_entry_id")
 );
