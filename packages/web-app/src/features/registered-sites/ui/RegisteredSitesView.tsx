@@ -11,6 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  formatDateTimeInTokyo,
+  formatTimeInTokyo,
+} from "@/lib/utils/data-format";
 import type {
   RegisteredSitePageData,
   RegisteredSiteView,
@@ -131,17 +135,13 @@ export default function RegisteredSitesView({
                 {selectedSite?.lastSuccessAt && (
                   <p className="mt-1 text-sm text-muted-foreground">
                     最終更新:{" "}
-                    {new Date(selectedSite.lastSuccessAt).toLocaleString(
-                      "ja-JP",
-                    )}
+                    {formatDateTimeInTokyo(selectedSite.lastSuccessAt)}
                   </p>
                 )}
                 {selectedSite?.fetchNotBefore && hasFetchLimit && (
                   <p className="mt-1 text-sm text-muted-foreground">
                     次回更新可能:{" "}
-                    {new Date(selectedSite.fetchNotBefore).toLocaleTimeString(
-                      "ja-JP",
-                    )}
+                    {formatTimeInTokyo(selectedSite.fetchNotBefore)}
                     （あと {remainingSeconds} 秒）
                   </p>
                 )}

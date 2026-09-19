@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
 }
 
 datasource db {
@@ -129,10 +130,11 @@ model RegisteredSite {
   created_at         DateTime  @default(now()) @db.Timestamptz(3)
   updated_at         DateTime  @updatedAt @db.Timestamptz(3)
 
-  user         User         @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user         User        @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   feed_entries FeedEntry[]
 
   @@unique([user_id, feed_url_key])
+  @@unique([user_id, site_url_key], map: "registered_sites_user_id_site_url_key_link_key", where: { feed_url: null, site_url_key: { not: null } })
   @@index([user_id])
   @@index([user_id, site_url_key])
   @@map("registered_sites")
@@ -140,7 +142,7 @@ model RegisteredSite {
 
 model FeedEntry {
   feed_entry_id      String    @id @default(uuid()) @db.Uuid
-  registered_site_id  String    @db.Uuid
+  registered_site_id String    @db.Uuid
   entry_key          String    @db.VarChar(64)
   source_entry_id    String?   @db.Text
   article_url        String    @db.Text

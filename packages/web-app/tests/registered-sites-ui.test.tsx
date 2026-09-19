@@ -552,6 +552,21 @@ describe("useRegisteredSites の閲覧基準と取得結果", () => {
 });
 
 describe("RegisteredSitesView の取得制限表示", () => {
+  it("日時をAsia/Tokyo基準で表示する", async () => {
+    await renderView(
+      makeData({
+        sites: [
+          makeSite(SITE_ID, {
+            fetchNotBefore: "2026-09-19T00:02:00.000Z",
+          }),
+        ],
+      }),
+      12,
+    );
+    expect(container.textContent).toContain("最終更新: 2026/09/19 08:00");
+    expect(container.textContent).toContain("次回更新可能: 09:02:00");
+  });
+
   it("取得失敗時は空配信と表示せず、更新と再試行を無効にする", async () => {
     const data = makeData({
       entries: [],
