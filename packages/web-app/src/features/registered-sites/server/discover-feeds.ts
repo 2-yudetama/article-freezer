@@ -60,7 +60,7 @@ export async function discoverFeeds(
     // URL の公開性を検査できた後の取得失敗は、フィード非対応として
     // リンク登録へフォールバックできるようにする。SSRF 検査自体は
     // assertPublicUrl と fetchBoundedFeed の両方で維持する
-    if (error instanceof FeedFetchError) {
+    if (error instanceof FeedFetchError && error.code !== "ssrf") {
       return { sourceUrl, siteUrl: sourceUrl, candidates: [] };
     }
     throw error;
@@ -105,7 +105,10 @@ export async function discoverFeeds(
         title: feed.title,
         format: feed.format,
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof FeedFetchError && error.code === "ssrf") {
+        throw error;
+      }
       if (Date.now() >= deadlineAt) {
         return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
       }

@@ -338,6 +338,8 @@ async function getEntriesPage({
               published_at: publishedAt,
               entry_key: { lt: decodedCursor.entryKey },
             },
+            // 公開日時不明の記事は、日時ありの記事の後ろへ続く
+            { published_at: null },
           ];
         }
       }

@@ -133,8 +133,9 @@ async function mountHook(
 async function renderView(
   data: RegisteredSitePageData,
   remainingSeconds: number,
+  cursorPosition = 0,
 ) {
-  root = createRoot(container);
+  root ??= createRoot(container);
   await act(async () => {
     root?.render(
       <RegisteredSitesView
@@ -143,7 +144,7 @@ async function renderView(
         selectedSite={data.sites.find(
           (site) => site.registeredSiteId === data.selectedSiteId,
         )}
-        cursorPosition={0}
+        cursorPosition={cursorPosition}
         isDeepLink={false}
         isLoading={false}
         remainingSeconds={remainingSeconds}
@@ -604,6 +605,38 @@ describe("useRegisteredSites の閲覧基準と取得結果", () => {
 });
 
 describe("RegisteredSitesView の取得制限表示", () => {
+  it("選択中のフィードに登録 URL のリンクを表示する", async () => {
+    await renderView(makeData(), 0);
+
+    const siteUrl = makeSite().siteUrl;
+    const link = container.querySelector(`a[href="${siteUrl}"]`);
+    expect(link?.textContent).toBe(siteUrl);
+    expect(link?.textContent).toContain("https://example.com/site-1");
+  });
+
+  it("次ページ移動時は内側の一覧とモバイルの親を先頭へ移動する", async () => {
+    const data = makeData({ nextCursor: "next-cursor" });
+    await renderView(data, 0);
+
+    const section = container.querySelector("section");
+    expect(section).not.toBeNull();
+    if (!section) return;
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(section, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    section.scrollTop = 500;
+
+    await renderView({ ...data, entries: [makeEntry("next-entry")] }, 0, 1);
+
+    expect(section.scrollTop).toBe(0);
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      block: "start",
+      behavior: "auto",
+    });
+  });
+
   it("新着カードはサムネイルの上下余白と識別しやすい枠線を持つ", async () => {
     await renderView(
       makeData({

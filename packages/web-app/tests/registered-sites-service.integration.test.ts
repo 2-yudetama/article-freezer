@@ -450,7 +450,7 @@ suite("registered site service with PostgreSQL", () => {
         publishedAt: new Date("2026-01-03T00:00:00.000Z"),
         firstSeenAt,
       },
-      ...Array.from({ length: 18 }, (_, index) => ({
+      ...Array.from({ length: 19 }, (_, index) => ({
         key: `middle-${String(index).padStart(2, "0")}`,
         url: `https://article.example.test/middle-${index}`,
         publishedAt: new Date(
@@ -459,8 +459,14 @@ suite("registered site service with PostgreSQL", () => {
         firstSeenAt,
       })),
       {
-        key: "unknown",
+        key: "unknown-1",
         url: "https://article.example.test/unknown",
+        publishedAt: null,
+        firstSeenAt,
+      },
+      {
+        key: "unknown-2",
+        url: "https://article.example.test/unknown-2",
         publishedAt: null,
         firstSeenAt,
       },
@@ -482,7 +488,12 @@ suite("registered site service with PostgreSQL", () => {
       cursor: first.nextCursor ?? undefined,
       operation: "page",
     });
-    expect(second.entries.map((entry) => entry.publishedAt)).toEqual([null]);
+    expect(second.entries).toHaveLength(3);
+    expect(second.entries[0]?.publishedAt).toBe("2025-12-13T00:00:00.000Z");
+    expect(second.entries.slice(1).map((entry) => entry.publishedAt)).toEqual([
+      null,
+      null,
+    ]);
   });
 
   it("取得中の解除後に古い結果を保存しない", async () => {

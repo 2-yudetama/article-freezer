@@ -55,6 +55,38 @@ describe("discoverFeeds", () => {
     });
   });
 
+  it("取得先の SSRF 検査失敗はリンク登録へフォールバックしない", async () => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    fetchFeedMock.mockRejectedValueOnce(
+      new FeedFetchError("private redirect", "ssrf"),
+    );
+
+    await expect(discoverFeeds("https://example.test/")).rejects.toMatchObject({
+      name: "FeedFetchError",
+      code: "ssrf",
+    });
+  });
+
+  it("候補への SSRF リダイレクトも検出 API のエラーにする", async () => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    normalizeHttpUrlMock.mockImplementation((value: string) => value);
+    fetchFeedMock
+      .mockResolvedValueOnce({
+        url: "https://example.test/",
+        body: '<html><link rel="alternate" type="application/rss+xml" href="/feed" /></html>',
+        contentType: "text/html",
+      })
+      .mockRejectedValueOnce(new FeedFetchError("private redirect", "ssrf"));
+    parseFeedMock.mockImplementation(() => {
+      throw new FeedParseError("not a feed");
+    });
+
+    await expect(discoverFeeds("https://example.test/")).rejects.toMatchObject({
+      name: "FeedFetchError",
+      code: "ssrf",
+    });
+  });
+
   it("候補リンクがない HTML はフィード非対応として返す", async () => {
     assertPublicUrlMock.mockResolvedValue("https://example.test/");
     fetchFeedMock.mockResolvedValueOnce({

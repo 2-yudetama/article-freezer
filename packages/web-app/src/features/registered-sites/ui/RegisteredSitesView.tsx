@@ -116,7 +116,10 @@ export default function RegisteredSitesView({
   useEffect(() => {
     if (cursorPosition > previousCursorPositionRef.current) {
       const element = articleScrollRef.current;
-      if (element) element.scrollTop = 0;
+      if (element) {
+        element.scrollTop = 0;
+        element.scrollIntoView?.({ block: "start", behavior: "auto" });
+      }
     }
     previousCursorPositionRef.current = cursorPosition;
   }, [cursorPosition]);
@@ -180,15 +183,17 @@ export default function RegisteredSitesView({
         </Card>
       ) : (
         <div className="min-h-0 flex-1 md:grid md:grid-cols-[16rem_1fr] md:gap-6">
-          <aside className="hidden min-h-0 md:block">
-            <Card className="h-fit max-h-full">
-              <CardContent className="space-y-2 p-3">
+          <aside className="hidden min-h-0 md:flex">
+            <Card className="h-full min-h-0 w-full">
+              <CardContent className="flex min-h-0 w-full flex-col p-3">
                 <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
                   登録先 ({data.sites.length})
                 </p>
-                {visibleSites.map((site) => renderSiteButton(site))}
+                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable">
+                  {visibleSites.map((site) => renderSiteButton(site))}
+                </div>
                 {siteListPageCount > 1 && (
-                  <div className="flex items-center justify-between gap-2 pt-2">
+                  <div className="flex shrink-0 items-center justify-between gap-2 pt-2">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -260,6 +265,19 @@ export default function RegisteredSitesView({
                     <p className="mt-1 text-sm text-muted-foreground">
                       最終更新:{" "}
                       {formatDateTimeInTokyo(selectedSite.lastSuccessAt)}
+                    </p>
+                  )}
+                  {selectedSite?.feedUrl && (
+                    <p className="mt-1 truncate text-sm text-muted-foreground">
+                      登録 URL:{" "}
+                      <a
+                        href={selectedSite.siteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2 hover:text-foreground"
+                      >
+                        {selectedSite.siteUrl}
+                      </a>
                     </p>
                   )}
                   {selectedSite?.fetchNotBefore && hasFetchLimit && (
