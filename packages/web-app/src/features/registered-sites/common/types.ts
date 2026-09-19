@@ -26,24 +26,15 @@ export const RegisterSiteRequestSchema = v.object({
   siteUrl: RegisteredSiteUrlSchema,
   feedUrl: v.optional(RegisteredSiteUrlSchema),
 });
-export type RegisterSiteRequest = v.InferOutput<
-  typeof RegisterSiteRequestSchema
->;
 
 export const DiscoverFeedsRequestSchema = v.object({
   url: RegisteredSiteUrlSchema,
 });
-export type DiscoverFeedsRequest = v.InferOutput<
-  typeof DiscoverFeedsRequestSchema
->;
 
 export const RecordSiteAccessRequestSchema = v.object({
   accessStartedAt: v.string(),
   displayed: v.boolean(),
 });
-export type RecordSiteAccessRequest = v.InferOutput<
-  typeof RecordSiteAccessRequestSchema
->;
 
 export const RegisteredSiteSearchParamsSchema = v.object({
   siteId: v.optional(RegisteredSiteIdSchema),
