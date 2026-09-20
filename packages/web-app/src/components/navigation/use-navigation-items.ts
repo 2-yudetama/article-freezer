@@ -1,7 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, FilePlusCorner, Settings, Tags } from "lucide-react";
+import { BookOpen, FilePlusCorner, Radio, Settings, Tags } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUserId } from "@/components/providers/user-id-provider";
 
@@ -46,6 +46,11 @@ export function useNavigationItems(): NavigationItemsResult {
       href: registrationHref,
       icon: FilePlusCorner,
       label: "記事を保存",
+    },
+    {
+      href: `/users/${userId}/registered-sites`,
+      icon: Radio,
+      label: "登録サイト",
     },
     { href: `/users/${userId}/article-tags`, icon: Tags, label: "タグ管理" },
     { href: `/users/${userId}/settings`, icon: Settings, label: "設定" },

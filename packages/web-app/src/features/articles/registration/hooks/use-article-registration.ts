@@ -9,9 +9,9 @@ import { useArticleRegistrationState } from "./use-article-registration-state";
  * 記事保存画面で利用する facade hook。
  * state 管理と副作用を束ね、page から扱いやすい形で公開する。
  */
-export function useArticleRegistration() {
+export function useArticleRegistration(initialUrl = "") {
   const userId = useUserId();
-  const state = useArticleRegistrationState();
+  const state = useArticleRegistrationState(initialUrl);
   const actions = useArticleRegistrationActions({
     userId,
     step: state.step,

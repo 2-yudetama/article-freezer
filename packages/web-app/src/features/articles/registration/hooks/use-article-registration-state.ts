@@ -12,9 +12,9 @@ import {
  * 記事保存フローで利用する画面状態をまとめて管理する。
  * ステップ遷移に必要な入力値と進捗表示用の派生値を返す。
  */
-export function useArticleRegistrationState() {
+export function useArticleRegistrationState(initialUrl = "") {
   const [step, setStep] = useState<RegistrationStep>("url");
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [extractedArticle, setExtractedArticle] =
     useState<ArticleExtractResponse | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);

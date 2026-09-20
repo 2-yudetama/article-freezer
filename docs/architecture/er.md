@@ -55,6 +55,40 @@ erDiagram
         UUID tag_id PK, FK
     }
 
+    registered_sites {
+        UUID registered_site_id PK
+        UUID user_id FK
+        TEXT site_url
+        TEXT site_url_key
+        TEXT display_name
+        TEXT feed_url
+        TEXT feed_url_key
+        TIMESTAMPTZ last_success_at
+        BIGINT cache_version
+        UUID fetch_token
+        TIMESTAMPTZ fetch_not_before
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    feed_entries {
+        UUID feed_entry_id PK
+        UUID registered_site_id FK
+        VARCHAR entry_key
+        TEXT source_entry_id
+        TEXT article_url
+        TEXT title
+        TEXT thumbnail_url
+        TIMESTAMPTZ published_at
+        TIMESTAMPTZ first_seen_at
+        TIMESTAMPTZ updated_at
+    }
+
+    site_tab_states {
+        UUID user_id PK, FK
+        TIMESTAMPTZ last_accessed_at
+    }
+
     users ||--o{ articles : owns
     articles ||--|| article_sources : has
     articles ||--o| article_comments : has
@@ -62,4 +96,7 @@ erDiagram
     users ||--o{ article_tags : owns
     articles ||--o{ article_tags_articles : has
     article_tags ||--o{ article_tags_articles : has
+    users ||--o{ registered_sites : registers
+    users ||--o| site_tab_states : visits
+    registered_sites ||--o{ feed_entries : caches
 ```
