@@ -30,6 +30,8 @@ export default function ArticleDetailPageClient({
           article={articleDetailPage.article}
           deleteDialogOpen={articleDetailPage.deleteDialogOpen}
           onDeleteDialogOpenChange={articleDetailPage.setDeleteDialogOpen}
+          deleteError={articleDetailPage.deleteError}
+          isDeleting={articleDetailPage.isDeleting}
           onDelete={articleDetailPage.handleDelete}
         />
       </div>

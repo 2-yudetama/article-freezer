@@ -91,3 +91,27 @@ export async function getArticle({
 
   return toArticle(article);
 }
+
+/**
+ * ユーザが所有する記事を削除する
+ *
+ * 記事 ID とユーザ ID を同じ deleteMany の条件に含めることで、所有確認と
+ * 削除を単一のデータベース操作として扱い、関連する入力元・コメント・
+ * タグとの中間レコードはスキーマの Cascade 設定により削除される
+ */
+export async function deleteArticle({
+  userId,
+  articleId,
+}: {
+  userId: string;
+  articleId: string;
+}) {
+  const result = await prisma.article.deleteMany({
+    where: {
+      article_id: articleId,
+      user_id: userId,
+    },
+  });
+
+  return result.count === 1;
+}
