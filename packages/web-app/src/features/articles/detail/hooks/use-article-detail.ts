@@ -23,6 +23,9 @@ export function useArticleDetail({ userId, article }: Params) {
   const articleComment = useArticleComment({ userId, article });
 
   const setDeleteDialogOpen = (open: boolean) => {
+    if (!open && deleteInFlightRef.current) {
+      return;
+    }
     if (open) {
       setDeleteError(null);
     }

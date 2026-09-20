@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { NotFoundError, UnauthorizedError } from "@/lib/errors";
 
 vi.mock("server-only", () => ({}));
 
-const authorizeUserApiRequest = vi.hoisted(() => vi.fn());
+const auth = vi.hoisted(() => vi.fn());
 const deleteArticle = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/api/auth-user", () => ({ authorizeUserApiRequest }));
+vi.mock("@/lib/auth", () => ({ auth }));
 vi.mock("@/features/articles/detail/api/detail.actions", () => ({
   deleteArticle,
 }));
@@ -24,7 +23,12 @@ function params(
 }
 
 beforeEach(() => {
-  authorizeUserApiRequest.mockReset().mockResolvedValue(undefined);
+  auth.mockReset().mockResolvedValue({
+    user: {
+      id: USER_ID,
+      role: 1,
+    },
+  });
   deleteArticle.mockReset().mockResolvedValue(true);
 });
 
@@ -43,18 +47,18 @@ describe("記事削除 API", () => {
     });
   });
 
-  it("不正な記事 ID を 400 として拒否する", async () => {
+  it("不正な記事 ID を 404 として拒否する", async () => {
     const response = await DELETE(
       new Request("http://localhost"),
       params(USER_ID, "not-an-article-id"),
     );
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
     expect(deleteArticle).not.toHaveBeenCalled();
   });
 
   it("未認証のリクエストを 401 として拒否する", async () => {
-    authorizeUserApiRequest.mockRejectedValueOnce(new UnauthorizedError());
+    auth.mockResolvedValueOnce(null);
 
     const response = await DELETE(new Request("http://localhost"), params());
 
@@ -63,14 +67,33 @@ describe("記事削除 API", () => {
   });
 
   it("他ユーザの URL を 404 として拒否する", async () => {
-    authorizeUserApiRequest.mockRejectedValueOnce(new NotFoundError());
+    auth.mockResolvedValueOnce({
+      user: {
+        id: "33333333-3333-4333-8333-333333333333",
+        role: 1,
+      },
+    });
 
     const response = await DELETE(
       new Request("http://localhost"),
-      params("33333333-3333-4333-8333-333333333333"),
+      params(USER_ID),
     );
 
     expect(response.status).toBe(404);
+    expect(deleteArticle).not.toHaveBeenCalled();
+  });
+
+  it("利用権限のないロールを 403 として拒否する", async () => {
+    auth.mockResolvedValueOnce({
+      user: {
+        id: USER_ID,
+        role: 0,
+      },
+    });
+
+    const response = await DELETE(new Request("http://localhost"), params());
+
+    expect(response.status).toBe(403);
     expect(deleteArticle).not.toHaveBeenCalled();
   });
 

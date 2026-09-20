@@ -4,6 +4,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Article } from "@/domain/articles";
+import { DEFAULT_ERROR_MESSAGE } from "@/lib/api/response.shared";
 
 const router = vi.hoisted(() => ({
   push: vi.fn(),
@@ -127,6 +128,9 @@ describe("記事削除 UI", () => {
     await settle();
 
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      document.querySelector('[role="alertdialog"][data-state="open"]'),
+    ).toBeNull();
   });
 
   it("処理中の二重送信を防ぎ、失敗後は再試行できる", async () => {
@@ -142,11 +146,27 @@ describe("記事削除 UI", () => {
     });
     const deleteDialog = dialog();
     await act(async () => {
-      button(deleteDialog, "削除").click();
+      const deleteButton = button(deleteDialog, "削除");
+      deleteButton.click();
+      deleteButton.click();
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/users/${USER_ID}/articles/${ARTICLE_ID}`,
+      { method: "DELETE" },
+    );
     expect(button(dialog(), "削除中…").disabled).toBe(true);
     expect(button(dialog(), "キャンセル").disabled).toBe(true);
+
+    await act(async () => {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    });
+    await settle();
+    expect(
+      document.querySelector('[role="alertdialog"][data-state="open"]'),
+    ).not.toBeNull();
 
     resolveRequest(
       new Response(
@@ -176,5 +196,32 @@ describe("記事削除 UI", () => {
     });
     expect(router.push).toHaveBeenCalledWith(`/users/${USER_ID}/articles`);
     expect(router.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("ネットワークエラーを表示し、失敗後に再試行できる", async () => {
+    fetchMock.mockRejectedValueOnce(new Error("network unavailable"));
+
+    await mount();
+    await act(async () => {
+      button(container, "削除").click();
+    });
+    await act(async () => {
+      button(dialog(), "削除").click();
+    });
+    await settle();
+
+    expect(dialog().textContent).toContain(DEFAULT_ERROR_MESSAGE);
+    expect(toast.error).toHaveBeenCalledWith("記事を削除できませんでした", {
+      description: DEFAULT_ERROR_MESSAGE,
+    });
+
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+    await act(async () => {
+      button(dialog(), "削除").click();
+    });
+    await settle();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(router.push).toHaveBeenCalledWith(`/users/${USER_ID}/articles`);
   });
 });

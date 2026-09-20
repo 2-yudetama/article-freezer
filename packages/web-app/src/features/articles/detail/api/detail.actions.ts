@@ -96,8 +96,8 @@ export async function getArticle({
  * ユーザが所有する記事を削除する
  *
  * 記事 ID とユーザ ID を同じ deleteMany の条件に含めることで、所有確認と
- * 削除を単一のデータベース操作として扱う。関連する入力元・コメント・
- * タグとの中間レコードは、スキーマの Cascade 設定により削除される。
+ * 削除を単一のデータベース操作として扱い、関連する入力元・コメント・
+ * タグとの中間レコードはスキーマの Cascade 設定により削除される
  */
 export async function deleteArticle({
   userId,

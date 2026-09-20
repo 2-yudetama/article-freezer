@@ -3,7 +3,7 @@ import * as v from "valibot";
 import { deleteArticle } from "@/features/articles/detail/api/detail.actions";
 import { authorizeUserApiRequest } from "@/lib/api/auth-user";
 import { toApiExceptionResponse } from "@/lib/api/response";
-import { BadRequestError, NotFoundError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/errors";
 
 export async function DELETE(
   _request: Request,
@@ -18,7 +18,7 @@ export async function DELETE(
       articleId,
     );
     if (!articleIdResult.success) {
-      throw new BadRequestError();
+      throw new NotFoundError();
     }
 
     const deleted = await deleteArticle({
