@@ -2,7 +2,7 @@
 
 import type { Article } from "@/domain/articles";
 import { useArticleEdit } from "@/features/articles/edit/hooks/use-article-edit";
-import ArticleEditPageView from "@/features/articles/edit/ui/page-view";
+import ArticleEditPageView from "@/features/articles/edit/ui/ArticleEditPageView";
 
 type ArticleEditPageClientProps = {
   userId: string;

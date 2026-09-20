@@ -9,7 +9,7 @@ import { BadRequestError, NotFoundError } from "@/lib/errors";
  *
  * article_id と user_id を同じ条件に含めることで、所有確認と更新を
  * 単一のデータベース操作として扱う。Prisma の @updatedAt により
- * updated_at は自動更新されるが、その他の関連データは変更しない。
+ * updated_at は自動更新されるが、その他の関連データは変更しない
  */
 export async function updateArticle({
   userId,

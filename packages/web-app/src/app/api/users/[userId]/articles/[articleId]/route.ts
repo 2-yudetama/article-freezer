@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import * as v from "valibot";
 import { deleteArticle } from "@/features/articles/detail/api/detail.actions";
-import { updateArticle } from "@/features/articles/edit/api/edit.actions";
 import { authorizeUserApiRequest } from "@/lib/api/auth-user";
 import { toApiExceptionResponse } from "@/lib/api/response";
 import { ArticleUpdateRequestSchema } from "@/lib/api/schemas";
@@ -30,6 +29,10 @@ export async function PATCH(
     if (!requestResult.success) {
       throw new BadRequestError();
     }
+
+    const { updateArticle } = await import(
+      "@/features/articles/edit/api/edit.actions"
+    );
 
     await updateArticle({
       userId,

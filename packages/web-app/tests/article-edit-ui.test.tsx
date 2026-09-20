@@ -26,7 +26,7 @@ vi.mock("@/components/markdown-preview", () => ({
 }));
 
 import { useArticleEdit } from "@/features/articles/edit/hooks/use-article-edit";
-import ArticleEditPageView from "@/features/articles/edit/ui/page-view";
+import ArticleEditPageView from "@/features/articles/edit/ui/ArticleEditPageView";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ARTICLE_ID = "22222222-2222-4222-8222-222222222222";
@@ -96,6 +96,24 @@ function field<T extends HTMLInputElement | HTMLTextAreaElement>(
   return element as T;
 }
 
+async function fillField(
+  element: HTMLInputElement | HTMLTextAreaElement,
+  value: string,
+) {
+  await act(async () => {
+    const prototype =
+      element instanceof HTMLInputElement
+        ? HTMLInputElement.prototype
+        : HTMLTextAreaElement.prototype;
+    const valueSetter = Object.getOwnPropertyDescriptor(
+      prototype,
+      "value",
+    )?.set;
+    valueSetter?.call(element, value);
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
 beforeEach(() => {
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -160,6 +178,12 @@ describe("記事編集 UI", () => {
     fetchMock.mockReturnValueOnce(pendingRequest);
 
     await mount();
+    await fillField(field<HTMLInputElement>("title"), "更新後のタイトル");
+    await fillField(field<HTMLTextAreaElement>("content"), "## 更新後の本文");
+    expect(
+      container.querySelector('[data-testid="markdown-preview"]')?.textContent,
+    ).toBe("## 更新後の本文");
+
     await act(async () => {
       button("保存").click();
       button("保存").click();
@@ -172,8 +196,8 @@ describe("記事編集 UI", () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: article.title,
-          content: article.content,
+          title: "更新後のタイトル",
+          content: "## 更新後の本文",
         }),
       },
     );
@@ -202,13 +226,15 @@ describe("記事編集 UI", () => {
     );
 
     await mount();
+    await fillField(field<HTMLInputElement>("title"), "編集済みタイトル");
+    await fillField(field<HTMLTextAreaElement>("content"), "編集済みの本文");
     await act(async () => {
       button("保存").click();
     });
     await settle();
 
-    expect(field<HTMLInputElement>("title").value).toBe(article.title);
-    expect(field<HTMLTextAreaElement>("content").value).toBe(article.content);
+    expect(field<HTMLInputElement>("title").value).toBe("編集済みタイトル");
+    expect(field<HTMLTextAreaElement>("content").value).toBe("編集済みの本文");
     expect(container.textContent).toContain("保存に失敗しました");
     expect(toast.error).toHaveBeenCalledWith("記事を保存できませんでした", {
       description: "保存に失敗しました",
@@ -221,6 +247,17 @@ describe("記事編集 UI", () => {
     await settle();
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      `/api/users/${USER_ID}/articles/${ARTICLE_ID}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "編集済みタイトル",
+          content: "編集済みの本文",
+        }),
+      },
+    );
     expect(router.push).toHaveBeenCalledWith(
       `/users/${USER_ID}/articles/${ARTICLE_ID}`,
     );

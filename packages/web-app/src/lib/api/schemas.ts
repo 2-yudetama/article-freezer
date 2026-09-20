@@ -104,7 +104,7 @@ export type ArticleCommentSaveResponse = v.InferOutput<
  *
  * 編集対象は記事タイトルと Markdown 本文だけに限定する。Valibot の
  * object は定義していないキーを出力から除外するため、API 側でも更新
- * フィールドを title/content に限定できる。
+ * フィールドを title/content に限定できる
  */
 export const ArticleUpdateRequestSchema = v.object({
   title: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(255)),

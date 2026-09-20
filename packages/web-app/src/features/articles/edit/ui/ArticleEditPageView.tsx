@@ -23,7 +23,7 @@ type ArticleEditPageViewProps = {
   onCancel: () => void;
 };
 
-/** 記事編集ページのUIを表示する関数 */
+/** 記事編集ページの UI を表示する関数 */
 export default function ArticleEditPageView({
   userId,
   article,
@@ -93,6 +93,7 @@ export default function ArticleEditPageView({
             <CardTitle>本文（Markdown）</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Label htmlFor="content">本文（Markdown）</Label>
             <Textarea
               id="content"
               value={content}
