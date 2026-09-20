@@ -118,9 +118,29 @@ jobs:
 
       - name: Run DB migration job on Northflank
         run: |
+          build_id="${{ steps.build.outputs.build_id }}"
+          payload="$(
+            jq -n \
+              --arg job_id "$NORTHFLANK_JOB_ID" \
+              --arg build_id "$build_id" \
+              '{
+                deployment: {
+                  docker: {
+                    configType: "default"
+                  },
+                  internal: {
+                    id: $job_id,
+                    buildId: $build_id
+                  }
+                }
+              }'
+          )"
+
+          echo "Running Northflank migration build: $build_id"
+
           curl --silent --show-error --fail-with-body \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $NORTHFLANK_API_TOKEN" \
             --request POST \
-            --data '{}' \
+            --data "$payload" \
             "https://api.northflank.com/v1/projects/${NORTHFLANK_PROJECT_ID}/jobs/${NORTHFLANK_JOB_ID}/runs"
