@@ -2,9 +2,15 @@
 
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { memo, useState } from "react";
 import { MarkdownPreview } from "@/components/markdown-preview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +29,14 @@ type ArticleEditPageViewProps = {
   onCancel: () => void;
 };
 
+const ArticleEditMarkdownPreview = memo(function ArticleEditMarkdownPreview({
+  content,
+}: {
+  content: string;
+}) {
+  return <MarkdownPreview content={content} />;
+});
+
 /** 記事編集ページの UI を表示する関数 */
 export default function ArticleEditPageView({
   userId,
@@ -36,100 +50,124 @@ export default function ArticleEditPageView({
   onSave,
   onCancel,
 }: ArticleEditPageViewProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <Link href={`/users/${userId}/articles/${article.articleId}`}>
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              詳細に戻る
-            </Button>
-          </Link>
-          <h1 className="text-4xl font-bold">記事を編集</h1>
-        </div>
-      </div>
+    <form
+      className="container mx-auto flex min-h-0 max-w-full flex-col overflow-hidden h-[calc(100dvh-8rem)] md:h-screen"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void onSave();
+      }}
+    >
+      <header className="shrink-0 border-b border-border bg-background">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <Link href={`/users/${userId}/articles/${article.articleId}`}>
+              <Button variant="ghost" size="sm" className="mb-3">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                詳細に戻る
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold sm:text-4xl">記事を編集</h1>
+          </div>
 
-      <form
-        className="space-y-6"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void onSave();
-        }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>基本情報</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">タイトル</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => onTitleChange(e.target.value)}
-                placeholder="記事のタイトル"
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="url">URL</Label>
-              <Input
-                id="url"
-                value={article.articleSource.url}
-                disabled
-                className="opacity-50"
-              />
-              <p className="text-xs text-muted-foreground">
-                URLは変更できません
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>本文（Markdown）</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Label htmlFor="content">本文（Markdown）</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => onContentChange(e.target.value)}
-              placeholder="記事本文を Markdown で入力してください"
-              rows={16}
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
               disabled={isSaving}
-            />
-            <div className="space-y-2">
-              <Label>プレビュー</Label>
-              <MarkdownPreview content={content} />
-            </div>
-          </CardContent>
-        </Card>
+              onClick={onCancel}
+            >
+              キャンセル
+            </Button>
+            <Button type="submit" disabled={isSaving}>
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? "保存中…" : "保存"}
+            </Button>
+          </div>
+        </div>
 
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p
+            className="mx-auto w-full max-w-4xl px-4 pb-4 text-sm text-destructive"
+            role="alert"
+          >
             {error}
           </p>
         )}
+      </header>
 
-        <div className="flex justify-end gap-4 pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isSaving}
-            onClick={onCancel}
-          >
-            キャンセル
-          </Button>
-          <Button type="submit" disabled={isSaving}>
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? "保存中…" : "保存"}
-          </Button>
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-readable">
+        <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>基本情報</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">タイトル</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => onTitleChange(e.target.value)}
+                  placeholder="記事のタイトル"
+                  disabled={isSaving}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="url">URL</Label>
+                <Input
+                  id="url"
+                  value={article.articleSource.url}
+                  disabled
+                  className="opacity-50"
+                />
+                <p className="text-xs text-muted-foreground">
+                  URLは変更できません
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle id="content-heading">本文（Markdown）</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                id="content"
+                aria-labelledby="content-heading"
+                value={content}
+                onChange={(e) => onContentChange(e.target.value)}
+                placeholder="記事本文を Markdown で入力してください"
+                rows={16}
+                disabled={isSaving}
+              />
+              <Collapsible
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                className="space-y-3"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button type="button" variant="outline">
+                    {previewOpen ? "プレビューを閉じる" : "プレビューを表示"}
+                  </Button>
+                </CollapsibleTrigger>
+                {previewOpen && (
+                  <CollapsibleContent>
+                    <div className="space-y-2">
+                      <h2 className="text-sm font-medium">プレビュー</h2>
+                      <ArticleEditMarkdownPreview content={content} />
+                    </div>
+                  </CollapsibleContent>
+                )}
+              </Collapsible>
+            </CardContent>
+          </Card>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }

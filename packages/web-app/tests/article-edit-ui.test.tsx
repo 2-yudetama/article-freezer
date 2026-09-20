@@ -144,17 +144,45 @@ async function mount() {
 }
 
 describe("記事編集 UI", () => {
-  it("DBから渡された記事を表示し、本文の Markdown プレビューを表示する", async () => {
+  it("DBから渡された記事を表示し、初期状態では Markdown プレビューを描画しない", async () => {
     await mount();
 
     expect(field<HTMLInputElement>("title").value).toBe("編集前のタイトル");
     expect(field<HTMLTextAreaElement>("content").value).toBe("# 編集前の本文");
     expect(
-      container.querySelector('[data-testid="markdown-preview"]')?.textContent,
-    ).toBe("# 編集前の本文");
+      container.querySelector('[data-testid="markdown-preview"]'),
+    ).toBeNull();
+    expect(
+      field<HTMLTextAreaElement>("content").getAttribute("aria-labelledby"),
+    ).toBe("content-heading");
     expect(field<HTMLInputElement>("url").disabled).toBe(true);
     expect(container.textContent).not.toContain("お気に入り");
     expect(container.textContent).not.toContain("タグ");
+  });
+
+  it("プレビューを開くと最新本文を表示し、閉じると描画を破棄する", async () => {
+    await mount();
+    await fillField(field<HTMLTextAreaElement>("content"), "## 編集後の本文");
+
+    expect(
+      container.querySelector('[data-testid="markdown-preview"]'),
+    ).toBeNull();
+
+    await act(async () => {
+      button("プレビューを表示").click();
+    });
+
+    expect(
+      container.querySelector('[data-testid="markdown-preview"]')?.textContent,
+    ).toBe("## 編集後の本文");
+
+    await act(async () => {
+      button("プレビューを閉じる").click();
+    });
+
+    expect(
+      container.querySelector('[data-testid="markdown-preview"]'),
+    ).toBeNull();
   });
 
   it("キャンセルでは API を呼ばず詳細へ戻る", async () => {
@@ -180,9 +208,6 @@ describe("記事編集 UI", () => {
     await mount();
     await fillField(field<HTMLInputElement>("title"), "更新後のタイトル");
     await fillField(field<HTMLTextAreaElement>("content"), "## 更新後の本文");
-    expect(
-      container.querySelector('[data-testid="markdown-preview"]')?.textContent,
-    ).toBe("## 更新後の本文");
 
     await act(async () => {
       button("保存").click();
