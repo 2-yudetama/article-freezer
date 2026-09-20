@@ -95,6 +95,7 @@ export default function ArticleHeader({
                 キャンセル
               </AlertDialogCancel>
               <AlertDialogAction
+                variant="destructive"
                 disabled={isDeleting}
                 onClick={(event) => {
                   event.preventDefault();
