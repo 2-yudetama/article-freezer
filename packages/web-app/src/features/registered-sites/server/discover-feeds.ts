@@ -12,6 +12,36 @@ function getHtmlAttribute(tag: string, attributeName: string) {
   return match?.[1] ?? null;
 }
 
+function getHtmlTitle(html: string) {
+  const match = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  if (!match?.[1]) return null;
+  const decoded = match[1]
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#(x[\da-f]+|\d+);/gi, (_, value: string) => {
+      const codePoint = value.toLowerCase().startsWith("x")
+        ? Number.parseInt(value.slice(1), 16)
+        : Number.parseInt(value, 10);
+      return !Number.isInteger(codePoint) ||
+        codePoint < 0 ||
+        codePoint > 0x10ffff
+        ? ""
+        : String.fromCodePoint(codePoint);
+    })
+    .replace(/&(?:amp|lt|gt|quot|apos);/gi, (value) => {
+      const entities: Record<string, string> = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&apos;": "'",
+      };
+      return entities[value.toLowerCase()] ?? value;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+  return decoded || null;
+}
+
 function htmlFeedLinks(html: string, baseUrl: string) {
   const links = new Set<string>();
   for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
@@ -38,6 +68,7 @@ function htmlFeedLinks(html: string, baseUrl: string) {
 export type FeedDiscoveryResult = {
   sourceUrl: string;
   siteUrl: string;
+  siteTitle?: string;
   candidates: FeedCandidate[];
 };
 
@@ -71,6 +102,7 @@ export async function discoverFeeds(
     return {
       sourceUrl: response.url,
       siteUrl: sourceUrl,
+      siteTitle: parsed.title,
       candidates: [
         {
           feedUrl: response.url,
@@ -90,6 +122,7 @@ export async function discoverFeeds(
   if (!contentType.includes("html") && !/<html\b/i.test(response.body)) {
     return { sourceUrl: response.url, siteUrl: sourceUrl, candidates: [] };
   }
+  const siteTitle = getHtmlTitle(response.body);
 
   const candidates: FeedCandidate[] = [];
   const candidateUrls = htmlFeedLinks(response.body, response.url).slice(
@@ -110,15 +143,30 @@ export async function discoverFeeds(
         throw error;
       }
       if (Date.now() >= deadlineAt) {
-        return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+        return {
+          sourceUrl: response.url,
+          siteUrl: sourceUrl,
+          ...(siteTitle ? { siteTitle } : {}),
+          candidates,
+        };
       }
       // 1つの候補が壊れていても、他の候補の検出は継続する
     }
   }
 
   if (Date.now() >= deadlineAt) {
-    return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+    return {
+      sourceUrl: response.url,
+      siteUrl: sourceUrl,
+      ...(siteTitle ? { siteTitle } : {}),
+      candidates,
+    };
   }
 
-  return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+  return {
+    sourceUrl: response.url,
+    siteUrl: sourceUrl,
+    ...(siteTitle ? { siteTitle } : {}),
+    candidates,
+  };
 }

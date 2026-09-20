@@ -2,14 +2,18 @@
 
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  GripVertical,
+  ListFilter,
   Loader2,
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,12 +43,14 @@ export type RegisteredSitesViewProps = {
   cursorPosition: number;
   isDeepLink: boolean;
   isLoading: boolean;
+  isSavingOrder?: boolean;
   remainingSeconds: number;
   selectSite: (siteId: string) => void;
   refresh: () => void;
   removeSite: () => void;
   goNext: () => void;
   goPrevious: () => void;
+  reorderSites?: (registeredSiteIds: string[]) => Promise<boolean>;
   reload: (registeredSiteId?: string) => void;
 };
 
@@ -55,12 +61,14 @@ export default function RegisteredSitesView({
   cursorPosition,
   isDeepLink,
   isLoading,
+  isSavingOrder = false,
   remainingSeconds,
   selectSite,
   refresh,
   removeSite,
   goNext,
   goPrevious,
+  reorderSites = async () => false,
   reload,
 }: RegisteredSitesViewProps) {
   const [siteListElement, setSiteListElement] = useState<HTMLDivElement | null>(
@@ -78,9 +86,16 @@ export default function RegisteredSitesView({
       : Math.floor(selectedIndex / DEFAULT_REGISTERED_SITE_LIST_PAGE_SIZE);
   });
   const [mobileSitesOpen, setMobileSitesOpen] = useState(false);
+  const [sortMode, setSortMode] = useState(false);
+  const [newOnly, setNewOnly] = useState(false);
+  const [draggedSiteId, setDraggedSiteId] = useState<string | null>(null);
+  const [dragOverSiteId, setDragOverSiteId] = useState<string | null>(null);
   const articleScrollRef = useRef<HTMLElement>(null);
   const previousCursorPositionRef = useRef(cursorPosition);
   const previousSiteIdsRef = useRef(
+    data.sites.map((site) => site.registeredSiteId).join(","),
+  );
+  const previousAllSiteIdsRef = useRef(
     data.sites.map((site) => site.registeredSiteId).join(","),
   );
   const previousSelectedSiteIdRef = useRef(data.selectedSiteId);
@@ -97,9 +112,13 @@ export default function RegisteredSitesView({
   );
   const siteListPageCount = Math.max(
     1,
-    Math.ceil(data.sites.length / siteListPageSize),
+    Math.ceil(
+      data.sites.filter((site) => !newOnly || site.hasNew).length /
+        siteListPageSize,
+    ),
   );
-  const visibleSites = data.sites.slice(
+  const filteredSites = data.sites.filter((site) => !newOnly || site.hasNew);
+  const visibleSites = filteredSites.slice(
     siteListPage * siteListPageSize,
     (siteListPage + 1) * siteListPageSize,
   );
@@ -154,22 +173,28 @@ export default function RegisteredSitesView({
   }, [siteListElement]);
 
   useEffect(() => {
-    const siteIds = data.sites.map((site) => site.registeredSiteId).join(",");
+    const siteIds = filteredSites
+      .map((site) => site.registeredSiteId)
+      .join(",");
     const siteListChanged = siteIds !== previousSiteIdsRef.current;
     const selectionChanged =
       data.selectedSiteId !== previousSelectedSiteIdRef.current;
     const pageSizeChanged =
       siteListPageSize !== previousSiteListPageSizeRef.current;
+    const previousAllSiteIds = previousAllSiteIdsRef.current.split(",");
+    const currentAllSiteIds = data.sites.map((site) => site.registeredSiteId);
+    const membershipChanged =
+      previousAllSiteIds.length !== currentAllSiteIds.length ||
+      previousAllSiteIds.some((siteId) => !currentAllSiteIds.includes(siteId));
     if (siteListChanged || selectionChanged) {
-      const selectedIndex = data.sites.findIndex(
+      const selectedIndex = filteredSites.findIndex(
         (site) => site.registeredSiteId === data.selectedSiteId,
       );
       setSiteListPage(
         selectedIndex < 0 ? 0 : Math.floor(selectedIndex / siteListPageSize),
       );
-      setMobileSitesOpen(false);
     } else if (pageSizeChanged) {
-      const selectedIndex = data.sites.findIndex(
+      const selectedIndex = filteredSites.findIndex(
         (site) => site.registeredSiteId === data.selectedSiteId,
       );
       if (!hasAppliedMeasuredPageSizeRef.current) {
@@ -182,10 +207,20 @@ export default function RegisteredSitesView({
         setSiteListPage((currentPage) => Math.min(currentPage, lastPage));
       }
     }
+    if (membershipChanged || selectionChanged) setMobileSitesOpen(false);
     previousSiteIdsRef.current = siteIds;
+    previousAllSiteIdsRef.current = data.sites
+      .map((site) => site.registeredSiteId)
+      .join(",");
     previousSelectedSiteIdRef.current = data.selectedSiteId;
     previousSiteListPageSizeRef.current = siteListPageSize;
-  }, [data.sites, data.selectedSiteId, siteListPageCount, siteListPageSize]);
+  }, [
+    data.selectedSiteId,
+    data.sites,
+    filteredSites,
+    siteListPageCount,
+    siteListPageSize,
+  ]);
 
   useEffect(() => {
     if (cursorPosition > previousCursorPositionRef.current) {
@@ -198,33 +233,214 @@ export default function RegisteredSitesView({
     previousCursorPositionRef.current = cursorPosition;
   }, [cursorPosition]);
 
-  const renderSiteButton = (site: RegisteredSiteView, closeMobile = false) => (
-    <button
-      key={site.registeredSiteId}
-      type="button"
-      onClick={() => {
-        selectSite(site.registeredSiteId);
-        if (closeMobile) setMobileSitesOpen(false);
-      }}
-      className={`w-full rounded-lg px-2 py-1 text-left transition-colors ${
-        site.registeredSiteId === data.selectedSiteId
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted"
-      }`}
-    >
-      <span className="block truncate text-sm font-medium leading-5">
-        {site.displayName}
-      </span>
-      <span className="mt-0.5 block truncate text-xs leading-4 opacity-70">
-        {site.status === "link"
-          ? "リンク登録"
-          : site.status === "error"
-            ? "取得失敗"
-            : site.status === "rate-limited"
-              ? "取得制限中"
-              : "フィード"}
-      </span>
-    </button>
+  const moveSite = useCallback(
+    (siteId: string, offset: -1 | 1) => {
+      if (isSavingOrder) return;
+      const index = data.sites.findIndex(
+        (site) => site.registeredSiteId === siteId,
+      );
+      const nextIndex = index + offset;
+      if (index < 0 || nextIndex < 0 || nextIndex >= data.sites.length) return;
+      const nextIds = data.sites.map((site) => site.registeredSiteId);
+      [nextIds[index], nextIds[nextIndex]] = [
+        nextIds[nextIndex],
+        nextIds[index],
+      ];
+      void reorderSites(nextIds);
+    },
+    [data.sites, isSavingOrder, reorderSites],
+  );
+
+  const moveSiteBefore = useCallback(
+    (siteId: string, targetId: string) => {
+      if (isSavingOrder) return;
+      if (siteId === targetId) return;
+      const nextIds = data.sites.map((site) => site.registeredSiteId);
+      const sourceIndex = nextIds.indexOf(siteId);
+      const targetIndex = nextIds.indexOf(targetId);
+      if (sourceIndex < 0 || targetIndex < 0) return;
+      nextIds.splice(sourceIndex, 1);
+      const adjustedTargetIndex = nextIds.indexOf(targetId);
+      const insertionIndex =
+        sourceIndex < targetIndex
+          ? adjustedTargetIndex + 1
+          : adjustedTargetIndex;
+      nextIds.splice(insertionIndex, 0, siteId);
+      void reorderSites(nextIds);
+    },
+    [data.sites, isSavingOrder, reorderSites],
+  );
+
+  useEffect(() => {
+    if (!draggedSiteId) return;
+    const onPointerMove = (event: PointerEvent) => {
+      const target = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest<HTMLElement>("[data-registered-site-id]");
+      const targetId = target?.dataset.registeredSiteId ?? null;
+      if (targetId && targetId !== draggedSiteId) setDragOverSiteId(targetId);
+    };
+    const clearDrag = () => {
+      setDraggedSiteId(null);
+      setDragOverSiteId(null);
+    };
+    const onPointerUp = () => {
+      if (dragOverSiteId) moveSiteBefore(draggedSiteId, dragOverSiteId);
+      clearDrag();
+    };
+    const onPointerCancel = clearDrag;
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+    };
+  }, [dragOverSiteId, draggedSiteId, moveSiteBefore]);
+
+  const renderSiteButton = (site: RegisteredSiteView, closeMobile = false) => {
+    const siteIndex = data.sites.findIndex(
+      (current) => current.registeredSiteId === site.registeredSiteId,
+    );
+    return (
+      <div
+        key={site.registeredSiteId}
+        data-registered-site-id={site.registeredSiteId}
+        className={`rounded-lg transition-colors ${
+          dragOverSiteId === site.registeredSiteId
+            ? "border-2 border-sky-400"
+            : ""
+        }`}
+      >
+        <div className="flex items-stretch gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              selectSite(site.registeredSiteId);
+              if (closeMobile) setMobileSitesOpen(false);
+            }}
+            className={`min-w-0 flex-1 rounded-lg px-2 py-1 text-left transition-colors ${
+              site.registeredSiteId === data.selectedSiteId
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted"
+            }`}
+          >
+            <span className="flex min-w-0 items-center gap-1 truncate text-sm font-medium leading-5">
+              <span className="truncate">{site.displayName}</span>
+              {site.hasNew && (
+                <span
+                  className="size-2 shrink-0 rounded-full bg-sky-400"
+                  aria-hidden="true"
+                  title="新着あり"
+                />
+              )}
+            </span>
+            <span className="mt-0.5 block truncate text-xs leading-4 opacity-70">
+              {site.status === "link"
+                ? "リンク登録"
+                : site.status === "error"
+                  ? "取得失敗"
+                  : site.status === "rate-limited"
+                    ? "取得制限中"
+                    : "フィード"}
+            </span>
+          </button>
+          {sortMode && (
+            <div className="flex shrink-0 items-center gap-0.5">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => moveSite(site.registeredSiteId, -1)}
+                disabled={isSavingOrder || siteIndex <= 0}
+                aria-label={`${site.displayName}を上へ移動`}
+              >
+                <ArrowUp />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => moveSite(site.registeredSiteId, 1)}
+                disabled={
+                  isSavingOrder ||
+                  siteIndex < 0 ||
+                  siteIndex >= data.sites.length - 1
+                }
+                aria-label={`${site.displayName}を下へ移動`}
+              >
+                <ArrowDown />
+              </Button>
+              <button
+                type="button"
+                tabIndex={0}
+                className="touch-none cursor-grab rounded p-1 text-muted-foreground hover:bg-muted"
+                aria-label={`${site.displayName}をドラッグして移動`}
+                onPointerDown={(event) => {
+                  if (isSavingOrder) return;
+                  event.preventDefault();
+                  setDraggedSiteId(site.registeredSiteId);
+                  setDragOverSiteId(null);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                    event.preventDefault();
+                    moveSite(
+                      site.registeredSiteId,
+                      event.key === "ArrowUp" ? -1 : 1,
+                    );
+                  }
+                }}
+              >
+                <GripVertical />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const siteListControls = (
+    <div className="flex shrink-0 flex-wrap items-center gap-2 pb-2 border-b">
+      <Button
+        variant="outline"
+        size="sm"
+        aria-pressed={newOnly}
+        aria-label="新着のみ"
+        className={newOnly ? "text-accent-foreground" : ""}
+        onClick={() => {
+          const nextNewOnly = !newOnly;
+          setNewOnly(nextNewOnly);
+          setSiteListPage(0);
+          if (nextNewOnly) {
+            setSortMode(false);
+            setDraggedSiteId(null);
+            setDragOverSiteId(null);
+          }
+        }}
+      >
+        <ListFilter />
+        新着のみ
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          const nextSortMode = !sortMode;
+          setSortMode(nextSortMode);
+          setDraggedSiteId(null);
+          setDragOverSiteId(null);
+          if (nextSortMode) setNewOnly(false);
+        }}
+        aria-pressed={sortMode}
+        aria-label={sortMode ? "並べ替え完了" : "並べ替え"}
+        disabled={data.sites.length < 2 || isSavingOrder}
+        className={sortMode ? "text-accent-foreground" : ""}
+      >
+        <ChevronsUpDown />
+        {sortMode ? "並べ替え完了" : "並べ替え"}
+      </Button>
+    </div>
   );
 
   return (
@@ -262,14 +478,21 @@ export default function RegisteredSitesView({
           <aside className="hidden min-h-0 md:flex">
             <Card className="h-full min-h-0 w-full py-2">
               <CardContent className="flex min-h-0 w-full flex-1 flex-col gap-2 p-2">
-                <p className="px-1 pb-1 text-xs leading-4 font-medium text-muted-foreground">
-                  登録先 ({data.sites.length})
+                <p className="px-1 pb-1 text-sm leading-4 font-medium text-muted-foreground">
+                  登録先 ({filteredSites.length}/{data.sites.length})
                 </p>
+                {siteListControls}
                 <div
                   ref={setSiteListElement}
                   className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable"
                 >
-                  {visibleSites.map((site) => renderSiteButton(site))}
+                  {visibleSites.length > 0 ? (
+                    visibleSites.map((site) => renderSiteButton(site))
+                  ) : (
+                    <p className="px-2 py-3 text-sm text-muted-foreground">
+                      新着記事のある登録先はありません
+                    </p>
+                  )}
                 </div>
                 {siteListPageCount > 1 && (
                   <div className="flex shrink-0 items-center justify-between gap-2 pt-1">
@@ -325,7 +548,14 @@ export default function RegisteredSitesView({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent className="space-y-2 border-t p-3">
-                    {data.sites.map((site) => renderSiteButton(site, true))}
+                    <div className="px-3 pb-2">{siteListControls}</div>
+                    {filteredSites.length > 0 ? (
+                      filteredSites.map((site) => renderSiteButton(site, true))
+                    ) : (
+                      <p className="px-2 py-3 text-sm text-muted-foreground">
+                        新着記事のある登録先はありません
+                      </p>
+                    )}
                   </CardContent>
                 </CollapsibleContent>
               </Card>
@@ -333,7 +563,7 @@ export default function RegisteredSitesView({
 
             <section
               ref={articleScrollRef}
-              className="min-w-0 space-y-5 md:h-full md:overflow-y-auto md:pr-2 md:scrollbar-readable"
+              className="min-w-0 space-y-5 md:h-full md:overflow-y-auto md:pr-2 scrollbar-readable"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -425,15 +655,14 @@ export default function RegisteredSitesView({
                     <p className="text-muted-foreground">
                       このサイトはリンクとして登録されています
                     </p>
-                    <Button asChild variant="outline">
-                      <a
-                        href={selectedSite.siteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        サイトを開く
-                      </a>
-                    </Button>
+                    <a
+                      href={selectedSite.siteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block break-all text-primary underline underline-offset-2 hover:text-primary/80"
+                    >
+                      {selectedSite.siteUrl}
+                    </a>
                   </CardContent>
                 </Card>
               ) : unavailableWithoutCache ? (

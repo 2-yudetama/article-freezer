@@ -102,4 +102,23 @@ describe("discoverFeeds", () => {
       { candidates: [] },
     );
   });
+
+  it("HTML の title をリンク登録用のサイト名として返す", async () => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    fetchFeedMock.mockResolvedValueOnce({
+      url: "https://example.test/",
+      body: "<html><head><title>Example &amp; Site</title></head></html>",
+      contentType: "text/html",
+    });
+    parseFeedMock.mockImplementation(() => {
+      throw new FeedParseError("not a feed");
+    });
+
+    await expect(discoverFeeds("https://example.test/")).resolves.toMatchObject(
+      {
+        siteTitle: "Example & Site",
+        candidates: [],
+      },
+    );
+  });
 });

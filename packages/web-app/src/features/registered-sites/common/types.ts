@@ -71,7 +71,7 @@ export type RegisteredSiteView = {
   registeredSiteId: string;
   siteUrl: string;
   displayName: string;
-  hasNew?: boolean;
+  hasNew: boolean;
   feedUrl: string | null;
   status: RegisteredSiteStatus;
   lastSuccessAt: string | null;
@@ -99,6 +99,7 @@ export type RegisteredSitePageData = {
   accessStartedAt: string;
   displaySucceeded: boolean;
   accessRecorded: boolean;
+  backgroundRefreshPending?: boolean;
   cursorStale?: boolean;
   errorMessage?: string;
 };

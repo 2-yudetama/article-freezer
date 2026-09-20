@@ -38,6 +38,7 @@ type FeedSiteRecord = Awaited<ReturnType<typeof getOwnedSite>>;
 type SiteViewOptions = {
   status?: RegisteredSiteStatus;
   errorMessage?: string;
+  hasNew?: boolean;
 };
 
 function hashKey(value: string) {
@@ -66,13 +67,33 @@ function toSiteView(
     registeredSiteId: site.registered_site_id,
     siteUrl: site.site_url,
     displayName: site.display_name,
-    hasNew: false,
+    hasNew: options.hasNew ?? false,
     feedUrl: site.feed_url,
     status,
     lastSuccessAt: site.last_success_at?.toISOString() ?? null,
     fetchNotBefore: site.fetch_not_before?.toISOString() ?? null,
     ...(options.errorMessage ? { errorMessage: options.errorMessage } : {}),
   };
+}
+
+async function getSitesWithNewEntries(
+  sites: Array<{ registered_site_id: string; feed_url: string | null }>,
+  baseline: Date,
+) {
+  const feedSiteIds = sites
+    .filter((site) => site.feed_url)
+    .map((site) => site.registered_site_id);
+  if (feedSiteIds.length === 0) return new Set<string>();
+
+  const entries = await prisma.feedEntry.findMany({
+    where: {
+      registered_site_id: { in: feedSiteIds },
+      first_seen_at: { gt: baseline },
+    },
+    select: { registered_site_id: true },
+    distinct: ["registered_site_id"],
+  });
+  return new Set(entries.map((entry) => entry.registered_site_id));
 }
 
 function feedCandidateToView(candidate: FeedCandidate) {
@@ -382,6 +403,7 @@ export async function discoverRegisteredSiteFeeds(input: string) {
   return {
     sourceUrl: result.sourceUrl,
     siteUrl: result.siteUrl,
+    siteTitle: result.siteTitle ?? null,
     candidates: result.candidates.map(feedCandidateToView),
   };
 }
@@ -595,7 +617,15 @@ export async function getRegisteredSitePageData({
     where: { user_id: userId },
     orderBy: [{ sort_order: "asc" }, { registered_site_id: "asc" }],
   });
-  let sites = siteRecords.map((site) => toSiteView(site));
+  const sitesWithNewEntries = await getSitesWithNewEntries(
+    siteRecords,
+    baseline,
+  );
+  let sites = siteRecords.map((site) =>
+    toSiteView(site, {
+      hasNew: sitesWithNewEntries.has(site.registered_site_id),
+    }),
+  );
   if (
     registeredSiteId &&
     !siteRecords.some((site) => site.registered_site_id === registeredSiteId)
@@ -608,7 +638,9 @@ export async function getRegisteredSitePageData({
     siteRecords[0] ??
     null;
   let selectedView: RegisteredSiteView | null = selected
-    ? toSiteView(selected)
+    ? toSiteView(selected, {
+        hasNew: sitesWithNewEntries.has(selected.registered_site_id),
+      })
     : null;
   // 先にキャッシュを読み取り、既存一覧がある場合はそれを表示しながら
   // 期限切れの更新を開始する。カーソル移動では外部取得を行わない
@@ -632,7 +664,10 @@ export async function getRegisteredSitePageData({
       if (!forceRefresh) {
         // 初回表示ではキャッシュを先に返し、クライアントが refresh API を
         // 明示的に待つことで取得失敗を画面へ返せるようにする
-        selectedView = toSiteView(selected, { status: "loading" });
+        selectedView = toSiteView(selected, {
+          status: "loading",
+          hasNew: sitesWithNewEntries.has(selected.registered_site_id),
+        });
       } else {
         try {
           const refreshed = await fetchAndStore(selected, now);
@@ -646,7 +681,15 @@ export async function getRegisteredSitePageData({
           } else {
             selected = refreshed;
           }
-          selectedView = toSiteView(selected);
+          const refreshedSitesWithNewEntries = await getSitesWithNewEntries(
+            siteRecords,
+            baseline,
+          );
+          selectedView = toSiteView(selected, {
+            hasNew: refreshedSitesWithNewEntries.has(
+              selected.registered_site_id,
+            ),
+          });
           page = await getEntriesPage({
             userId,
             registeredSiteId: selected.registered_site_id,
@@ -665,11 +708,23 @@ export async function getRegisteredSitePageData({
             (await getOwnedSite(userId, selected.registered_site_id)) ??
             selected;
           selected = latest;
+          const latestSitesWithNewEntries = await getSitesWithNewEntries(
+            siteRecords,
+            baseline,
+          );
           if (error instanceof FeedRateLimitError) {
-            selectedView = toSiteView(selected, { status: "rate-limited" });
+            selectedView = toSiteView(selected, {
+              status: "rate-limited",
+              hasNew: latestSitesWithNewEntries.has(
+                selected.registered_site_id,
+              ),
+            });
           } else {
             selectedView = toSiteView(selected, {
               status: "error",
+              hasNew: latestSitesWithNewEntries.has(
+                selected.registered_site_id,
+              ),
               errorMessage:
                 error instanceof FeedParseError
                   ? "フィードを解析できませんでした。再試行してください"
@@ -685,7 +740,9 @@ export async function getRegisteredSitePageData({
     sites = siteRecords.map((site) =>
       site.registered_site_id === selectedView?.registeredSiteId
         ? selectedView
-        : toSiteView(site),
+        : toSiteView(site, {
+            hasNew: sitesWithNewEntries.has(site.registered_site_id),
+          }),
     );
   }
 
@@ -694,6 +751,15 @@ export async function getRegisteredSitePageData({
     Boolean(
       selectedView &&
         (selectedView.feedUrl === null || selectedView.lastSuccessAt !== null),
+    );
+  const backgroundRefreshPending =
+    operation === "initial" &&
+    siteRecords.some(
+      (site) =>
+        site.feed_url &&
+        (site.last_success_at === null ||
+          now.getTime() - site.last_success_at.getTime() >=
+            REGISTERED_SITE_CONFIG.cacheTtlMs),
     );
 
   return {
@@ -706,9 +772,82 @@ export async function getRegisteredSitePageData({
     accessStartedAt: startedAt.toISOString(),
     displaySucceeded,
     accessRecorded: false,
+    backgroundRefreshPending,
     ...(selectedView?.errorMessage
       ? { errorMessage: selectedView.errorMessage }
       : {}),
+  };
+}
+
+export async function refreshExpiredRegisteredSites({
+  userId,
+  registeredSiteId,
+  cursor,
+  since,
+  accessStartedAt,
+}: {
+  userId: string;
+  registeredSiteId?: string;
+  cursor?: string;
+  since?: string;
+  accessStartedAt?: string;
+}) {
+  if (!registeredSiteId) {
+    throw new FeedInputError("期限切れフィードの更新対象を指定してください");
+  }
+
+  const now = await databaseNow();
+  const sites = await prisma.registeredSite.findMany({
+    where: {
+      user_id: userId,
+      registered_site_id: registeredSiteId,
+      feed_url: { not: null },
+    },
+    orderBy: [{ sort_order: "asc" }, { registered_site_id: "asc" }],
+  });
+  const failures = new Map<
+    string,
+    { status: RegisteredSiteStatus; message: string }
+  >();
+
+  for (const site of sites) {
+    const isExpired =
+      site.last_success_at === null ||
+      now.getTime() - site.last_success_at.getTime() >=
+        REGISTERED_SITE_CONFIG.cacheTtlMs;
+    if (!isExpired) continue;
+
+    try {
+      await fetchAndStore(site, now);
+    } catch (error) {
+      failures.set(site.registered_site_id, {
+        status: error instanceof FeedRateLimitError ? "rate-limited" : "error",
+        message:
+          error instanceof FeedParseError
+            ? "フィードを解析できませんでした。再試行してください"
+            : "フィードの取得に失敗しました。再試行してください",
+      });
+    }
+  }
+
+  const page = await getRegisteredSitePageData({
+    userId,
+    registeredSiteId,
+    cursor,
+    since,
+    accessStartedAt,
+    operation: "page",
+  });
+  if (failures.size === 0) return page;
+
+  return {
+    ...page,
+    sites: page.sites.map((site) => {
+      const failure = failures.get(site.registeredSiteId);
+      return failure
+        ? { ...site, status: failure.status, errorMessage: failure.message }
+        : site;
+    }),
   };
 }
 
