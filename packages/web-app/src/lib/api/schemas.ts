@@ -98,3 +98,21 @@ export const ArticleCommentSaveResponseSchema = ArticleCommentSchema;
 export type ArticleCommentSaveResponse = v.InferOutput<
   typeof ArticleCommentSaveResponseSchema
 >;
+
+/**
+ * PATCH /api/users/[userId]/articles/[articleId] のリクエストスキーマ
+ *
+ * 編集対象は記事タイトルと Markdown 本文だけに限定する。Valibot の
+ * object は定義していないキーを出力から除外するため、API 側でも更新
+ * フィールドを title/content に限定できる。
+ */
+export const ArticleUpdateRequestSchema = v.object({
+  title: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(255)),
+  content: v.pipe(
+    v.string(),
+    v.check((content) => content.trim().length > 0, "本文を入力してください"),
+  ),
+});
+export type ArticleUpdateRequest = v.InferOutput<
+  typeof ArticleUpdateRequestSchema
+>;
