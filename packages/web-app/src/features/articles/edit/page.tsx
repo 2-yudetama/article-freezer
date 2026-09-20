@@ -1,5 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { notFound } from "next/navigation";
+import * as v from "valibot";
 import { getArticle } from "@/features/articles/detail/api/detail.actions";
 import { DataIntegrityError, NotFoundError } from "@/lib/errors";
 import ArticleEditPageClient from "./page-client";
@@ -13,11 +14,15 @@ export default async function ArticleEditPage({
   params: Promise<{ userId: string; article_id: string }>;
 }) {
   const { userId, article_id: articleId } = await params;
+  const articleIdResult = v.safeParse(v.pipe(v.string(), v.uuid()), articleId);
+  if (!articleIdResult.success) {
+    notFound();
+  }
 
   try {
     const article = await getArticle({
       userId,
-      articleId,
+      articleId: articleIdResult.output,
     });
 
     return <ArticleEditPageClient userId={userId} article={article} />;

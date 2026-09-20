@@ -80,4 +80,18 @@ describe("記事編集ページ", () => {
 
     expect(notFound).toHaveBeenCalledTimes(1);
   });
+
+  it("不正な記事 ID は DB 呼び出し前に 404 にする", async () => {
+    await expect(
+      ArticleEditPage({
+        params: Promise.resolve({
+          userId: USER_ID,
+          article_id: "not-an-article-id",
+        }),
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+
+    expect(notFound).toHaveBeenCalledTimes(1);
+    expect(getArticle).not.toHaveBeenCalled();
+  });
 });
