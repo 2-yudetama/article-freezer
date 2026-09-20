@@ -1,39 +1,113 @@
-import { notFound, useRouter } from "next/navigation";
-import { use } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useUserId } from "@/components/providers/user-id-provider";
-import { mockArticles } from "@/lib/mock-data";
+import type { Article } from "@/domain/articles";
+import {
+  DEFAULT_ERROR_MESSAGE,
+  getApiErrorMessage,
+} from "@/lib/api/response.shared";
 
 type UseArticleEditResult = {
   userId: string;
-  articleId: string;
-  article: (typeof mockArticles)[number];
-  handleSave: () => void;
+  article: Article;
+  title: string;
+  content: string;
+  error: string | null;
+  isSaving: boolean;
+  setTitle: (title: string) => void;
+  setContent: (content: string) => void;
+  handleSave: () => Promise<void>;
+  handleCancel: () => void;
 };
 
-export function useArticleEdit(
-  params: Promise<{ article_id: string }>,
-): UseArticleEditResult {
+export function useArticleEdit({
+  userId,
+  article,
+}: {
+  userId: string;
+  article: Article;
+}): UseArticleEditResult {
   const router = useRouter();
-  const userId = useUserId();
-  const { article_id } = use(params);
-  const article = mockArticles.find((item) => item.id === article_id);
+  const [title, setTitle] = useState(article.title);
+  const [content, setContent] = useState(article.content);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
 
-  if (!article) {
-    notFound();
-  }
+  const handleSave = async () => {
+    if (saveInFlightRef.current) return;
 
-  const handleSave = () => {
-    toast.success("保存しました", {
-      description: "記事の情報が更新されました",
-    });
-    router.push(`/users/${userId}/articles/${article_id}`);
+    const normalizedTitle = title.trim();
+    if (!normalizedTitle) {
+      setError("タイトルを入力してください");
+      return;
+    }
+    if (normalizedTitle.length > 255) {
+      setError("タイトルは255文字以内で入力してください");
+      return;
+    }
+    if (!content.trim()) {
+      setError("本文を入力してください");
+      return;
+    }
+
+    saveInFlightRef.current = true;
+    setError(null);
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(
+        `/api/users/${userId}/articles/${article.articleId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            content,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorMessage = await getApiErrorMessage(response);
+        setError(errorMessage);
+        toast.error("記事を保存できませんでした", {
+          description: errorMessage,
+        });
+        return;
+      }
+
+      toast.success("記事を保存しました");
+      router.push(`/users/${userId}/articles/${article.articleId}`);
+      router.refresh();
+    } catch {
+      setError(DEFAULT_ERROR_MESSAGE);
+      toast.error("記事を保存できませんでした", {
+        description: DEFAULT_ERROR_MESSAGE,
+      });
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (saveInFlightRef.current) return;
+    router.push(`/users/${userId}/articles/${article.articleId}`);
   };
 
   return {
     userId,
-    articleId: article_id,
     article,
+    title,
+    content,
+    error,
+    isSaving,
+    setTitle,
+    setContent,
     handleSave,
+    handleCancel,
   };
 }

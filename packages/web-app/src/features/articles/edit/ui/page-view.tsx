@@ -2,51 +2,45 @@
 
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { MarkdownPreview } from "@/components/markdown-preview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { mockTags } from "@/lib/mock-data";
-import type { Article } from "@/lib/types";
+import type { Article } from "@/domain/articles";
 
 type ArticleEditPageViewProps = {
   userId: string;
-  articleId: string;
   article: Article;
-  onSave: () => void;
+  title: string;
+  content: string;
+  error: string | null;
+  isSaving: boolean;
+  onTitleChange: (title: string) => void;
+  onContentChange: (content: string) => void;
+  onSave: () => Promise<void>;
+  onCancel: () => void;
 };
 
 /** 記事編集ページのUIを表示する関数 */
 export default function ArticleEditPageView({
   userId,
-  articleId,
   article,
+  title,
+  content,
+  error,
+  isSaving,
+  onTitleChange,
+  onContentChange,
   onSave,
+  onCancel,
 }: ArticleEditPageViewProps) {
-  const [title, setTitle] = useState(article.title);
-  const [summary, setSummary] = useState(article.summary);
-  const [comment, setComment] = useState(article.comment || "");
-  const [isFavorite, setIsFavorite] = useState(article.isFavorite);
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    article.tags.map((tag) => tag.id),
-  );
-
-  const toggleTag = (tagId: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId],
-    );
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href={`/users/${userId}/articles/${articleId}`}>
+          <Link href={`/users/${userId}/articles/${article.articleId}`}>
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
               詳細に戻る
@@ -56,7 +50,13 @@ export default function ArticleEditPageView({
         </div>
       </div>
 
-      <div className="space-y-6">
+      <form
+        className="space-y-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void onSave();
+        }}
+      >
         <Card>
           <CardHeader>
             <CardTitle>基本情報</CardTitle>
@@ -67,8 +67,9 @@ export default function ArticleEditPageView({
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => onTitleChange(e.target.value)}
                 placeholder="記事のタイトル"
+                disabled={isSaving}
               />
             </div>
 
@@ -76,7 +77,7 @@ export default function ArticleEditPageView({
               <Label htmlFor="url">URL</Label>
               <Input
                 id="url"
-                value={article.url}
+                value={article.articleSource.url}
                 disabled
                 className="opacity-50"
               />
@@ -84,83 +85,50 @@ export default function ArticleEditPageView({
                 URLは変更できません
               </p>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label htmlFor="favorite">お気に入り</Label>
-                <p className="text-xs text-muted-foreground">
-                  お気に入りに設定すると一覧で目立つように表示されます
-                </p>
-              </div>
-              <Switch
-                id="favorite"
-                checked={isFavorite}
-                onCheckedChange={setIsFavorite}
-              />
+        <Card>
+          <CardHeader>
+            <CardTitle>本文（Markdown）</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => onContentChange(e.target.value)}
+              placeholder="記事本文を Markdown で入力してください"
+              rows={16}
+              disabled={isSaving}
+            />
+            <div className="space-y-2">
+              <Label>プレビュー</Label>
+              <MarkdownPreview content={content} />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>要約</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="記事の要約を入力してください"
-              rows={6}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>コメント</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="記事についての感想やメモを入力してください"
-              rows={4}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>タグ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {mockTags.map((tag) => (
-                <Button
-                  key={tag.id}
-                  variant={
-                    selectedTags.includes(tag.id) ? "default" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => toggleTag(tag.id)}
-                >
-                  {tag.name}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {error && (
+          <p className="text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        )}
 
         <div className="flex justify-end gap-4 pt-6">
-          <Link href={`/users/${userId}/articles/${articleId}`}>
-            <Button variant="outline">キャンセル</Button>
-          </Link>
-          <Button onClick={onSave}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSaving}
+            onClick={onCancel}
+          >
+            キャンセル
+          </Button>
+          <Button type="submit" disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
-            保存
+            {isSaving ? "保存中…" : "保存"}
           </Button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
