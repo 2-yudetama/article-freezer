@@ -68,6 +68,12 @@ function makeSite(
   };
 }
 
+function makeSites(count: number): RegisteredSiteView[] {
+  return Array.from({ length: count }, (_, index) =>
+    makeSite(`site-${index + 1}`),
+  );
+}
+
 function makeData(
   overrides: Partial<RegisteredSitePageData> = {},
 ): RegisteredSitePageData {
@@ -159,6 +165,149 @@ async function renderView(
   });
 }
 
+type RegisteredSitesLayoutMock = {
+  setHeight: (height: number) => void;
+  setListHeight: (list: HTMLElement, height: number) => void;
+  triggerResize: () => void;
+  restore: () => void;
+};
+
+let registeredSitesLayoutMock: RegisteredSitesLayoutMock | null = null;
+
+function installRegisteredSitesLayoutMock(): RegisteredSitesLayoutMock {
+  const originalResizeObserver = globalThis.ResizeObserver;
+  const originalGetBoundingClientRect =
+    HTMLElement.prototype.getBoundingClientRect;
+  const observers = new Set<TestResizeObserver>();
+  let availableHeight = 0;
+
+  class TestResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {
+      observers.add(this);
+    }
+
+    observe() {}
+
+    disconnect() {
+      observers.delete(this);
+    }
+
+    trigger() {
+      this.callback([], this as unknown as ResizeObserver);
+    }
+  }
+
+  const getBoundingClientRectSpy = vi
+    .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+    .mockImplementation(function (this: HTMLElement) {
+      const list = this.parentElement;
+      if (!list?.classList.contains("space-y-2")) {
+        return originalGetBoundingClientRect.call(this);
+      }
+
+      const itemIndex = Array.from(list.children).indexOf(this);
+      if (itemIndex < 0) {
+        return originalGetBoundingClientRect.call(this);
+      }
+
+      const itemHeight = 44;
+      const itemStep = 52;
+      const top = itemIndex * itemStep;
+      return {
+        bottom: top + itemHeight,
+        height: itemHeight,
+        left: 0,
+        right: 100,
+        top,
+        width: 100,
+        x: 0,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect;
+    });
+
+  vi.stubGlobal("ResizeObserver", TestResizeObserver);
+
+  return {
+    setHeight: (height) => {
+      availableHeight = height;
+    },
+    setListHeight: (list, height) => {
+      availableHeight = height;
+      Object.defineProperty(list, "clientHeight", {
+        configurable: true,
+        get: () => availableHeight,
+      });
+    },
+    triggerResize: () => {
+      for (const observer of observers) observer.trigger();
+    },
+    restore: () => {
+      getBoundingClientRectSpy.mockRestore();
+      vi.stubGlobal("ResizeObserver", originalResizeObserver);
+    },
+  };
+}
+
+function desktopSiteList(): HTMLElement {
+  const list = container.querySelector('aside [class~="overflow-y-auto"]');
+  if (!(list instanceof HTMLElement)) {
+    throw new Error("登録先一覧が見つかりません");
+  }
+  return list;
+}
+
+function sitePaginationLabel(): string | undefined {
+  return Array.from(container.querySelectorAll("aside span"))
+    .map((element) => element.textContent?.trim())
+    .find((text) => text && /^\d+ \/ \d+$/.test(text));
+}
+
+async function waitForSiteListButtonCount(
+  list: HTMLElement,
+  expectedCount: number,
+) {
+  await act(async () => {
+    await vi.waitFor(() => {
+      expect(list.querySelectorAll("button")).toHaveLength(expectedCount);
+    });
+  });
+}
+
+async function resizeSiteList(
+  list: HTMLElement,
+  height: number,
+  expectedCount: number,
+) {
+  const layoutMock = registeredSitesLayoutMock;
+  if (!layoutMock) throw new Error("登録先一覧の寸法モックがありません");
+  layoutMock.setHeight(height);
+  await act(async () => {
+    layoutMock.triggerResize();
+  });
+  await waitForSiteListButtonCount(list, expectedCount);
+}
+
+async function waitForSitePagination(label: string) {
+  await act(async () => {
+    await vi.waitFor(() => {
+      expect(sitePaginationLabel()).toBe(label);
+    });
+  });
+}
+
+async function goToNextSitePage() {
+  const nextButton = container.querySelector<HTMLButtonElement>(
+    '[aria-label="登録先の次のページ"]',
+  );
+  if (!nextButton) {
+    throw new Error("登録先一覧の次ページボタンが見つかりません");
+  }
+  await act(async () => {
+    nextButton.click();
+  });
+}
+
 beforeEach(() => {
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -177,6 +326,8 @@ afterEach(async () => {
     await act(async () => root?.unmount());
     root = null;
   }
+  registeredSitesLayoutMock?.restore();
+  registeredSitesLayoutMock = null;
   latest = null;
   window.confirm = originalConfirm;
   container.remove();
@@ -712,5 +863,51 @@ describe("RegisteredSitesView の取得制限表示", () => {
     );
     expect(container.textContent).not.toContain("今すぐ更新");
     expect(container.textContent).toContain("リンクとして登録されています");
+  });
+});
+
+describe("RegisteredSitesView の可変ページ表示", () => {
+  it("十分な高さでは10件以上を1ページに表示する", async () => {
+    registeredSitesLayoutMock = installRegisteredSitesLayoutMock();
+    await renderView(makeData({ sites: makeSites(20) }), 0);
+
+    const list = desktopSiteList();
+    registeredSitesLayoutMock.setListHeight(list, 620);
+    await resizeSiteList(list, 620, 12);
+
+    expect(list.textContent).toContain("サイト site-12");
+    expect(sitePaginationLabel()).toBe("1 / 2");
+  });
+
+  it("高さを縮めると1ページの表示件数が減り、ページ数が増える", async () => {
+    registeredSitesLayoutMock = installRegisteredSitesLayoutMock();
+    await renderView(makeData({ sites: makeSites(20) }), 0);
+
+    const list = desktopSiteList();
+    registeredSitesLayoutMock.setListHeight(list, 620);
+    await resizeSiteList(list, 620, 12);
+    await waitForSitePagination("1 / 2");
+
+    await resizeSiteList(list, 250, 4);
+    expect(sitePaginationLabel()).toBe("1 / 5");
+  });
+
+  it("最後のページ表示中に高さを広げても一覧を空にせずページを補正する", async () => {
+    registeredSitesLayoutMock = installRegisteredSitesLayoutMock();
+    await renderView(makeData({ sites: makeSites(10) }), 0);
+
+    const list = desktopSiteList();
+    registeredSitesLayoutMock.setListHeight(list, 250);
+    await resizeSiteList(list, 250, 4);
+    await waitForSitePagination("1 / 3");
+
+    await goToNextSitePage();
+    await waitForSitePagination("2 / 3");
+    await goToNextSitePage();
+    await waitForSitePagination("3 / 3");
+
+    await resizeSiteList(list, 620, 10);
+    expect(sitePaginationLabel()).toBeUndefined();
+    expect(list.textContent).toContain("サイト site-10");
   });
 });
