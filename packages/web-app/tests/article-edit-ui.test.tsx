@@ -211,6 +211,7 @@ describe("記事編集 UI", () => {
   it("詳細に戻るリンクでは保存処理を呼び出さない", async () => {
     await mount();
     const detailLink = link("詳細に戻る");
+    expect(detailLink.querySelector("button")).toBeNull();
     detailLink.addEventListener("click", (event) => event.preventDefault(), {
       once: true,
     });
