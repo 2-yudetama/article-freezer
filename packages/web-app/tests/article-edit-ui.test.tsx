@@ -83,6 +83,16 @@ function button(name: string): HTMLButtonElement {
   return element;
 }
 
+function link(name: string): HTMLAnchorElement {
+  const element = Array.from(container.querySelectorAll("a")).find(
+    (candidate) => candidate.textContent?.trim() === name,
+  );
+  if (!(element instanceof HTMLAnchorElement)) {
+    throw new Error(`リンクが見つかりません: ${name}`);
+  }
+  return element;
+}
+
 function field<T extends HTMLInputElement | HTMLTextAreaElement>(
   id: string,
 ): T {
@@ -196,6 +206,20 @@ describe("記事編集 UI", () => {
     expect(router.push).toHaveBeenCalledWith(
       `/users/${USER_ID}/articles/${ARTICLE_ID}`,
     );
+  });
+
+  it("詳細に戻るリンクでは保存処理を呼び出さない", async () => {
+    await mount();
+    const detailLink = link("詳細に戻る");
+    detailLink.addEventListener("click", (event) => event.preventDefault(), {
+      once: true,
+    });
+
+    await act(async () => {
+      detailLink.click();
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("保存中の二重送信を防ぎ、成功後に詳細を更新する", async () => {

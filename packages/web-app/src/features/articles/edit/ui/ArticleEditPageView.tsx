@@ -63,12 +63,12 @@ export default function ArticleEditPageView({
       <header className="shrink-0 border-b border-border bg-background">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <Link href={`/users/${userId}/articles/${article.articleId}`}>
-              <Button variant="ghost" size="sm" className="mb-3">
+            <Button variant="ghost" size="sm" className="mb-3" asChild>
+              <Link href={`/users/${userId}/articles/${article.articleId}`}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 詳細に戻る
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <h1 className="text-3xl font-bold sm:text-4xl">記事を編集</h1>
           </div>
 
