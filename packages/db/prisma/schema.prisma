@@ -121,6 +121,7 @@ model RegisteredSite {
   site_url           String    @db.Text
   site_url_key       String?   @db.VarChar(64)
   display_name       String    @db.Text
+  sort_order         Int       @default(0) @db.Integer
   feed_url           String?   @db.Text
   feed_url_key       String?   @db.VarChar(64)
   last_success_at    DateTime? @db.Timestamptz(3)
@@ -136,6 +137,7 @@ model RegisteredSite {
   @@unique([user_id, feed_url_key])
   @@unique([user_id, site_url_key], map: "registered_sites_user_id_site_url_key_link_key", where: { feed_url: null, site_url_key: { not: null } })
   @@index([user_id])
+  @@index([user_id, sort_order, registered_site_id])
   @@index([user_id, site_url_key])
   @@map("registered_sites")
 }

@@ -172,6 +172,52 @@ suite("registered site service with PostgreSQL", () => {
     ).rejects.toMatchObject({ name: "NotFoundError" });
   });
 
+  it("登録先の表示順をユーザ単位で保存し、他ユーザの ID は更新しない", async () => {
+    const owner = await createUser("order-owner");
+    const other = await createUser("order-other");
+    const first = await createSite(owner.user_id, { feedUrl: null });
+    const second = await createSite(owner.user_id, { feedUrl: null });
+    const otherSite = await createSite(other.user_id, { feedUrl: null });
+
+    await expect(
+      service.reorderRegisteredSites({
+        userId: owner.user_id,
+        registeredSiteIds: [
+          second.registered_site_id,
+          first.registered_site_id,
+        ],
+      }),
+    ).resolves.toEqual([
+      { registered_site_id: second.registered_site_id },
+      { registered_site_id: first.registered_site_id },
+    ]);
+
+    const page = await service.getRegisteredSitePageData({
+      userId: owner.user_id,
+      operation: "page",
+    });
+    expect(page.sites.map((site) => site.registeredSiteId)).toEqual([
+      second.registered_site_id,
+      first.registered_site_id,
+    ]);
+
+    await expect(
+      service.reorderRegisteredSites({
+        userId: owner.user_id,
+        registeredSiteIds: [
+          first.registered_site_id,
+          otherSite.registered_site_id,
+        ],
+      }),
+    ).rejects.toMatchObject({ name: "NotFoundError" });
+
+    const otherRow = await prisma.registeredSite.findUniqueOrThrow({
+      where: { registered_site_id: otherSite.registered_site_id },
+      select: { sort_order: true },
+    });
+    expect(otherRow.sort_order).toBe(0);
+  });
+
   it("同じ登録先への同時取得は一つだけが原子的 claim を取得する", async () => {
     const user = await createUser("claim");
     const site = await createSite(user.user_id);

@@ -66,6 +66,7 @@ function toSiteView(
     registeredSiteId: site.registered_site_id,
     siteUrl: site.site_url,
     displayName: site.display_name,
+    hasNew: false,
     feedUrl: site.feed_url,
     status,
     lastSuccessAt: site.last_success_at?.toISOString() ?? null,
@@ -389,10 +390,12 @@ export async function registerSite({
   userId,
   siteUrl: rawSiteUrl,
   feedUrl: rawFeedUrl,
+  displayName: rawDisplayName,
 }: {
   userId: string;
   siteUrl: string;
   feedUrl?: string | null;
+  displayName?: string;
 }) {
   const deadlineAt = Date.now() + REGISTERED_SITE_CONFIG.operationTimeoutMs;
   const siteUrl = await assertPublicUrl(rawSiteUrl, { deadlineAt });
@@ -421,12 +424,18 @@ export async function registerSite({
 
   const created = await prisma.$transaction(async (tx) => {
     const reflectedAt = feed ? await databaseNow(tx) : null;
+    const lastSite = await tx.registeredSite.findFirst({
+      where: { user_id: userId },
+      orderBy: [{ sort_order: "desc" }, { registered_site_id: "desc" }],
+      select: { sort_order: true },
+    });
     const site = await tx.registeredSite.create({
       data: {
         user_id: userId,
         site_url: siteUrl,
         site_url_key: hashKey(siteUrl),
-        display_name: displayName,
+        display_name: rawDisplayName?.trim() || displayName,
+        sort_order: (lastSite?.sort_order ?? -1) + 1,
         feed_url: feedUrl,
         feed_url_key: feedUrl ? hashKey(feedUrl) : null,
         ...(reflectedAt
@@ -474,6 +483,47 @@ export async function deleteRegisteredSite({
     where: { registered_site_id: registeredSiteId, user_id: userId },
   });
   return result.count === 1;
+}
+
+export async function reorderRegisteredSites({
+  userId,
+  registeredSiteIds,
+}: {
+  userId: string;
+  registeredSiteIds: string[];
+}) {
+  if (new Set(registeredSiteIds).size !== registeredSiteIds.length) {
+    throw new FeedInputError("登録先の ID が重複しています");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const sites = await tx.registeredSite.findMany({
+      where: { user_id: userId },
+      select: { registered_site_id: true },
+    });
+    const ownedIds = new Set(sites.map((site) => site.registered_site_id));
+    if (
+      ownedIds.size !== registeredSiteIds.length ||
+      registeredSiteIds.some(
+        (registeredSiteId) => !ownedIds.has(registeredSiteId),
+      )
+    ) {
+      throw new NotFoundError();
+    }
+
+    for (const [sortOrder, registeredSiteId] of registeredSiteIds.entries()) {
+      await tx.registeredSite.updateMany({
+        where: { registered_site_id: registeredSiteId, user_id: userId },
+        data: { sort_order: sortOrder },
+      });
+    }
+
+    return tx.registeredSite.findMany({
+      where: { user_id: userId },
+      orderBy: [{ sort_order: "asc" }, { registered_site_id: "asc" }],
+      select: { registered_site_id: true },
+    });
+  });
 }
 
 export async function recordRegisteredSiteAccess({
@@ -543,7 +593,7 @@ export async function getRegisteredSitePageData({
 
   const siteRecords = await prisma.registeredSite.findMany({
     where: { user_id: userId },
-    orderBy: [{ created_at: "asc" }, { registered_site_id: "asc" }],
+    orderBy: [{ sort_order: "asc" }, { registered_site_id: "asc" }],
   });
   let sites = siteRecords.map((site) => toSiteView(site));
   if (
