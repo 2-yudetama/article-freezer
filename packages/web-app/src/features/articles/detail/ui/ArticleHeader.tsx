@@ -20,7 +20,9 @@ type ArticleHeaderProps = {
   article?: Article;
   deleteDialogOpen?: boolean;
   onDeleteDialogOpenChange?: (open: boolean) => void;
-  onDelete?: () => void;
+  deleteError?: string | null;
+  isDeleting?: boolean;
+  onDelete?: () => void | Promise<void>;
 };
 
 /** 記事詳細ページのヘッダーを表示する関数 */
@@ -29,6 +31,8 @@ export default function ArticleHeader({
   article,
   deleteDialogOpen,
   onDeleteDialogOpenChange,
+  deleteError,
+  isDeleting = false,
   onDelete,
 }: ArticleHeaderProps) {
   const canShowArticleActions =
@@ -59,6 +63,7 @@ export default function ArticleHeader({
             <Button
               variant="outline"
               size="sm"
+              disabled={isDeleting}
               onClick={() => onDeleteDialogOpenChange(true)}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -79,10 +84,25 @@ export default function ArticleHeader({
               <AlertDialogDescription>
                 この操作は取り消せません。記事を完全に削除してもよろしいですか？
               </AlertDialogDescription>
+              {deleteError && (
+                <p className="text-destructive text-sm" role="alert">
+                  {deleteError}
+                </p>
+              )}
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>キャンセル</AlertDialogCancel>
-              <AlertDialogAction onClick={onDelete}>削除</AlertDialogAction>
+              <AlertDialogCancel disabled={isDeleting}>
+                キャンセル
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={isDeleting}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void onDelete?.();
+                }}
+              >
+                {isDeleting ? "削除中…" : "削除"}
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
