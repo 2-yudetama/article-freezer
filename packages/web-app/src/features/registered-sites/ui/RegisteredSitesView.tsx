@@ -187,11 +187,11 @@ export default function RegisteredSitesView({
         <div className="min-h-0 flex-1 md:grid md:grid-cols-[16rem_1fr] md:gap-6">
           <aside className="hidden min-h-0 md:flex">
             <Card className="h-full min-h-0 w-full py-2">
-              <CardContent className="flex min-h-0 w-full flex-col p-2">
+              <CardContent className="flex min-h-0 w-full flex-1 flex-col gap-2 p-2">
                 <p className="px-1 pb-1 text-xs leading-4 font-medium text-muted-foreground">
                   登録先 ({data.sites.length})
                 </p>
-                <div className="min-h-0 flex-1 space-y-1 overflow-y-auto scrollbar-readable">
+                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable">
                   {visibleSites.map((site) => renderSiteButton(site))}
                 </div>
                 {siteListPageCount > 1 && (
@@ -229,7 +229,7 @@ export default function RegisteredSitesView({
               onOpenChange={setMobileSitesOpen}
               className="mb-5 md:hidden"
             >
-              <Card>
+              <Card className="py-2">
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
