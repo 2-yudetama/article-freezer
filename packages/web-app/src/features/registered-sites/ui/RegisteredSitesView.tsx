@@ -29,7 +29,8 @@ import type {
 import AddRegisteredSiteDialog from "./AddRegisteredSiteDialog";
 import RegisteredSiteArticleCard from "./RegisteredSiteArticleCard";
 
-const REGISTERED_SITE_LIST_PAGE_SIZE = 9;
+const DEFAULT_REGISTERED_SITE_LIST_PAGE_SIZE = 9;
+const REGISTERED_SITE_LIST_ITEM_GAP_PX = 8;
 
 export type RegisteredSitesViewProps = {
   userId: string;
@@ -62,13 +63,19 @@ export default function RegisteredSitesView({
   goPrevious,
   reload,
 }: RegisteredSitesViewProps) {
+  const [siteListElement, setSiteListElement] = useState<HTMLDivElement | null>(
+    null,
+  );
+  const [siteListPageSize, setSiteListPageSize] = useState(
+    DEFAULT_REGISTERED_SITE_LIST_PAGE_SIZE,
+  );
   const [siteListPage, setSiteListPage] = useState(() => {
     const selectedIndex = data.sites.findIndex(
       (site) => site.registeredSiteId === data.selectedSiteId,
     );
     return selectedIndex < 0
       ? 0
-      : Math.floor(selectedIndex / REGISTERED_SITE_LIST_PAGE_SIZE);
+      : Math.floor(selectedIndex / DEFAULT_REGISTERED_SITE_LIST_PAGE_SIZE);
   });
   const [mobileSitesOpen, setMobileSitesOpen] = useState(false);
   const articleScrollRef = useRef<HTMLElement>(null);
@@ -77,6 +84,10 @@ export default function RegisteredSitesView({
     data.sites.map((site) => site.registeredSiteId).join(","),
   );
   const previousSelectedSiteIdRef = useRef(data.selectedSiteId);
+  const previousSiteListPageSizeRef = useRef(
+    DEFAULT_REGISTERED_SITE_LIST_PAGE_SIZE,
+  );
+  const hasAppliedMeasuredPageSizeRef = useRef(false);
   const hasFetchLimit = remainingSeconds > 0;
   const unavailableWithoutCache = Boolean(
     selectedSite?.feedUrl &&
@@ -86,32 +97,95 @@ export default function RegisteredSitesView({
   );
   const siteListPageCount = Math.max(
     1,
-    Math.ceil(data.sites.length / REGISTERED_SITE_LIST_PAGE_SIZE),
+    Math.ceil(data.sites.length / siteListPageSize),
   );
   const visibleSites = data.sites.slice(
-    siteListPage * REGISTERED_SITE_LIST_PAGE_SIZE,
-    (siteListPage + 1) * REGISTERED_SITE_LIST_PAGE_SIZE,
+    siteListPage * siteListPageSize,
+    (siteListPage + 1) * siteListPageSize,
   );
+
+  useEffect(() => {
+    const list = siteListElement;
+    if (!list) return;
+
+    const measurePageSize = () => {
+      if (list.clientHeight <= 0) return;
+      const firstItem = list.firstElementChild;
+      if (!(firstItem instanceof HTMLElement)) return;
+
+      const firstItemRect = firstItem.getBoundingClientRect();
+      if (firstItemRect.height <= 0) return;
+
+      const secondItem = firstItem.nextElementSibling;
+      const itemStep =
+        secondItem instanceof HTMLElement
+          ? secondItem.getBoundingClientRect().top - firstItemRect.top
+          : firstItemRect.height + REGISTERED_SITE_LIST_ITEM_GAP_PX;
+      if (itemStep <= 0) return;
+
+      const nextPageSize = Math.max(
+        1,
+        Math.floor(
+          (list.clientHeight + itemStep - firstItemRect.height) / itemStep,
+        ),
+      );
+      setSiteListPageSize((currentPageSize) =>
+        currentPageSize === nextPageSize ? currentPageSize : nextPageSize,
+      );
+    };
+
+    measurePageSize();
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(measurePageSize);
+    resizeObserver?.observe(list);
+
+    const mutationObserver =
+      typeof MutationObserver === "undefined"
+        ? null
+        : new MutationObserver(measurePageSize);
+    mutationObserver?.observe(list, { childList: true });
+
+    return () => {
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+    };
+  }, [siteListElement]);
 
   useEffect(() => {
     const siteIds = data.sites.map((site) => site.registeredSiteId).join(",");
     const siteListChanged = siteIds !== previousSiteIdsRef.current;
     const selectionChanged =
       data.selectedSiteId !== previousSelectedSiteIdRef.current;
+    const pageSizeChanged =
+      siteListPageSize !== previousSiteListPageSizeRef.current;
     if (siteListChanged || selectionChanged) {
       const selectedIndex = data.sites.findIndex(
         (site) => site.registeredSiteId === data.selectedSiteId,
       );
       setSiteListPage(
-        selectedIndex < 0
-          ? 0
-          : Math.floor(selectedIndex / REGISTERED_SITE_LIST_PAGE_SIZE),
+        selectedIndex < 0 ? 0 : Math.floor(selectedIndex / siteListPageSize),
       );
       setMobileSitesOpen(false);
+    } else if (pageSizeChanged) {
+      const selectedIndex = data.sites.findIndex(
+        (site) => site.registeredSiteId === data.selectedSiteId,
+      );
+      if (!hasAppliedMeasuredPageSizeRef.current) {
+        setSiteListPage(
+          selectedIndex < 0 ? 0 : Math.floor(selectedIndex / siteListPageSize),
+        );
+        hasAppliedMeasuredPageSizeRef.current = true;
+      } else {
+        const lastPage = Math.max(0, siteListPageCount - 1);
+        setSiteListPage((currentPage) => Math.min(currentPage, lastPage));
+      }
     }
     previousSiteIdsRef.current = siteIds;
     previousSelectedSiteIdRef.current = data.selectedSiteId;
-  }, [data.sites, data.selectedSiteId]);
+    previousSiteListPageSizeRef.current = siteListPageSize;
+  }, [data.sites, data.selectedSiteId, siteListPageCount, siteListPageSize]);
 
   useEffect(() => {
     if (cursorPosition > previousCursorPositionRef.current) {
@@ -191,7 +265,10 @@ export default function RegisteredSitesView({
                 <p className="px-1 pb-1 text-xs leading-4 font-medium text-muted-foreground">
                   登録先 ({data.sites.length})
                 </p>
-                <div className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable">
+                <div
+                  ref={setSiteListElement}
+                  className="min-h-0 flex-1 space-y-2 overflow-y-auto scrollbar-readable"
+                >
                   {visibleSites.map((site) => renderSiteButton(site))}
                 </div>
                 {siteListPageCount > 1 && (
@@ -229,7 +306,7 @@ export default function RegisteredSitesView({
               onOpenChange={setMobileSitesOpen}
               className="mb-5 md:hidden"
             >
-              <Card className="py-2">
+              <Card className="gap-0 py-2">
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="ghost"
