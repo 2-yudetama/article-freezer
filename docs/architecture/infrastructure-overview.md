@@ -110,6 +110,7 @@ flowchart LR
 - Release workflow は Northflank API で各 service の deployment を更新し、それぞれに対応する GHCR image を指定する
 - DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する。前回の tag がない初回 release では、現在の commit 配下にある migration file 全件を検出対象にする
 - migration file に差分がある場合だけ、Northflank API で DB migration job を build / run し、job が PostgreSQL addon に migration を適用する。差分がなければ job は起動しない
+- migration の build には version tag の checkout から取得した commit SHA を指定する。成功した build の ID と SHA が要求値に一致することを確認し、その build ID と branch を run に指定する。API 応答の ID / branch は検証後に step output と環境変数で渡す
 - workflow は DB migration job の build 完了を待ってから run を開始するが、run の完了・成功は待機しない。GitHub Actions の成功は DB migration の完了成功を保証しない
 
 > [!IMPORTANT]

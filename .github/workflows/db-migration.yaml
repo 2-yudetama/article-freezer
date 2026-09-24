@@ -26,6 +26,7 @@ jobs:
     outputs:
       has_migration_changes: ${{ steps.diff.outputs.has_migration_changes }}
       previous_tag: ${{ steps.diff.outputs.previous_tag }}
+      commit_sha: ${{ steps.diff.outputs.commit_sha }}
     steps:
       # actions/checkout v6.0.2
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -36,13 +37,15 @@ jobs:
       - name: Detect migration changes since previous tag
         id: diff
         run: |
-          previous_tag="$(git tag --sort=-version:refname --merged "$GITHUB_SHA" 'v*.*.*' | grep -Fxv "$GITHUB_REF_NAME" | head -n 1)"
+          commit_sha="$(git rev-parse HEAD)"
+          echo "commit_sha=$commit_sha" >> "$GITHUB_OUTPUT"
+          previous_tag="$(git tag --sort=-version:refname --merged "$commit_sha" 'v*.*.*' | grep -Fxv "$GITHUB_REF_NAME" | head -n 1)"
           echo "previous_tag=$previous_tag" >> "$GITHUB_OUTPUT"
 
           if [[ -n "$previous_tag" ]]; then
-            changed_files="$(git diff --name-only "$previous_tag" "$GITHUB_SHA" -- packages/db/prisma/migrations)"
+            changed_files="$(git diff --name-only "$previous_tag" "$commit_sha" -- packages/db/prisma/migrations)"
           else
-            changed_files="$(git ls-tree -r --name-only "$GITHUB_SHA" -- packages/db/prisma/migrations)"
+            changed_files="$(git ls-tree -r --name-only "$commit_sha" -- packages/db/prisma/migrations)"
           fi
 
           if [[ -n "$changed_files" ]]; then
@@ -63,22 +66,27 @@ jobs:
       NORTHFLANK_PROJECT_ID: ${{ vars.NORTHFLANK_PROJECT_ID }}
       NORTHFLANK_JOB_ID: ${{ vars.NORTHFLANK_DB_MIGRATION_JOB_ID }}
       NORTHFLANK_API_TOKEN: ${{ secrets.NORTHFLANK_API_TOKEN }}
+      NF_COMMIT_SHA: ${{ needs.detect-migrations.outputs.commit_sha }}
     steps:
       - name: Start DB migration job build on Northflank
         id: build
         run: |
+          if [[ ! "$NF_COMMIT_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Invalid migration commit SHA"
+            exit 1
+          fi
+
+          payload="$(jq -n --arg sha "$NF_COMMIT_SHA" '{sha: $sha}')"
           response="$(
             curl --silent --show-error --fail-with-body \
               --header "Content-Type: application/json" \
               --header "Authorization: Bearer $NORTHFLANK_API_TOKEN" \
               --request POST \
-              --data '{}' \
+              --data "$payload" \
               "https://api.northflank.com/v1/projects/${NORTHFLANK_PROJECT_ID}/jobs/${NORTHFLANK_JOB_ID}/build"
           )"
 
-          build_id="$(jq -r '.data.id' <<< "$response")"
-
-          if [[ -z "$build_id" || "$build_id" == "null" ]]; then
+          if ! build_id="$(jq -er '.data.id | select(type == "string") | select(test("^[A-Za-z0-9_-]+$"))' <<< "$response")"; then
             echo "Failed to read Northflank build id"
             exit 1
           fi
@@ -87,15 +95,15 @@ jobs:
 
       - name: Wait for DB migration job build
         id: wait-build
+        env:
+          NF_BUILD_ID: ${{ steps.build.outputs.build_id }}
         run: |
-          build_id="${{ steps.build.outputs.build_id }}"
-
           for _ in {1..60}; do
             response="$(
               curl --silent --show-error --fail-with-body \
                 --header "Content-Type: application/json" \
                 --header "Authorization: Bearer $NORTHFLANK_API_TOKEN" \
-                "https://api.northflank.com/v1/projects/${NORTHFLANK_PROJECT_ID}/jobs/${NORTHFLANK_JOB_ID}/build/${build_id}"
+                "https://api.northflank.com/v1/projects/${NORTHFLANK_PROJECT_ID}/jobs/${NORTHFLANK_JOB_ID}/build/${NF_BUILD_ID}"
             )"
 
             status="$(jq -r '.data.status' <<< "$response")"
@@ -106,9 +114,13 @@ jobs:
 
             if [[ "$concluded" == "true" ]]; then
               if [[ "$success" == "true" ]]; then
-                branch="$(jq -r 'if (.data.branch | type) == "string" then .data.branch else empty end' <<< "$response")"
+                if ! jq -e --arg id "$NF_BUILD_ID" --arg sha "$NF_COMMIT_SHA" \
+                  '.data.id == $id and .data.sha == $sha' <<< "$response" > /dev/null; then
+                  echo "Northflank build does not match the requested build ID and commit SHA"
+                  exit 1
+                fi
 
-                if [[ -z "$branch" ]]; then
+                if ! branch="$(jq -er '.data.branch | select(type == "string") | select(length > 0) | select(test("[[:cntrl:]]") | not)' <<< "$response")"; then
                   echo "Failed to read Northflank build branch"
                   exit 1
                 fi
@@ -129,13 +141,13 @@ jobs:
 
       - name: Run DB migration job on Northflank
         env:
+          NF_BUILD_ID: ${{ steps.build.outputs.build_id }}
           NF_BRANCH: ${{ steps.wait-build.outputs.branch }}
         run: |
-          build_id="${{ steps.build.outputs.build_id }}"
           payload="$(
             jq -n \
               --arg job_id "$NORTHFLANK_JOB_ID" \
-              --arg build_id "$build_id" \
+              --arg build_id "$NF_BUILD_ID" \
               --arg branch "$NF_BRANCH" \
               '{
                 deployment: {
@@ -151,7 +163,7 @@ jobs:
               }'
           )"
 
-          echo "Running Northflank migration build: $build_id"
+          echo "Running Northflank migration build: $NF_BUILD_ID"
 
           curl --silent --show-error --fail-with-body \
             --header "Content-Type: application/json" \
