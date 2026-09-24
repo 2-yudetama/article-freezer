@@ -126,14 +126,15 @@ jobs:
           exit 1
 
       - name: Run DB migration job on Northflank
+        env:
+          NF_BRANCH: ${{ steps.wait-build.outputs.branch }}
         run: |
           build_id="${{ steps.build.outputs.build_id }}"
-          branch="${{ steps.wait-build.outputs.branch }}"
           payload="$(
             jq -n \
               --arg job_id "$NORTHFLANK_JOB_ID" \
               --arg build_id "$build_id" \
-              --arg branch "$branch" \
+              --arg branch "$NF_BRANCH" \
               '{
                 deployment: {
                   docker: {
