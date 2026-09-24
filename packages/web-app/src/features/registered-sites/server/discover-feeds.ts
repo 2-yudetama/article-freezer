@@ -5,6 +5,8 @@ import { fetchBoundedFeed } from "./fetch-feed";
 import { parseFeed } from "./parse-feed";
 import { assertPublicUrl, normalizeHttpUrl } from "./url-security";
 
+const HTML_TITLE_SCAN_LIMIT = 64 * 1024;
+
 function getHtmlAttribute(tag: string, attributeName: string) {
   const match = tag.match(
     new RegExp(`${attributeName}\\s*=\\s*["']([^"']+)["']`, "i"),
@@ -13,9 +15,29 @@ function getHtmlAttribute(tag: string, attributeName: string) {
 }
 
 function getHtmlTitle(html: string) {
-  const match = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
-  if (!match?.[1]) return null;
-  const decoded = match[1]
+  const head = html.slice(0, HTML_TITLE_SCAN_LIMIT);
+  const titleStart = head.search(/<title\b/i);
+  if (titleStart < 0) return null;
+
+  const contentStart = head.indexOf(">", titleStart + "<title".length) + 1;
+  if (contentStart === 0) return null;
+
+  const closingTag = "</title>";
+  let titleEnd = head.indexOf("<", contentStart);
+  while (titleEnd >= 0) {
+    if (
+      head.slice(titleEnd, titleEnd + closingTag.length).toLowerCase() ===
+      closingTag
+    ) {
+      break;
+    }
+    titleEnd = head.indexOf("<", titleEnd + 1);
+  }
+  if (titleEnd < 0) return null;
+
+  const rawTitle = head.slice(contentStart, titleEnd);
+  if (!rawTitle) return null;
+  const decoded = rawTitle
     .replace(/<[^>]+>/g, " ")
     .replace(/&#(x[\da-f]+|\d+);/gi, (_, value: string) => {
       const codePoint = value.toLowerCase().startsWith("x")

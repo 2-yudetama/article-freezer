@@ -121,4 +121,39 @@ describe("discoverFeeds", () => {
       },
     );
   });
+
+  it("64 KiB を超えて続く HTML title はサイト名に使わない", async () => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    fetchFeedMock.mockResolvedValueOnce({
+      url: "https://example.test/",
+      body: `<html><title>${"x".repeat(64 * 1024)}</title></html>`,
+      contentType: "text/html",
+    });
+    parseFeedMock.mockImplementation(() => {
+      throw new FeedParseError("not a feed");
+    });
+
+    const result = await discoverFeeds("https://example.test/");
+
+    expect(result).not.toHaveProperty("siteTitle");
+  });
+
+  it.each([
+    "<html><title",
+    "<html><title>Incomplete title",
+  ])("不完全な HTML title はサイト名に使わない: %s", async (body) => {
+    assertPublicUrlMock.mockResolvedValue("https://example.test/");
+    fetchFeedMock.mockResolvedValueOnce({
+      url: "https://example.test/",
+      body,
+      contentType: "text/html",
+    });
+    parseFeedMock.mockImplementation(() => {
+      throw new FeedParseError("not a feed");
+    });
+
+    const result = await discoverFeeds("https://example.test/");
+
+    expect(result).not.toHaveProperty("siteTitle");
+  });
 });
