@@ -105,6 +105,7 @@ flowchart LR
 ### 図の読み方
 
 - `v*.*.*` の version tag を push すると、Release workflow と DB Migration workflow がそれぞれ独立して起動する
+- `GITHUB_TOKEN` は CI と migration 差分検出では `contents: read`、image 公開では `contents: read` / `packages: write`、release 作成では `contents: write` に制限する。タグ検証と Northflank API 呼び出しの job には GitHub の権限を付与せず、checkout 後に認証情報を保持しない
 - Release workflow は SemVer を検証し、`web-app` と `md-extractor` の image を GitHub Actions で build / push して GHCR に保存する
 - Release workflow は Northflank API で各 service の deployment を更新し、それぞれに対応する GHCR image を指定する
 - DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する。前回の tag がない初回 release では、現在の commit 配下にある migration file 全件を検出対象にする

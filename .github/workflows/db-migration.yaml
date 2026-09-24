@@ -5,8 +5,7 @@ on:
     tags:
       - "v*.*.*"
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   validate:
@@ -22,6 +21,8 @@ jobs:
   detect-migrations:
     runs-on: ubuntu-latest
     needs: validate
+    permissions:
+      contents: read
     outputs:
       has_migration_changes: ${{ steps.diff.outputs.has_migration_changes }}
       previous_tag: ${{ steps.diff.outputs.previous_tag }}
@@ -31,6 +32,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
       - name: Detect migration changes since previous tag
         id: diff
         run: |
