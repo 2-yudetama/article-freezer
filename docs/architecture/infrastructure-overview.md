@@ -60,7 +60,7 @@ flowchart LR
             ReleaseValidate["SemVer 検証"]
             WebBuild["web-app image<br/>build / push"]
             ExtractorBuild["md-extractor image<br/>build / push"]
-            DeployJob["deploy job<br/>image path を組み立て"]
+            DeployJob["deploy job<br/>image digest を指定"]
 
             ReleaseValidate --> WebBuild
             ReleaseValidate --> ExtractorBuild
@@ -105,10 +105,12 @@ flowchart LR
 ### 図の読み方
 
 - `v*.*.*` の version tag を push すると、Release workflow と DB Migration workflow がそれぞれ独立して起動する
-- Release workflow は SemVer を検証し、`web-app` と `md-extractor` の image を GitHub Actions で build / push して GHCR に保存する
-- Release workflow は Northflank API で各 service の deployment を更新し、それぞれに対応する GHCR image を指定する
+- `GITHUB_TOKEN` は CI と migration 差分検出では `contents: read`、image 公開では `contents: read` / `packages: write`、release 作成では `contents: write` に制限する。タグ検証と Northflank API 呼び出しの job には GitHub の権限を付与せず、checkout 後に認証情報を保持しない
+- Release workflow は SemVer を検証し、`web-app` と `md-extractor` ごとに共通の Build and publish image workflow を呼び出し、image を build / push して GHCR に保存する。各 job の出力に image digest を保持し、service ごとに対応する値を渡す
+- Release workflow は Northflank API で各 service の deployment を更新し、GHCR image を `@sha256:...` の digest で指定する。build / deploy の各段階で digest の形式を検証し、欠落や不正値がある場合は失敗する
 - DB Migration workflow は SemVer を検証し、前回の version tag から `packages/db/prisma/migrations` の差分を検出する。前回の tag がない初回 release では、現在の commit 配下にある migration file 全件を検出対象にする
 - migration file に差分がある場合だけ、Northflank API で DB migration job を build / run し、job が PostgreSQL addon に migration を適用する。差分がなければ job は起動しない
+- migration の build には version tag の checkout から取得した commit SHA を指定する。成功した build の ID と SHA が要求値に一致することを確認し、その build ID と branch を run に指定する。API 応答の ID / branch は検証後に step output と環境変数で渡す
 - workflow は DB migration job の build 完了を待ってから run を開始するが、run の完了・成功は待機しない。GitHub Actions の成功は DB migration の完了成功を保証しない
 
 > [!IMPORTANT]
@@ -131,6 +133,7 @@ flowchart LR
 ## 構成の根拠
 
 - [Release workflow](../../.github/workflows/release.yaml): version tag、SemVer 検証、2 image の build / push、GHCR、Northflank service deployment 更新
+- [Build and publish image workflow](../../.github/workflows/build-image.yaml): image ごとの共通 build / push 処理と digest の出力
 - [DB Migration workflow](../../.github/workflows/db-migration.yaml): version tag、migration 差分検出、条件付き DB migration job の build / run
 - [Issue #45: デプロイ方法調査](https://github.com/2-yudetama/article-freezer/issues/45): Northflank の service / addon 構成と GitHub Actions からのデプロイ方針
 - [PR #46: リリース用の GitHub Actions を整備](https://github.com/2-yudetama/article-freezer/pull/46): Release workflow の実装

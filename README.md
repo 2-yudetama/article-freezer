@@ -177,6 +177,10 @@ git tag v1.0.0+build.1
 
 Release作成時はGitHubの自動リリースノート生成を使用します。リリースノートの分類は[.github/release.yaml](./.github/release.yaml)で管理します。
 
+Release workflow は共通の [build-image.yaml](./.github/workflows/build-image.yaml) で service ごとに image を公開し、各 build が返す digest を指定して Northflank にデプロイします。
+
+DB Migration workflow は migration に差分がある場合、version tag の commit SHA を指定して Northflank で build し、応答の SHA を照合してから実行します。Release workflow とは独立して起動します。詳細は[本番インフラ構成](./docs/architecture/infrastructure-overview.md)を参照してください。
+
 リリースノートに含めるPRは、以下のラベルで分類されます。
 
 - `feature`: ✨ Features
