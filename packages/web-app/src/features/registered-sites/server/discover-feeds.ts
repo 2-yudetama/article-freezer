@@ -5,11 +5,63 @@ import { fetchBoundedFeed } from "./fetch-feed";
 import { parseFeed } from "./parse-feed";
 import { assertPublicUrl, normalizeHttpUrl } from "./url-security";
 
+const HTML_TITLE_SCAN_LIMIT = 64 * 1024;
+
 function getHtmlAttribute(tag: string, attributeName: string) {
   const match = tag.match(
     new RegExp(`${attributeName}\\s*=\\s*["']([^"']+)["']`, "i"),
   );
   return match?.[1] ?? null;
+}
+
+function getHtmlTitle(html: string) {
+  const head = html.slice(0, HTML_TITLE_SCAN_LIMIT);
+  const titleStart = head.search(/<title\b/i);
+  if (titleStart < 0) return null;
+
+  const contentStart = head.indexOf(">", titleStart + "<title".length) + 1;
+  if (contentStart === 0) return null;
+
+  const closingTag = "</title>";
+  let titleEnd = head.indexOf("<", contentStart);
+  while (titleEnd >= 0) {
+    if (
+      head.slice(titleEnd, titleEnd + closingTag.length).toLowerCase() ===
+      closingTag
+    ) {
+      break;
+    }
+    titleEnd = head.indexOf("<", titleEnd + 1);
+  }
+  if (titleEnd < 0) return null;
+
+  const rawTitle = head.slice(contentStart, titleEnd);
+  if (!rawTitle) return null;
+  const decoded = rawTitle
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#(x[\da-f]+|\d+);/gi, (_, value: string) => {
+      const codePoint = value.toLowerCase().startsWith("x")
+        ? Number.parseInt(value.slice(1), 16)
+        : Number.parseInt(value, 10);
+      return !Number.isInteger(codePoint) ||
+        codePoint < 0 ||
+        codePoint > 0x10ffff
+        ? ""
+        : String.fromCodePoint(codePoint);
+    })
+    .replace(/&(?:amp|lt|gt|quot|apos);/gi, (value) => {
+      const entities: Record<string, string> = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&apos;": "'",
+      };
+      return entities[value.toLowerCase()] ?? value;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+  return decoded || null;
 }
 
 function htmlFeedLinks(html: string, baseUrl: string) {
@@ -38,6 +90,7 @@ function htmlFeedLinks(html: string, baseUrl: string) {
 export type FeedDiscoveryResult = {
   sourceUrl: string;
   siteUrl: string;
+  siteTitle?: string;
   candidates: FeedCandidate[];
 };
 
@@ -71,6 +124,7 @@ export async function discoverFeeds(
     return {
       sourceUrl: response.url,
       siteUrl: sourceUrl,
+      siteTitle: parsed.title,
       candidates: [
         {
           feedUrl: response.url,
@@ -90,6 +144,7 @@ export async function discoverFeeds(
   if (!contentType.includes("html") && !/<html\b/i.test(response.body)) {
     return { sourceUrl: response.url, siteUrl: sourceUrl, candidates: [] };
   }
+  const siteTitle = getHtmlTitle(response.body);
 
   const candidates: FeedCandidate[] = [];
   const candidateUrls = htmlFeedLinks(response.body, response.url).slice(
@@ -110,15 +165,30 @@ export async function discoverFeeds(
         throw error;
       }
       if (Date.now() >= deadlineAt) {
-        return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+        return {
+          sourceUrl: response.url,
+          siteUrl: sourceUrl,
+          ...(siteTitle ? { siteTitle } : {}),
+          candidates,
+        };
       }
       // 1つの候補が壊れていても、他の候補の検出は継続する
     }
   }
 
   if (Date.now() >= deadlineAt) {
-    return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+    return {
+      sourceUrl: response.url,
+      siteUrl: sourceUrl,
+      ...(siteTitle ? { siteTitle } : {}),
+      candidates,
+    };
   }
 
-  return { sourceUrl: response.url, siteUrl: sourceUrl, candidates };
+  return {
+    sourceUrl: response.url,
+    siteUrl: sourceUrl,
+    ...(siteTitle ? { siteTitle } : {}),
+    candidates,
+  };
 }

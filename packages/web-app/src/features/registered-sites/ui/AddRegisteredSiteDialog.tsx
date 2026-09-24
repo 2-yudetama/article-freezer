@@ -27,6 +27,7 @@ type Props = {
 
 type Discovery = {
   siteUrl: string;
+  siteTitle?: string | null;
   candidates: FeedCandidate[];
 };
 
@@ -36,12 +37,16 @@ export default function AddRegisteredSiteDialog({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
   const [discovery, setDiscovery] = useState<Discovery | null>(null);
   const [selectedFeedUrl, setSelectedFeedUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const reset = () => {
     setUrl("");
+    setDisplayName("");
+    setIsDisplayNameEdited(false);
     setDiscovery(null);
     setSelectedFeedUrl("");
     setIsLoading(false);
@@ -71,6 +76,14 @@ export default function AddRegisteredSiteDialog({
       const result = (await response.json()) as Discovery;
       setDiscovery(result);
       setSelectedFeedUrl(result.candidates[0]?.feedUrl ?? "");
+      setDisplayName(
+        (
+          result.candidates[0]?.title ??
+          result.siteTitle ??
+          new URL(result.siteUrl).hostname
+        ).slice(0, 255),
+      );
+      setIsDisplayNameEdited(false);
       if (result.candidates.length === 0) {
         toast.info("フィードは見つかりませんでした", {
           description: "サイトへのリンクとして登録できます",
@@ -95,6 +108,7 @@ export default function AddRegisteredSiteDialog({
         body: JSON.stringify({
           siteUrl: discovery.siteUrl,
           feedUrl,
+          ...(displayName.trim() ? { displayName: displayName.trim() } : {}),
         }),
       });
       if (!response.ok) {
@@ -146,7 +160,7 @@ export default function AddRegisteredSiteDialog({
             type="url"
             value={url}
             onChange={(event) => setUrl(event.target.value)}
-            placeholder="https://zenn.dev/topics/ai/feed"
+            placeholder="example.com"
             disabled={isLoading || Boolean(discovery)}
           />
         </div>
@@ -155,6 +169,23 @@ export default function AddRegisteredSiteDialog({
           <div className="rounded-lg border bg-muted/40 p-3 text-sm">
             <p className="text-xs text-muted-foreground">登録する URL</p>
             <p className="mt-1 break-all font-medium">{discovery.siteUrl}</p>
+          </div>
+        )}
+
+        {discovery && (
+          <div className="space-y-2">
+            <Label htmlFor="registered-site-display-name">表示名</Label>
+            <Input
+              id="registered-site-display-name"
+              value={displayName}
+              onChange={(event) => {
+                setDisplayName(event.target.value);
+                setIsDisplayNameEdited(true);
+              }}
+              placeholder="サイト名（任意）"
+              maxLength={255}
+              disabled={isLoading}
+            />
           </div>
         )}
 
@@ -171,7 +202,12 @@ export default function AddRegisteredSiteDialog({
                   name="feed-candidate"
                   value={candidate.feedUrl}
                   checked={selectedFeedUrl === candidate.feedUrl}
-                  onChange={() => setSelectedFeedUrl(candidate.feedUrl)}
+                  onChange={() => {
+                    setSelectedFeedUrl(candidate.feedUrl);
+                    if (!isDisplayNameEdited) {
+                      setDisplayName(candidate.title.slice(0, 255));
+                    }
+                  }}
                   disabled={isLoading}
                 />
                 <span className="min-w-0 space-y-1">
@@ -196,7 +232,7 @@ export default function AddRegisteredSiteDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row">
           {!discovery ? (
             <Button onClick={discover} disabled={isLoading || !url.trim()}>
               {isLoading && <Loader2 className="animate-spin" />}
@@ -210,18 +246,18 @@ export default function AddRegisteredSiteDialog({
           ) : (
             <>
               <Button
-                variant="outline"
-                onClick={() => register(null)}
-                disabled={isLoading}
-              >
-                リンクとして登録
-              </Button>
-              <Button
                 onClick={() => register(selectedFeedUrl)}
                 disabled={isLoading || !selectedFeedUrl}
               >
                 {isLoading && <Loader2 className="animate-spin" />}
                 このフィードを登録
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => register(null)}
+                disabled={isLoading}
+              >
+                リンクとして登録
               </Button>
             </>
           )}

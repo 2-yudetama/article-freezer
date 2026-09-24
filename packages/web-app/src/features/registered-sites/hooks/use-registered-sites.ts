@@ -7,6 +7,7 @@ import { getApiErrorMessage } from "@/lib/api/response.shared";
 import type {
   RegisteredSitePageData,
   RegisteredSiteStatus,
+  RegisteredSiteView,
 } from "../common/types";
 
 type LoadMode = "initial" | "page" | "refresh";
@@ -18,6 +19,21 @@ type LoadOptions = {
   replaceUrl?: boolean;
   deepLink?: boolean;
   resetHistory?: boolean;
+};
+
+type BackgroundRefreshState = "idle" | "running" | "complete" | "suppressed";
+
+type ForegroundRequest = {
+  requestId: number;
+  siteId: string | null;
+  cursor: string | null;
+  mode: LoadMode;
+};
+
+type PendingBackgroundResponse = {
+  responseData: RegisteredSitePageData;
+  preservedFailureSiteIds: ReadonlySet<string>;
+  requestIdAtQueue: number;
 };
 
 function buildQuery({
@@ -67,6 +83,40 @@ function statusFromError(status: number): RegisteredSiteStatus {
   return status === 429 ? "rate-limited" : "error";
 }
 
+function mergeSitesKeepingCurrentOrder(
+  currentSites: RegisteredSiteView[],
+  incomingSites: RegisteredSiteView[],
+  preservedSiteIds: ReadonlySet<string> = new Set(),
+) {
+  const incomingById = new Map(
+    incomingSites.map((site) => [site.registeredSiteId, site]),
+  );
+  return [
+    ...currentSites.map((site) =>
+      preservedSiteIds.has(site.registeredSiteId)
+        ? site
+        : (incomingById.get(site.registeredSiteId) ?? site),
+    ),
+  ];
+}
+
+function restoreSiteOrder(
+  currentSites: RegisteredSiteView[],
+  previousSiteIds: string[],
+) {
+  const currentById = new Map(
+    currentSites.map((site) => [site.registeredSiteId, site]),
+  );
+  const previousIds = new Set(previousSiteIds);
+  return [
+    ...previousSiteIds.flatMap((siteId) => {
+      const site = currentById.get(siteId);
+      return site ? [site] : [];
+    }),
+    ...currentSites.filter((site) => !previousIds.has(site.registeredSiteId)),
+  ];
+}
+
 export function useRegisteredSites(
   props: RegisteredSitePageData & { userId: string },
 ) {
@@ -76,6 +126,7 @@ export function useRegisteredSites(
   const searchKey = searchParams.toString();
   const initialCursor = searchParams.get("cursor");
   const initialSiteId = searchParams.get("siteId");
+  const initialMode = searchParams.get("mode");
   const [data, setData] = useState(initialData);
   const [cursorState, setCursorState] = useState<{
     history: Array<string | null>;
@@ -85,6 +136,19 @@ export function useRegisteredSites(
     position: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const shouldStartInitialBackgroundRefresh =
+    Boolean(initialData.backgroundRefreshPending) &&
+    !initialCursor &&
+    initialMode !== "page" &&
+    !props.cursorStale;
+  const [backgroundRefreshState, setBackgroundRefreshState] =
+    useState<BackgroundRefreshState>(() => {
+      if (shouldStartInitialBackgroundRefresh) return "running";
+      if (initialData.backgroundRefreshPending) return "suppressed";
+      return "idle";
+    });
+  const savingOrderRef = useRef(false);
   const [now, setNow] = useState(() => Date.now());
   const accessSessionRef = useRef({
     accessBaseline: initialData.accessBaseline,
@@ -92,15 +156,33 @@ export function useRegisteredSites(
   });
   const accessRecordedRef = useRef(initialData.accessRecorded);
   const latestRequestId = useRef(0);
+  const foregroundRequestRef = useRef<ForegroundRequest | null>(null);
   const handledUrlRef = useRef(searchKey);
   const accessRecordAttemptRef = useRef<string | null>(null);
   const cursorStaleHandledRef = useRef(false);
   const refreshAttemptRef = useRef<string | null>(null);
+  const backgroundRefreshAttemptRef = useRef(false);
   const deepLinkRef = useRef(Boolean(initialCursor));
   const normalizedUrlRef = useRef(false);
-  const skipInitialUrlEffectRef = useRef(true);
   const cacheVersionRef = useRef(initialData.cacheVersion);
   const selectedSiteIdRef = useRef(initialData.selectedSiteId);
+  const mountedRef = useRef(false);
+  const backgroundFailureSiteIdsRef = useRef(new Set<string>());
+  const backgroundRefreshSuppressedSiteIdsRef = useRef(new Set<string>());
+  const pendingBackgroundResponsesRef = useRef(
+    new Map<string, PendingBackgroundResponse>(),
+  );
+  const [backgroundResponseRevision, setBackgroundResponseRevision] =
+    useState(0);
+  const initialBackgroundRequestRef = useRef({
+    cursor: initialCursor,
+    mode: initialMode,
+    siteIds: initialData.sites
+      .filter((site) => site.feedUrl)
+      .map((site) => site.registeredSiteId),
+    stale: Boolean(props.cursorStale),
+    pending: Boolean(initialData.backgroundRefreshPending),
+  });
 
   const selectedSite = data.sites.find(
     (site) => site.registeredSiteId === data.selectedSiteId,
@@ -108,12 +190,21 @@ export function useRegisteredSites(
   const cursorHistory = cursorState.history;
   const cursorPosition = cursorState.position;
   const currentCursor = cursorHistory[cursorPosition] ?? null;
+  const currentCursorRef = useRef(currentCursor);
+  currentCursorRef.current = currentCursor;
   const retryAt = selectedSite?.fetchNotBefore
     ? new Date(selectedSite.fetchNotBefore).getTime()
     : null;
   const remainingSeconds = retryAt
     ? Math.max(0, Math.ceil((retryAt - now) / 1000))
     : 0;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!retryAt || retryAt <= Date.now()) return;
@@ -174,6 +265,11 @@ export function useRegisteredSites(
       resetHistory = false,
     }: LoadOptions) => {
       const requestId = ++latestRequestId.current;
+      foregroundRequestRef.current = { requestId, siteId, cursor, mode };
+      if (mode === "refresh" && siteId) {
+        backgroundRefreshSuppressedSiteIdsRef.current.add(siteId);
+        pendingBackgroundResponsesRef.current.delete(siteId);
+      }
       setIsLoading(true);
       const queryMode = mode === "page" ? "page" : "initial";
       const { accessBaseline, accessStartedAt } = accessSessionRef.current;
@@ -253,6 +349,19 @@ export function useRegisteredSites(
           accessRecorded:
             accessRecordedRef.current || responseData.accessRecorded,
         };
+        const pendingBackgroundResponse =
+          pendingBackgroundResponsesRef.current.get(
+            responseData.selectedSiteId ?? "",
+          );
+        if (
+          cursor === null &&
+          pendingBackgroundResponse &&
+          pendingBackgroundResponse.requestIdAtQueue < requestId
+        ) {
+          pendingBackgroundResponsesRef.current.delete(
+            responseData.selectedSiteId ?? "",
+          );
+        }
         const siteChanged =
           selectedSiteIdRef.current !== responseData.selectedSiteId;
         const generationChanged =
@@ -333,6 +442,9 @@ export function useRegisteredSites(
           description: "通信に失敗しました。再試行してください",
         });
       } finally {
+        if (foregroundRequestRef.current?.requestId === requestId) {
+          foregroundRequestRef.current = null;
+        }
         if (requestId === latestRequestId.current) setIsLoading(false);
       }
     },
@@ -370,8 +482,160 @@ export function useRegisteredSites(
   }, [data, initialSiteId, load, props.cursorStale, recordAccess]);
 
   useEffect(() => {
+    const initialBackgroundRequest = initialBackgroundRequestRef.current;
     if (
+      backgroundRefreshAttemptRef.current ||
+      initialBackgroundRequest.stale ||
+      !initialBackgroundRequest.pending ||
+      initialBackgroundRequest.cursor ||
+      initialBackgroundRequest.mode === "page"
+    ) {
+      return;
+    }
+    backgroundRefreshAttemptRef.current = true;
+    setBackgroundRefreshState("running");
+    const { accessBaseline, accessStartedAt } = accessSessionRef.current;
+    const applyBackgroundResponse = (
+      siteId: string,
+      responseData: RegisteredSitePageData,
+    ) => {
+      const activeRequest =
+        foregroundRequestRef.current?.requestId === latestRequestId.current
+          ? foregroundRequestRef.current
+          : null;
+      if (backgroundRefreshSuppressedSiteIdsRef.current.has(siteId)) {
+        return;
+      }
+      if (
+        activeRequest?.mode === "refresh" &&
+        activeRequest.siteId === siteId
+      ) {
+        return;
+      }
+      const targetSite = responseData.sites.find(
+        (site) => site.registeredSiteId === siteId,
+      );
+      if (
+        targetSite?.status === "error" ||
+        targetSite?.status === "rate-limited"
+      ) {
+        backgroundFailureSiteIdsRef.current.add(siteId);
+      } else {
+        backgroundFailureSiteIdsRef.current.delete(siteId);
+      }
+      const preservedFailureSiteIds = new Set(
+        backgroundFailureSiteIdsRef.current,
+      );
+      preservedFailureSiteIds.delete(siteId);
+      const currentFirstPageMatchesResponse =
+        siteId === responseData.selectedSiteId &&
+        selectedSiteIdRef.current === responseData.selectedSiteId &&
+        currentCursorRef.current === null;
+      const activeRequestTargetsCurrentPage =
+        activeRequest?.siteId === responseData.selectedSiteId &&
+        activeRequest.cursor === null;
+      const selectedPageApplied =
+        currentFirstPageMatchesResponse &&
+        (!activeRequest || activeRequestTargetsCurrentPage);
+      if (selectedPageApplied) {
+        pendingBackgroundResponsesRef.current.delete(siteId);
+        if (activeRequest) {
+          foregroundRequestRef.current = null;
+          latestRequestId.current += 1;
+          setIsLoading(false);
+        }
+      } else if (siteId === responseData.selectedSiteId) {
+        pendingBackgroundResponsesRef.current.set(siteId, {
+          responseData,
+          preservedFailureSiteIds,
+          requestIdAtQueue: latestRequestId.current,
+        });
+        setBackgroundResponseRevision((revision) => revision + 1);
+      }
+      setData((current) => {
+        return {
+          ...current,
+          sites: mergeSitesKeepingCurrentOrder(
+            current.sites,
+            responseData.sites,
+            preservedFailureSiteIds,
+          ),
+          ...(selectedPageApplied
+            ? {
+                entries: responseData.entries,
+                nextCursor: responseData.nextCursor,
+                cacheVersion: responseData.cacheVersion,
+                displaySucceeded: responseData.displaySucceeded,
+              }
+            : {}),
+          accessBaseline: accessSessionRef.current.accessBaseline,
+          accessStartedAt: accessSessionRef.current.accessStartedAt,
+          accessRecorded:
+            accessRecordedRef.current || responseData.accessRecorded,
+          errorMessage: current.errorMessage,
+        };
+      });
+      if (selectedPageApplied) {
+        cacheVersionRef.current = responseData.cacheVersion;
+        selectedSiteIdRef.current = responseData.selectedSiteId;
+      }
+    };
+
+    const refreshSites = async () => {
+      let hadFailure = false;
+      for (const siteId of initialBackgroundRequest.siteIds) {
+        if (!mountedRef.current) return;
+        const query = buildQuery({
+          siteId,
+          cursor: null,
+          since: accessBaseline,
+          accessStartedAt,
+          mode: "page",
+        });
+        try {
+          const response = await fetch(
+            `/api/users/${userId}/registered-sites/refresh-expired?${query}`,
+            { method: "POST" },
+          );
+          if (!response.ok) {
+            hadFailure = true;
+            continue;
+          }
+          const responseData =
+            (await response.json()) as RegisteredSitePageData;
+          if (!mountedRef.current) return;
+          applyBackgroundResponse(siteId, responseData);
+        } catch {
+          hadFailure = true;
+        }
+      }
+      if (!mountedRef.current) return;
+      setBackgroundRefreshState("complete");
+      setData((current) => ({
+        ...current,
+        backgroundRefreshPending: false,
+      }));
+      if (hadFailure) {
+        toast.error("登録サイトを更新できません", {
+          description: "通信に失敗しました。再読み込みしてください",
+        });
+      }
+    };
+
+    void refreshSites();
+  }, [userId]);
+
+  useEffect(() => {
+    const hasPendingBackgroundResponse =
+      backgroundResponseRevision > 0 &&
+      Boolean(data.selectedSiteId) &&
+      pendingBackgroundResponsesRef.current.has(data.selectedSiteId ?? "");
+    if (
+      backgroundRefreshState === "running" ||
+      backgroundRefreshState === "suppressed" ||
+      foregroundRequestRef.current ||
       !data.selectedSiteId ||
+      hasPendingBackgroundResponse ||
       selectedSite?.status !== "loading" ||
       !selectedSite.feedUrl
     ) {
@@ -393,16 +657,56 @@ export function useRegisteredSites(
     data.accessStartedAt,
     data.cacheVersion,
     data.selectedSiteId,
+    backgroundRefreshState,
+    backgroundResponseRevision,
     load,
     selectedSite?.feedUrl,
     selectedSite?.status,
   ]);
 
   useEffect(() => {
-    if (skipInitialUrlEffectRef.current) {
-      skipInitialUrlEffectRef.current = false;
+    const selectedSiteId = data.selectedSiteId;
+    if (
+      !selectedSiteId ||
+      currentCursor !== null ||
+      foregroundRequestRef.current ||
+      isLoading ||
+      backgroundResponseRevision === 0
+    ) {
       return;
     }
+    const pending = pendingBackgroundResponsesRef.current.get(selectedSiteId);
+    if (!pending || pending.responseData.selectedSiteId !== selectedSiteId) {
+      return;
+    }
+    pendingBackgroundResponsesRef.current.delete(selectedSiteId);
+    const { responseData, preservedFailureSiteIds } = pending;
+    cacheVersionRef.current = responseData.cacheVersion;
+    selectedSiteIdRef.current = responseData.selectedSiteId;
+    setData((current) => ({
+      ...current,
+      sites: mergeSitesKeepingCurrentOrder(
+        current.sites,
+        responseData.sites,
+        preservedFailureSiteIds,
+      ),
+      entries: responseData.entries,
+      nextCursor: responseData.nextCursor,
+      cacheVersion: responseData.cacheVersion,
+      displaySucceeded: responseData.displaySucceeded,
+      accessBaseline: accessSessionRef.current.accessBaseline,
+      accessStartedAt: accessSessionRef.current.accessStartedAt,
+      accessRecorded: accessRecordedRef.current || responseData.accessRecorded,
+      errorMessage: current.errorMessage,
+    }));
+  }, [
+    backgroundResponseRevision,
+    currentCursor,
+    data.selectedSiteId,
+    isLoading,
+  ]);
+
+  useEffect(() => {
     const loadFromUrl = (nextSearch: string) => {
       const params = new URLSearchParams(nextSearch);
       const siteId = params.get("siteId");
@@ -420,7 +724,10 @@ export function useRegisteredSites(
     };
     const onPopState = () => loadFromUrl(window.location.search.slice(1));
     window.addEventListener("popstate", onPopState);
-    if (handledUrlRef.current !== searchKey) loadFromUrl(searchKey);
+    const currentSearch = window.location.search.slice(1);
+    if (searchKey || currentSearch) {
+      if (handledUrlRef.current !== currentSearch) loadFromUrl(currentSearch);
+    }
     return () => window.removeEventListener("popstate", onPopState);
   }, [cursorHistory, load, searchKey]);
 
@@ -446,6 +753,7 @@ export function useRegisteredSites(
     )
       return;
     const requestId = ++latestRequestId.current;
+    foregroundRequestRef.current = null;
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -476,6 +784,67 @@ export function useRegisteredSites(
     }
   };
 
+  const reorderSites = useCallback(
+    async (registeredSiteIds: string[]) => {
+      if (savingOrderRef.current) return false;
+      const currentIds = data.sites.map((site) => site.registeredSiteId);
+      if (
+        registeredSiteIds.length !== currentIds.length ||
+        new Set(registeredSiteIds).size !== currentIds.length ||
+        registeredSiteIds.some(
+          (registeredSiteId) => !currentIds.includes(registeredSiteId),
+        )
+      ) {
+        return false;
+      }
+
+      const byId = new Map(
+        data.sites.map((site) => [site.registeredSiteId, site]),
+      );
+      const previousSites = data.sites;
+      const nextSites = registeredSiteIds.flatMap((registeredSiteId) => {
+        const site = byId.get(registeredSiteId);
+        return site ? [site] : [];
+      });
+      savingOrderRef.current = true;
+      setData((current) => ({ ...current, sites: nextSites }));
+      setIsSavingOrder(true);
+      try {
+        const response = await fetch(
+          `/api/users/${userId}/registered-sites/order`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ registeredSiteIds }),
+          },
+        );
+        if (!response.ok) {
+          throw new Error(await getApiErrorMessage(response));
+        }
+        return true;
+      } catch (error) {
+        const previousSiteIds = previousSites.map(
+          (site) => site.registeredSiteId,
+        );
+        setData((current) => ({
+          ...current,
+          sites: restoreSiteOrder(current.sites, previousSiteIds),
+        }));
+        toast.error("登録先の順番を保存できません", {
+          description:
+            error instanceof Error
+              ? error.message
+              : "通信に失敗しました。再試行してください",
+        });
+        return false;
+      } finally {
+        savingOrderRef.current = false;
+        setIsSavingOrder(false);
+      }
+    },
+    [data.sites, userId],
+  );
+
   const goNext = () => {
     if (!data.selectedSiteId || !data.nextCursor) return;
     void load({
@@ -502,10 +871,12 @@ export function useRegisteredSites(
     cursorPosition,
     isDeepLink: deepLinkRef.current,
     isLoading,
+    isSavingOrder,
     remainingSeconds,
     selectSite,
     refresh,
     removeSite,
+    reorderSites,
     goNext,
     goPrevious,
     reload: (registeredSiteId?: string) =>

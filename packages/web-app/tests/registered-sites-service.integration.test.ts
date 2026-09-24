@@ -76,6 +76,7 @@ async function createSite(
     cacheVersion?: bigint;
     fetchNotBefore?: Date | null;
     feedUrl?: string | null;
+    sortOrder?: number;
   } = {},
 ) {
   return prisma.registeredSite.create({
@@ -84,6 +85,7 @@ async function createSite(
       site_url: `https://site.example.test/${crypto.randomUUID()}`,
       site_url_key: crypto.randomUUID().replaceAll("-", ""),
       display_name: "Integration site",
+      sort_order: options.sortOrder ?? 0,
       feed_url:
         options.feedUrl === undefined
           ? "https://feed.example.test/feed"
@@ -170,6 +172,171 @@ suite("registered site service with PostgreSQL", () => {
         operation: "page",
       }),
     ).rejects.toMatchObject({ name: "NotFoundError" });
+  });
+
+  it("登録先の表示順をユーザ単位で保存し、他ユーザの ID は更新しない", async () => {
+    const owner = await createUser("order-owner");
+    const other = await createUser("order-other");
+    const first = await createSite(owner.user_id, { feedUrl: null });
+    const second = await createSite(owner.user_id, { feedUrl: null });
+    const otherSite = await createSite(other.user_id, { feedUrl: null });
+
+    await expect(
+      service.reorderRegisteredSites({
+        userId: owner.user_id,
+        registeredSiteIds: [
+          second.registered_site_id,
+          first.registered_site_id,
+        ],
+      }),
+    ).resolves.toEqual([
+      { registered_site_id: second.registered_site_id },
+      { registered_site_id: first.registered_site_id },
+    ]);
+
+    const page = await service.getRegisteredSitePageData({
+      userId: owner.user_id,
+      operation: "page",
+    });
+    expect(page.sites.map((site) => site.registeredSiteId)).toEqual([
+      second.registered_site_id,
+      first.registered_site_id,
+    ]);
+
+    await expect(
+      service.reorderRegisteredSites({
+        userId: owner.user_id,
+        registeredSiteIds: [
+          first.registered_site_id,
+          otherSite.registered_site_id,
+        ],
+      }),
+    ).rejects.toMatchObject({ name: "NotFoundError" });
+
+    const otherRow = await prisma.registeredSite.findUniqueOrThrow({
+      where: { registered_site_id: otherSite.registered_site_id },
+      select: { sort_order: true },
+    });
+    expect(otherRow.sort_order).toBe(0);
+  });
+
+  it("アクセス基準より新しい全キャッシュをサイト単位で新着判定する", async () => {
+    const user = await createUser("new-sites");
+    const baseline = new Date("2026-09-20T00:00:00.000Z");
+    const first = await createSite(user.user_id, {
+      lastSuccessAt: new Date(),
+      cacheVersion: BigInt(1),
+      sortOrder: 0,
+    });
+    const second = await createSite(user.user_id, {
+      lastSuccessAt: new Date(),
+      cacheVersion: BigInt(1),
+      sortOrder: 1,
+    });
+    await createEntries(first.registered_site_id, [
+      {
+        key: "old-first",
+        url: "https://article.example.test/old-first",
+        firstSeenAt: new Date("2026-09-19T00:00:00.000Z"),
+      },
+      {
+        key: "new-first",
+        url: "https://article.example.test/new-first",
+        firstSeenAt: new Date("2026-09-20T00:00:00.001Z"),
+      },
+    ]);
+    await createEntries(second.registered_site_id, [
+      {
+        key: "old-second",
+        url: "https://article.example.test/old-second",
+        firstSeenAt: new Date("2026-09-19T00:00:00.000Z"),
+      },
+    ]);
+
+    const result = await service.getRegisteredSitePageData({
+      userId: user.user_id,
+      registeredSiteId: first.registered_site_id,
+      since: baseline.toISOString(),
+      operation: "page",
+    });
+    expect(result.sites.map((site) => site.hasNew)).toEqual([true, false]);
+  });
+
+  it("期限切れフィードを順番に更新し、個別失敗後も次の取得を続ける", async () => {
+    const user = await createUser("background-refresh");
+    const first = await createSite(user.user_id, {
+      lastSuccessAt: new Date("2026-01-01T00:00:00.000Z"),
+      cacheVersion: BigInt(1),
+      sortOrder: 0,
+    });
+    const second = await createSite(user.user_id, {
+      lastSuccessAt: new Date("2026-01-01T00:00:00.000Z"),
+      cacheVersion: BigInt(1),
+      sortOrder: 1,
+    });
+    const third = await createSite(user.user_id, {
+      lastSuccessAt: new Date("2026-01-01T00:00:00.000Z"),
+      cacheVersion: BigInt(1),
+      sortOrder: 2,
+    });
+    fetchFeedMock
+      .mockResolvedValueOnce({
+        url: "https://feed.example.test/first",
+        body: rss([
+          { id: "background-first", url: "https://article.example.test/first" },
+        ]),
+        contentType: "application/rss+xml",
+      })
+      .mockRejectedValueOnce(new FeedFetchError("network", "network"));
+    fetchFeedMock.mockResolvedValueOnce({
+      url: "https://feed.example.test/third",
+      body: rss([
+        { id: "background-third", url: "https://article.example.test/third" },
+      ]),
+      contentType: "application/rss+xml",
+    });
+
+    const firstResult = await service.refreshExpiredRegisteredSites({
+      userId: user.user_id,
+      registeredSiteId: first.registered_site_id,
+    });
+    const secondResult = await service.refreshExpiredRegisteredSites({
+      userId: user.user_id,
+      registeredSiteId: second.registered_site_id,
+    });
+    const thirdResult = await service.refreshExpiredRegisteredSites({
+      userId: user.user_id,
+      registeredSiteId: third.registered_site_id,
+    });
+    expect(fetchFeedMock).toHaveBeenCalledTimes(3);
+    expect(firstResult.entries.map((entry) => entry.articleUrl)).toEqual([
+      "https://article.example.test/first",
+    ]);
+    expect(firstResult.sites[0]?.status).toBe("ready");
+    expect(secondResult.sites[1]?.status).toBe("error");
+    expect(thirdResult.sites[2]?.status).toBe("ready");
+    expect(
+      await prisma.feedEntry.findFirstOrThrow({
+        where: {
+          registered_site_id: first.registered_site_id,
+        },
+      }),
+    ).toMatchObject({ source_entry_id: "background-first" });
+    expect(
+      await prisma.feedEntry.count({
+        where: { registered_site_id: first.registered_site_id },
+      }),
+    ).toBe(1);
+    expect(
+      await prisma.feedEntry.count({
+        where: { registered_site_id: second.registered_site_id },
+      }),
+    ).toBe(0);
+    expect(
+      await prisma.feedEntry.count({
+        where: { registered_site_id: third.registered_site_id },
+      }),
+    ).toBe(1);
   });
 
   it("同じ登録先への同時取得は一つだけが原子的 claim を取得する", async () => {

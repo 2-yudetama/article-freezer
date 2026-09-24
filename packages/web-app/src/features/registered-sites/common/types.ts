@@ -24,8 +24,15 @@ export type RegisteredSiteCursor = v.InferOutput<
 
 export const RegisterSiteRequestSchema = v.object({
   siteUrl: RegisteredSiteUrlSchema,
+  displayName: v.optional(
+    v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(255)),
+  ),
   // undefined は自動検出、null はフィードを使わないリンク登録を表す
   feedUrl: v.optional(v.nullable(RegisteredSiteUrlSchema)),
+});
+
+export const ReorderRegisteredSitesRequestSchema = v.object({
+  registeredSiteIds: v.array(RegisteredSiteIdSchema),
 });
 
 export const DiscoverFeedsRequestSchema = v.object({
@@ -64,6 +71,7 @@ export type RegisteredSiteView = {
   registeredSiteId: string;
   siteUrl: string;
   displayName: string;
+  hasNew: boolean;
   feedUrl: string | null;
   status: RegisteredSiteStatus;
   lastSuccessAt: string | null;
@@ -91,6 +99,7 @@ export type RegisteredSitePageData = {
   accessStartedAt: string;
   displaySucceeded: boolean;
   accessRecorded: boolean;
+  backgroundRefreshPending?: boolean;
   cursorStale?: boolean;
   errorMessage?: string;
 };

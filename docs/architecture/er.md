@@ -61,6 +61,7 @@ erDiagram
         TEXT site_url
         TEXT site_url_key
         TEXT display_name
+        INTEGER sort_order "ユーザごとの表示順"
         TEXT feed_url
         TEXT feed_url_key
         TIMESTAMPTZ last_success_at
