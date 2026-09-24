@@ -84,6 +84,7 @@ jobs:
           echo "build_id=$build_id" >> "$GITHUB_OUTPUT"
 
       - name: Wait for DB migration job build
+        id: wait-build
         run: |
           build_id="${{ steps.build.outputs.build_id }}"
 
@@ -103,6 +104,14 @@ jobs:
 
             if [[ "$concluded" == "true" ]]; then
               if [[ "$success" == "true" ]]; then
+                branch="$(jq -r 'if (.data.branch | type) == "string" then .data.branch else empty end' <<< "$response")"
+
+                if [[ -z "$branch" ]]; then
+                  echo "Failed to read Northflank build branch"
+                  exit 1
+                fi
+
+                echo "branch=$branch" >> "$GITHUB_OUTPUT"
                 exit 0
               fi
 
@@ -119,10 +128,12 @@ jobs:
       - name: Run DB migration job on Northflank
         run: |
           build_id="${{ steps.build.outputs.build_id }}"
+          branch="${{ steps.wait-build.outputs.branch }}"
           payload="$(
             jq -n \
               --arg job_id "$NORTHFLANK_JOB_ID" \
               --arg build_id "$build_id" \
+              --arg branch "$branch" \
               '{
                 deployment: {
                   docker: {
@@ -130,7 +141,8 @@ jobs:
                   },
                   internal: {
                     id: $job_id,
-                    buildId: $build_id
+                    buildId: $build_id,
+                    branch: $branch
                   }
                 }
               }'
