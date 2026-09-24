@@ -130,6 +130,13 @@ describe("AddRegisteredSiteDialog", () => {
     });
 
     expect(displayNameInput().value).toBe("記事フィード");
+    const footer = document.querySelector<HTMLElement>(
+      '[data-slot="dialog-footer"]',
+    );
+    if (!footer) throw new Error("ダイアログのフッターが見つかりません");
+    expect(footer.classList.contains("flex-col")).toBe(true);
+    expect(footer.classList.contains("flex-col-reverse")).toBe(false);
+    expect(footer.classList.contains("sm:flex-row")).toBe(true);
     const footerButtons = Array.from(
       document.querySelectorAll<HTMLElement>(
         '[data-slot="dialog-footer"] button',

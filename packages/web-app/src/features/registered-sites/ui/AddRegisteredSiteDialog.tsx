@@ -232,7 +232,7 @@ export default function AddRegisteredSiteDialog({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row">
           {!discovery ? (
             <Button onClick={discover} disabled={isLoading || !url.trim()}>
               {isLoading && <Loader2 className="animate-spin" />}
