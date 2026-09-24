@@ -38,6 +38,7 @@ export default function AddRegisteredSiteDialog({
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [isDisplayNameEdited, setIsDisplayNameEdited] = useState(false);
   const [discovery, setDiscovery] = useState<Discovery | null>(null);
   const [selectedFeedUrl, setSelectedFeedUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,7 @@ export default function AddRegisteredSiteDialog({
   const reset = () => {
     setUrl("");
     setDisplayName("");
+    setIsDisplayNameEdited(false);
     setDiscovery(null);
     setSelectedFeedUrl("");
     setIsLoading(false);
@@ -75,8 +77,13 @@ export default function AddRegisteredSiteDialog({
       setDiscovery(result);
       setSelectedFeedUrl(result.candidates[0]?.feedUrl ?? "");
       setDisplayName(
-        (result.siteTitle ?? new URL(result.siteUrl).hostname).slice(0, 255),
+        (
+          result.candidates[0]?.title ??
+          result.siteTitle ??
+          new URL(result.siteUrl).hostname
+        ).slice(0, 255),
       );
+      setIsDisplayNameEdited(false);
       if (result.candidates.length === 0) {
         toast.info("フィードは見つかりませんでした", {
           description: "サイトへのリンクとして登録できます",
@@ -171,7 +178,10 @@ export default function AddRegisteredSiteDialog({
             <Input
               id="registered-site-display-name"
               value={displayName}
-              onChange={(event) => setDisplayName(event.target.value)}
+              onChange={(event) => {
+                setDisplayName(event.target.value);
+                setIsDisplayNameEdited(true);
+              }}
               placeholder="サイト名（任意）"
               maxLength={255}
               disabled={isLoading}
@@ -192,7 +202,12 @@ export default function AddRegisteredSiteDialog({
                   name="feed-candidate"
                   value={candidate.feedUrl}
                   checked={selectedFeedUrl === candidate.feedUrl}
-                  onChange={() => setSelectedFeedUrl(candidate.feedUrl)}
+                  onChange={() => {
+                    setSelectedFeedUrl(candidate.feedUrl);
+                    if (!isDisplayNameEdited) {
+                      setDisplayName(candidate.title.slice(0, 255));
+                    }
+                  }}
                   disabled={isLoading}
                 />
                 <span className="min-w-0 space-y-1">
@@ -231,18 +246,18 @@ export default function AddRegisteredSiteDialog({
           ) : (
             <>
               <Button
-                variant="outline"
-                onClick={() => register(null)}
-                disabled={isLoading}
-              >
-                リンクとして登録
-              </Button>
-              <Button
                 onClick={() => register(selectedFeedUrl)}
                 disabled={isLoading || !selectedFeedUrl}
               >
                 {isLoading && <Loader2 className="animate-spin" />}
                 このフィードを登録
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => register(null)}
+                disabled={isLoading}
+              >
+                リンクとして登録
               </Button>
             </>
           )}
