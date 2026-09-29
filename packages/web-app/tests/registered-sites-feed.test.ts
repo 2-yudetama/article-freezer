@@ -39,6 +39,39 @@ describe("parseFeed", () => {
     });
   });
 
+  it("アポストロフィの10進・16進参照を一度だけ復号し、CDATA はそのまま保持する", () => {
+    const result = parseFeed(`
+      <rss><channel>
+        <title>Publisher&#39;s &#x27; &amp;#39; &amp;#x27; &copy; feed</title>
+        <item>
+          <guid>entry&#39;s-&#x27;-&amp;#39;-&amp;#x27;</guid>
+          <title>Reader&#39;s &#x27; &amp;#39; &amp;#x27; title</title>
+          <link>https://example.com/articles/it&#39;s-&#x27;</link>
+        </item>
+        <item>
+          <guid>cdata-entry</guid>
+          <title><![CDATA[CDATA &#39; and &#x27; stay literal]]></title>
+          <link>https://example.com/articles/cdata</link>
+        </item>
+      </channel></rss>
+    `);
+
+    expect(result).toMatchObject({
+      title: "Publisher's ' &#39; &#x27; © feed",
+      entries: [
+        {
+          sourceEntryId: "entry's-'-&#39;-&#x27;",
+          title: "Reader's ' &#39; &#x27; title",
+          articleUrl: "https://example.com/articles/it's-'",
+        },
+        {
+          sourceEntryId: "cdata-entry",
+          title: "CDATA &#39; and &#x27; stay literal",
+        },
+      ],
+    });
+  });
+
   it("Atom は published を投稿日として扱い updated を代用しない", () => {
     const result = parseFeed(`
       <feed xmlns="http://www.w3.org/2005/Atom">
