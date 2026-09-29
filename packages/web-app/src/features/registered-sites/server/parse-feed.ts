@@ -27,6 +27,8 @@ const parser = new XMLParser({
   parseTagValue: false,
   parseAttributeValue: false,
   processEntities: true,
+  // 数値文字参照を復号するため、HTML エンティティの処理を有効にする
+  htmlEntities: true,
   textNodeName: "#text",
   trimValues: true,
 });

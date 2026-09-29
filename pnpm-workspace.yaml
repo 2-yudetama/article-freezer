@@ -1,28 +1,30 @@
 # https://pnpm.io/ja/pnpm-workspace_yaml
 packages:
   - "packages/*"
+
 catalog:
   "@logtape/logtape": ^2.0.2
-  next: ^16.2.6
-  valibot: ^1.2.0
+  next: ^16.3.6
+  valibot: ^1.5.0
+
 catalogs:
   ts:
     "@types/node": 22.19.7
-    tsx: 4.21.0
+    tsx: 4.23.9
     typescript: 5.9.3
   prisma:
-    "@prisma/adapter-pg": ^7.8.0
-    "@prisma/client": ^7.8.0
+    "@prisma/adapter-pg": ^7.10.0
+    "@prisma/client": ^7.10.0
     pg: ^8.21.0
-    prisma: ^7.8.0
+    prisma: ^7.10.0
   react:
     "@types/react": ^19
     "@types/react-dom": ^19
     react: ^19.2.6
     react-dom: ^19.2.6
   vitest:
-    "@vitest/coverage-v8": "^4.1.7"
-    "vitest": "^4.1.7"
+    "@vitest/coverage-v8": "^4.1.11"
+    "vitest": "^4.1.11"
 
 # https://pnpm.io/ja/workspaces#syncinjecteddepsafterscripts
 syncInjectedDepsAfterScripts:
@@ -30,6 +32,12 @@ syncInjectedDepsAfterScripts:
 
 # https://pnpm.io/ja/settings#minimumreleaseage
 minimumReleaseAge: 4320 # 3日間 (4,320分)
+
+# Keep compatible transitive releases within the required fixed range
+overrides:
+  mysql2: 3.23.1
+  "picomatch@2": 2.3.2
+  smol-toml: 1.7.1
 
 # https://pnpm.io/ja/settings#ignoredbuiltdependencies
 ignoredBuiltDependencies:
