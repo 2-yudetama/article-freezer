@@ -2,7 +2,7 @@
 # 参考：https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
 # https://github.com/nodejs/docker-node/blob/74b0481b76e0af5b19d425ad34489e7393b23aff/24/bookworm-slim/Dockerfile
-ARG NODE_VERSION=24.13-slim
+ARG NODE_VERSION=24.21-slim
 
 FROM node:${NODE_VERSION} AS base
 ENV PNPM_HOME="/pnpm"
